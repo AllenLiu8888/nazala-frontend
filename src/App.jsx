@@ -1,16 +1,21 @@
-// import { useState } from 'react'
+import { Outlet } from 'react-router-dom';
+// import { Outlet, useLoaderData } from 'react-router-dom';
+
+// export async function loader() {
+//   return {
+//     return fetch('/api/games');
+//   }
+// }
 
 function App() {
-
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-      <div className="max-w-6xl mx-auto p-8 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-          NAVIGATING THE FUTURE OF MEMORY
-        </h1>
-
-      </div>
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* 页面内容区域 - 这里显示具体的页面组件 */}
+      <main className="container mx-auto px-4">
+        <Outlet />  {/* 🔑 关键：这里会显示子路由的内容 */}
+      </main>
     </div>
+
   )
 }
 

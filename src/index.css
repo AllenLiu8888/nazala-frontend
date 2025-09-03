@@ -1,5 +1,34 @@
 @import "tailwindcss";
 
+@theme {
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --box-border: #000000;
+  --box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+
+}
+
+html.dark {
+  --color-bg: #000000;
+  --color-text: #ffffff;
+  --box-border: #ffffff;
+  --box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+@layer utilities {
+
+  .bg-body {
+    background-color: rgb(var(--color-bg));
+  }
+
+} 
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+
 /* 自定义的全局样式（如果需要） */
 * {
   margin: 0;
