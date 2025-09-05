@@ -1,11 +1,11 @@
-import GameSection from '../../components/GameSection';
-import TitleSection from '../../components/TitleSection';
+import LobbySection from '../../components/Lobby/LobbySection';
+import TitleSection from '../../components/shared/TitleSection';
 
 const GameLobby = () => {
     
     return (
         <>
-            <div className="h-full overflow-hidden flex flex-col items-center justify-center gap-6 py-6">
+            <div className="h-full overflow-hidden flex flex-col items-center justify-center gap-6 py-12">
                 {/* Title 部分 */} 
                 {/*<header className="flex flex-col items-center justify-center text-center">
                     <h1 className="leading-normal text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">NAVIGATING THE FUTURE OF MEMORY</h1>
@@ -15,7 +15,7 @@ const GameLobby = () => {
 
                 {/* 游戏框部分 */}
                 <main className="flex-1 flex px-4 py-2 w-8/10">
-                    <GameSection />
+                    <LobbySection />
                 </main>
 
             </div>

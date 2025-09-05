@@ -18,7 +18,7 @@ import { Outlet } from 'react-router-dom';
 
 function App() {
   return (
-    <div className="fixed inset-0 box-border overflow-hidden bg-gradient-to-br from-gray-900 to-black p-6">
+    <div className="fixed inset-0 box-border overflow-hidden bg-gradient-to-br from-gray-900 to-black">
           <Outlet />
     </div>
   );
