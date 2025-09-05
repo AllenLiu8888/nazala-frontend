@@ -15,28 +15,31 @@ const HomePage = () => {
         return () => window.removeEventListener('keydown', goToLobby);
     }, [navigate]);
 
+    const HomePageTitle = "Memory Trading & Editing";
+    const HomePageSubtitle = "An Interactive Art Installation";
+
     return (
-        <>
+        <div className="flex items-center justify-center ">
             <div 
-                className="flex flex-col gap-80 items-center justify-center min-h-screen cursor-pointer"
+                className="flex flex-col gap-60 items-center justify-center min-h-screen cursor-pointer"
                 onClick={goToLobby}
             >
                 <div className="flex flex-col items-center justify-center text-center gap-6">
-                    <h1 className="leading-normal text-9xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-                        Memory Trading & Editing
+                    <h1 className="font-pixel leading-normal text-8xl font-bold text-cyan-300">
+                        {HomePageTitle}
                     </h1>
                     
-                    <p className="text-6xl text-gray-300 font-light">
-                        An Interactive Art Installation
+                    <p className="font-pixel text-6xl text-cyan-300 font-light">
+                        {HomePageSubtitle}
                     </p>
                 </div>
-                <div className="animate-pulse">
+                <div className="font-pixel animate-pulse">
                     <p className="text-4xl text-gray-400">
                         Press any key or click to start
                     </p>
                 </div>
-                </div>
-        </>
+            </div>
+    </div>
     );
 };
 
