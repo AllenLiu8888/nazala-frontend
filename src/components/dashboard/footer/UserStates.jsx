@@ -3,7 +3,7 @@ import ScoreRing from './RingScore';
 
 
 const UserStates = () => {
-    const value = 2;
+    const value = 3;
     const max = 5;
 
     return (    

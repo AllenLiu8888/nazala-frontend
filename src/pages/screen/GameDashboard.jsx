@@ -1,8 +1,8 @@
 import WorldStatus from '../../components/dashboard/header/WorldStatus';
 import Round from '../../components/dashboard/header/Round';
-import UserStates from '../../components/footer/UserStates';
+import UserStates from '../../components/dashboard/footer/UserStates';
 import { Link } from 'react-router-dom';
-import DecisionProgress from '../../components/footer/DecisionProgress';
+import DecisionProgress from '../../components/dashboard/footer/DecisionProgress';
 import StorySection from '../../components/dashboard/main/StorySection';
 import Visualisation from '../../components/dashboard/main/Visualisation';
 
