@@ -3,7 +3,6 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 // 大屏幕页面组件 - 管理员/主持人使用
 import HomePage from './pages/screen/HomePage'; // 游戏首页
-import GameLobby from './pages/screen/GameLobby'; // 游戏大厅
 import GameIntro from './pages/screen/GameIntro'; // 游戏介绍
 import GameDashboard from './pages/screen/GameDashboard'; // 游戏主界面 (Dashboard)
 import GameOver from './pages/screen/GameOver'; // 游戏结束页
@@ -30,7 +29,6 @@ export const router = createBrowserRouter([
         path: "screen",
         children: [
           { path: "home", element: <HomePage /> },
-          { path: "lobby", element: <GameLobby /> },
           { path: "intro", element: <GameIntro /> },
           { path: "game", element: <GameDashboard /> },
           { path: "gameover", element: <GameOver /> },

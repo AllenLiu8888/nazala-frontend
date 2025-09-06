@@ -5,14 +5,14 @@ const HomePage = () => {
     const navigate = useNavigate();
 
     // 导航到游戏大厅的函数
-    const goToLobby = () => {
-        navigate('/screen/lobby');
+    const goToIntro = () => {
+        navigate('/screen/intro');
     };
 
     // 键盘事件监听
     useEffect(() => {
-        window.addEventListener('keydown', goToLobby);
-        return () => window.removeEventListener('keydown', goToLobby);
+        window.addEventListener('keydown', goToIntro);
+        return () => window.removeEventListener('keydown', goToIntro);
     }, [navigate]);
 
     const HomePageTitle = "Memory Trading & Editing";
@@ -22,7 +22,7 @@ const HomePage = () => {
         <div className="flex items-center justify-center ">
             <div 
                 className="flex flex-col gap-60 items-center justify-center min-h-screen cursor-pointer"
-                onClick={goToLobby}
+                onClick={goToIntro}
             >
                 <div className="flex flex-col items-center justify-center text-center gap-6">
                     <h1 className="font-pixel leading-normal text-8xl font-bold text-cyan-300">
@@ -39,7 +39,7 @@ const HomePage = () => {
                     </p>
                 </div>
             </div>
-    </div>
+        </div>
     );
 };
 
