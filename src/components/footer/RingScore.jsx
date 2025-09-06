@@ -12,7 +12,7 @@ import "react-circular-progressbar/dist/styles.css";
  * - max: number     分母
  * - size?: number = 72           直径（px）
  * - strokeWidth?: number = 10    线宽
- * - color?: string = "#22d3ee"   进度色
+ * - color?: string = "#03ffff"   进度色
  * - track?: string = "#0b1220"   轨道色
  * - ccw?: boolean = true         逆时针（counter-clockwise）
  * - duration?: number = 0.6      动画时长（秒）
@@ -24,14 +24,14 @@ import "react-circular-progressbar/dist/styles.css";
 export default function ScoreRing({
     value,
     max,
-    size = 72,
-    strokeWidth = 10,
-    color = "#22d3ee",
+    size = 96,
+    strokeWidth = 18,
+    color = "#03ffff",
     track = "#0b1220",
     ccw = true,
     duration = 0.6,
     easing = "cubic-bezier(.22,1,.36,1)",
-    showText = true,
+    showText = false,
     className = "",
     animateOnMount = true,
     }) {

@@ -27,8 +27,8 @@ html {
 
 
 /* 可复用的组件类 - 使用 @apply 指令 */
-.btn-primary {
-  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+.pixel-text {
+  @apply font-pixel text-4xl font-medium text-cyan-300;
 }
 
 .btn-secondary {
