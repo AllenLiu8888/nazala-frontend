@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import QRCode from '../../components/shared/QRCode';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const HomePage = () => {
     return (
         <div className="flex items-center justify-center ">
             <div 
-                className="flex flex-col gap-60 items-center justify-center min-h-screen cursor-pointer"
+                className="flex flex-col gap-20 items-center justify-center min-h-screen cursor-pointer"
                 onClick={goToIntro}
             >
                 <div className="flex flex-col items-center justify-center text-center gap-6">
@@ -37,6 +38,7 @@ const HomePage = () => {
                         {HomePageSubtitle}
                     </p>
                 </div>
+                <QRCode/>
                 <div className="font-pixel animate-pulse">
                     <p className="text-4xl text-gray-400">
                         Press any key or click to start

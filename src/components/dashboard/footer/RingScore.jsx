@@ -25,7 +25,7 @@ export default function ScoreRing({
     value,
     max,
     size = 96,
-    strokeWidth = 18,
+    strokeWidth = 20,
     color = "#03ffff",
     track = "#0b1220",
     ccw = true,
