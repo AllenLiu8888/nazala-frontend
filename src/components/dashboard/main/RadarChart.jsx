@@ -1,137 +1,63 @@
+// 第1步：最基础的雷达图
 import React from 'react';
+import ReactApexChart from 'react-apexcharts';
+
 
 const RadarChart = () => {
-  // 模拟数据点
-    const dataPoints = [
-        { angle: 0, value: 100, label: 'Memory Fidelity', color: 'cyan' },
-        { angle: 90, value: 90, label: 'Technical Control', color: 'red' },
-        { angle: 180, value: 80, label: 'Pattern Cohesion', color: 'yellow' },
-        { angle: 270, value: 75, label: 'Autonomic Control', color: 'blue' }
-    ];
-
-    return (
-        <div className="flex-1 flex flex-col justify-between items-center overflow-hidden">
-            {/* 雷达图容器 */}
-            <div className="relative w-300 h-120 rounded-lg">
-            {/* SVG 雷达图 */}
-            <svg className="w-full h-full" viewBox="0 0 400 400">
-                {/* 定义渐变 */}
-                <defs>
-                <radialGradient id="radarGradient">
-                    <stop offset="0%" stopColor="cyan" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="cyan" stopOpacity="0.1" />
-                </radialGradient>
-                </defs>
-
-                {/* 背景圆圈 */}
-                {[1, 2, 3, 4, 5].map((level) => (
-                <circle
-                    key={level}
-                    cx="200"
-                    cy="200"
-                    r={level * 30}
-                    fill="none"
-                    stroke="rgba(0, 255, 255, 0.2)"
-                    strokeWidth="1"
-                />
-                ))}
-
-                {/* 轴线 */}
-                {dataPoints.map((point, index) => {
-                const angle = (index * 90 - 90) * Math.PI / 180;
-                const x2 = 200 + 150 * Math.cos(angle);
-                const y2 = 200 + 150 * Math.sin(angle);
-                return (
-                    <line
-                    key={index}
-                    x1="200"
-                    y1="200"
-                    x2={x2}
-                    y2={y2}
-                    stroke="rgba(0, 255, 255, 0.3)"
-                    strokeWidth="1"
-                    />
-                );
-                })}
-
-                {/* 数据多边形 */}
-                <polygon
-                points={dataPoints.map((point, index) => {
-                    const angle = (index * 90 - 90) * Math.PI / 180;
-                    const radius = (point.value / 100) * 150;
-                    const x = 200 + radius * Math.cos(angle);
-                    const y = 200 + radius * Math.sin(angle);
-                    return `${x},${y}`;
-                }).join(' ')}
-                fill="url(#radarGradient)"
-                stroke="cyan"
-                strokeWidth="2"
-                />
-
-                {/* 数据点 */}
-                {dataPoints.map((point, index) => {
-                const angle = (index * 90 - 90) * Math.PI / 180;
-                const radius = (point.value / 100) * 150;
-                const x = 200 + radius * Math.cos(angle);
-                const y = 200 + radius * Math.sin(angle);
-                return (
-                    <circle
-                    key={index}
-                    cx={x}
-                    cy={y}
-                    r="6"
-                    fill={point.color}
-                    stroke="white"
-                    strokeWidth="2"
-                    />
-                );
-                })}
-
-                {/* 标签 */}
-                {dataPoints.map((point, index) => {
-                const angle = (index * 90 - 90) * Math.PI / 180;
-                const x = 200 + 180 * Math.cos(angle);
-                const y = 200 + 180 * Math.sin(angle);
-                return (
-                    <g key={index}>
-                    <rect
-                        x={x - 60}
-                        y={y - 12}
-                        width="120"
-                        height="24"
-                        rx="12"
-                        fill="rgba(0, 255, 255, 0.2)"
-                        stroke="cyan"
-                        strokeWidth="1"
-                    />
-                    <text
-                        x={x}
-                        y={y + 4}
-                        fill="cyan"
-                        fontSize="12"
-                        textAnchor="middle"
-                        className="font-medium"
-                    >
-                        {point.label}
-                    </text>
-                    <text
-                        x={x}
-                        y={y + 16}
-                        fill="cyan"
-                        fontSize="10"
-                        textAnchor="middle"
-                        className="opacity-70"
-                    >
-                        {point.value}%
-                    </text>
-                    </g>
-                );
-                })}
-            </svg>
-            </div>
-
-        </div>
+        const options = {
+            chart: {
+                type: 'radar',
+                toolbar: { show: false }
+            },
+            colors: ['#ffffff'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                type: 'radial',
+                opacityFrom: 0.3,
+                opacityTo: 0.1
+                }
+            },
+            plotOptions: {
+                radar: {
+                size: 200  // 适中大小
+                }
+            },
+            grid: {
+                padding: {
+                left: 60,    // 关键：增加左边距
+                right: 60    // 关键：增加右边距
+                }
+            },
+            xaxis: {
+                categories: ['Memory Fidelity', 'Technical Control', 'Pattern Cohesion', 'Autonomic Control'],
+                labels: {
+                    style: {
+                        colors: '#00ffff',
+                        fontSize: '14px'
+                    }
+                }
+            },
+            yaxis: { show: false },
+            markers: { size: 8 }
+        };
+    
+        const series = [{
+        name: 'Score',
+        data: [85, 90, 80, 75]
+        }];
+    
+        return (
+        <>
+            <ReactApexChart 
+            options={options} 
+            series={series} 
+            type="radar" 
+            height={550}  // 更大的高度
+            width={800}   // 更大的宽度
+            />
+        </>
         );
-};
-
-export default RadarChart;
+    };
+    
+    export default RadarChart;
