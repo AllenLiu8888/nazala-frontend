@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Question from '../../components/dashboard/main/Queston';
 import VotingOption from '../../components/dashboard/main/VotingOption';
 
@@ -8,6 +8,10 @@ const VotingPage = () => {
   const [countdown, setCountdown] = useState(30);
   const { gameId } = useParams();
 
+  const goHistoryPage = () => {
+    navigate(`/game/${gameId}/history`);
+  };
+  const navigate = useNavigate();
   // 写死的数据，将来从后端获取
   const question = 'Memories is:';
   const votingOptions = ['a right', 'a resource', 'a responsibility', 'a trade'];
@@ -28,7 +32,7 @@ const VotingPage = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-black flex flex-col justify-center px-6 py-8">
+      <div className="min-h-screen bg-black flex flex-col justify-center px-6 py-8"onClick={goHistoryPage}>
         {/* 投票标题 */}
         <Question question={question} />
 
