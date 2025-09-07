@@ -26,19 +26,36 @@ html {
 /* 自定义的全局样式（如果需要） */
 
 
-/* 可复用的组件类 - 使用 @apply 指令 */
+/* 可复用的组件类 - 使用标准 CSS */
 .pixel-text {
-  @apply font-pixel text-4xl font-medium text-cyan-300;
+  font-family: var(--font-pixel);
+  font-size: 2.25rem;
+  font-weight: 500;
+  color: rgb(103 232 249);
 }
 
 .btn-secondary {
-  @apply px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors;
+  padding: 0.5rem 1rem;
+  background-color: rgb(229 231 235);
+  color: rgb(31 41 55);
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: rgb(209 213 219);
 }
 
 .card {
-  @apply bg-white rounded-xl shadow-lg p-6 border border-gray-100;
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  padding: 1.5rem;
+  border: 1px solid rgb(243 244 246);
 }
 
 .section-container {
-  @apply max-w-7xl mx-auto px-4 py-8;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
 }

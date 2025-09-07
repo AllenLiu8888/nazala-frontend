@@ -4,16 +4,20 @@ import { useNavigate } from 'react-router-dom';
 const HomePage = () => {
     const navigate = useNavigate();
 
+    // 键盘事件监听
+    useEffect(() => {
+        const goToIntro = () => {
+            navigate('/screen/intro');
+        };
+        
+        window.addEventListener('keydown', goToIntro);
+        return () => window.removeEventListener('keydown', goToIntro);
+    }, [navigate]);
+
     // 导航到游戏大厅的函数
     const goToIntro = () => {
         navigate('/screen/intro');
     };
-
-    // 键盘事件监听
-    useEffect(() => {
-        window.addEventListener('keydown', goToIntro);
-        return () => window.removeEventListener('keydown', goToIntro);
-    }, [navigate]);
 
     const HomePageTitle = "Memory Trading & Editing";
     const HomePageSubtitle = "An Interactive Art Installation";

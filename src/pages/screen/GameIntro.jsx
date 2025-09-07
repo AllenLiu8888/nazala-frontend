@@ -6,16 +6,17 @@ const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
     const subtitle = "2075 | The boundary between memory and privacy";
     const navigate = useNavigate();
-    // 导航到游戏大厅的函数
-    const goToGameDashboard = () => {
-        navigate('/screen/game');
-    };
-
+    
     // 键盘事件监听
     useEffect(() => {
+        const goToGameDashboard = () => {
+            navigate('/screen/game');
+        };
+        
         window.addEventListener('keydown', goToGameDashboard);
         return () => window.removeEventListener('keydown', goToGameDashboard);
     }, [navigate]);
+
     return (
         <>
             <div className="h-full overflow-hidden flex flex-col items-center justify-center gap-6 py-12">
