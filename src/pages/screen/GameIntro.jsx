@@ -6,7 +6,18 @@ const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
     const subtitle = "2075 | The boundary between memory and privacy";
     const navigate = useNavigate();
+    // 导航到游戏大厅的函数
+    const goToGameDashboard = () => {
+        navigate('/screen/game');
+    };
     
+    // 导航到投票页面的函数
+    const goWaitingPage = () => {
+        const gameId = 'demo-game'; // 写死的游戏ID
+        navigate(`/game/${gameId}/waiting`);
+    };
+
+
     // 键盘事件监听
     useEffect(() => {
         const goToGameDashboard = () => {
@@ -25,8 +36,11 @@ const GameIntro = () => {
                     <h1 className="leading-normal text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">NAVIGATING THE FUTURE OF MEMORY</h1>
                     <p className="text-2xl text-cyan-300">2075 | The boundary between memory and privacy</p>
                 </header>*/}
-                <header className="flex flex-col items-center justify-center text-center pt-15 gap-4">
-                    <h1 className="font-pixel leading-tight text-6xl font-bold text-cyan-300 tracking-wide">
+                <header className="flex flex-col items-center justify-center text-center gap-4">
+                    <h1 
+                        className="font-pixel leading-tight text-5xl font-bold text-cyan-300 tracking-wide cursor-pointer hover:text-cyan-200 transition-colors duration-200"
+                        onClick={goWaitingPage}//点击标题跳转到手机投票页面（之后可删）
+                    >
                         {title}
                     </h1>
                     <p className="font-pixel text-2xl font-medium text-cyan-300 tracking-wider opacity-90">
