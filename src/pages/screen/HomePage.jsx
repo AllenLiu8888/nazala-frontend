@@ -55,7 +55,7 @@ const HomePage = () => {
                         {HomePageSubtitle}
                     </p>
                     
-                    {/* 显示游戏状态 */}
+                    {/* 显示游戏状态
                     {loading && (
                         <p className="font-pixel text-2xl text-yellow-300">
                             加载中...
@@ -72,7 +72,7 @@ const HomePage = () => {
                             <p>状态: {game.status === 0 ? '等待中' : '进行中'}</p>
                             <p>玩家数: {game.players_count}</p>
                         </div>
-                    )}
+                    )} */}
                 </div>
                 <QRCode/>
                 <div className="font-pixel animate-pulse">
