@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import { GameProvider } from './context/GameProvider';
 // import { Outlet, useLoaderData } from 'react-router-dom';
 
 // export async function loader() {
@@ -20,9 +21,11 @@ const bgImage = "bg-[url(https://res.cloudinary.com/dd9dbngmy/image/upload/v1757
 
 function App() {
   return (
-    <div className={`fixed inset-0 box-border overflow-hidden ${bgImage} bg-center bg-black/60 bg-blend-multiply bg-cover`}>
-          <Outlet />
-    </div>
+    <GameProvider>
+      <div className={`fixed inset-0 box-border overflow-hidden ${bgImage} bg-center bg-black/60 bg-blend-multiply bg-cover`}>
+            <Outlet />
+      </div>
+    </GameProvider>
   );
 }
 

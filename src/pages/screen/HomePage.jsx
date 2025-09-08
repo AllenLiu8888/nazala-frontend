@@ -1,27 +1,26 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QRCode from '../../components/shared/QRCode';
-import { gameApi } from '../../services/gameApi';
+import { useGameContext } from '../../hooks/useGameContext';
 
 const HomePage = () => {
     const navigate = useNavigate();
+    const { game, loading, error, getCurrentGame } = useGameContext();
 
-    // 测试网络连接
+    // 页面加载时获取游戏数据
     useEffect(() => {
-        const testAPI = async () => {
+        const loadGameData = async () => {
             try {
-                console.log('🧪 测试 API 连接...');
-                const game = await gameApi.getCurrentGame();
-                console.log('✅ API 测试成功，游戏数据:', game);
+                console.log('🏠 HomePage: 加载游戏数据...');
+                await getCurrentGame();
+                console.log('✅ HomePage: 从 Context 获取游戏数据:', game);
             } catch (error) {
-                console.error('❌ API 测试失败:', error.message);
-                console.log('💡 提示：请确保后端服务器在 http://127.0.0.1:8000 运行');
-                console.log('💡 启动命令：cd nazala_backend && python manage.py runserver 127.0.0.1:8000');
-              }
+                console.error('❌ HomePage: 加载失败:', error.message);
+            }
         };
         
-        testAPI();
-    }, []);
+        loadGameData();
+    }, [getCurrentGame]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // 键盘事件监听
     useEffect(() => {
@@ -55,6 +54,25 @@ const HomePage = () => {
                     <p className="font-pixel text-6xl text-cyan-300 font-light">
                         {HomePageSubtitle}
                     </p>
+                    
+                    {/* 显示游戏状态 */}
+                    {loading && (
+                        <p className="font-pixel text-2xl text-yellow-300">
+                            加载中...
+                        </p>
+                    )}
+                    {error && (
+                        <p className="font-pixel text-2xl text-red-300">
+                            错误: {error}
+                        </p>
+                    )}
+                    {game && (
+                        <div className="font-pixel text-2xl text-green-300">
+                            <p>游戏 ID: {game.id}</p>
+                            <p>状态: {game.status === 0 ? '等待中' : '进行中'}</p>
+                            <p>玩家数: {game.players_count}</p>
+                        </div>
+                    )}
                 </div>
                 <QRCode/>
                 <div className="font-pixel animate-pulse">
