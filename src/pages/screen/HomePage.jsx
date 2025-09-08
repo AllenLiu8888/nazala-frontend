@@ -1,9 +1,27 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QRCode from '../../components/shared/QRCode';
+import { gameApi } from '../../services/gameApi';
 
 const HomePage = () => {
     const navigate = useNavigate();
+
+    // 测试网络连接
+    useEffect(() => {
+        const testAPI = async () => {
+            try {
+                console.log('🧪 测试 API 连接...');
+                const game = await gameApi.getCurrentGame();
+                console.log('✅ API 测试成功，游戏数据:', game);
+            } catch (error) {
+                console.error('❌ API 测试失败:', error.message);
+                console.log('💡 提示：请确保后端服务器在 http://127.0.0.1:8000 运行');
+                console.log('💡 启动命令：cd nazala_backend && python manage.py runserver 127.0.0.1:8000');
+              }
+        };
+        
+        testAPI();
+    }, []);
 
     // 键盘事件监听
     useEffect(() => {
