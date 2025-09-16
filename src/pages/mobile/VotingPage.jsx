@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+// import { useParams, useNavigate } from 'react-router-dom';
 import Question from '../../components/dashboard/main/Queston';
 import VotingOption from '../../components/dashboard/main/VotingOption';
 
 const VotingPage = () => {
   const [selectedOption, setSelectedOption] = useState('');
   const [countdown, setCountdown] = useState(30);
-  const { gameId } = useParams();
+  // const { gameId } = useParams();
 
-  const goHistoryPage = () => {
-    navigate(`/game/${gameId}/history`);
-  };
-  const navigate = useNavigate();
+  // const goHistoryPage = () => {
+  //   navigate(`/game/${gameId}/history`);
+  // };
+  // const navigate = useNavigate();
   // 写死的数据，将来从后端获取
   const question = 'Memories is:';
   const votingOptions = ['a right', 'a resource', 'a responsibility', 'a trade'];

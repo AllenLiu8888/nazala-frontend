@@ -1,9 +1,9 @@
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom';
 import RadarChart from '../../components/dashboard/main/RadarChart';
 import HistoricalHorizontal from '../../components/dashboard/main/HistoricalHorizontal';
 
 const HistoryPage = () => {
-  const { gameId } = useParams();
+  // const { gameId } = useParams();
 
   const decisions = [
     "The first choice",

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const WaitingPage = () => {
-  const [playerCount, setPlayerCount] = useState(0);
-  const [totalPlayers, setTotalPlayers] = useState(3);
+  // const [playerCount, setPlayerCount] = useState(0);
+  // const [totalPlayers, setTotalPlayers] = useState(3);
   const { gameId } = useParams();
 
   const goVotingPage = () => {
@@ -30,7 +30,7 @@ const WaitingPage = () => {
             <h1 className="text-3xl font-bold mb-2 text-cyan-300" 
               onClick={goVotingPage}//点击标题跳转到手机投票页面（之后可删）
             >
-              Waiting for players to join... ({playerCount}/{totalPlayers})
+              Waiting for players to join... {/* ({playerCount}/{totalPlayers}) */}
             </h1>
           </div>
         </div>
