@@ -1,36 +1,36 @@
-import { useEffect } from 'react';
+// import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QRCode from '../../components/shared/QRCode';
-import { useGameContext } from '../../hooks/useGameContext';
+// import { useGameContext } from '../../hooks/useGameContext';
 
 const HomePage = () => {
     const navigate = useNavigate();
-    const { game, loading, error, getCurrentGame } = useGameContext();
+    // const { game, loading, error, getCurrentGame } = useGameContext();
 
-    // 页面加载时获取游戏数据
-    useEffect(() => {
-        const loadGameData = async () => {
-            try {
-                console.log('🏠 HomePage: 加载游戏数据...');
-                await getCurrentGame();
-                console.log('✅ HomePage: 从 Context 获取游戏数据:', game);
-            } catch (error) {
-                console.error('❌ HomePage: 加载失败:', error.message);
-            }
-        };
+    // // 页面加载时获取游戏数据
+    // useEffect(() => {
+    //     const loadGameData = async () => {
+    //         try {
+    //             console.log('🏠 HomePage: 加载游戏数据...');
+    //             await getCurrentGame();
+    //             console.log('✅ HomePage: 从 Context 获取游戏数据:', game);
+    //         } catch (error) {
+    //             console.error('❌ HomePage: 加载失败:', error.message);
+    //         }
+    //     };
         
-        loadGameData();
-    }, [getCurrentGame]); // eslint-disable-line react-hooks/exhaustive-deps
+    //     loadGameData();
+    // }, [getCurrentGame]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // 键盘事件监听
-    useEffect(() => {
-        const goToIntro = () => {
-            navigate('/screen/intro');
-        };
+    // // 键盘事件监听
+    // useEffect(() => {
+    //     const goToIntro = () => {
+    //         navigate('/screen/intro');
+    //     };
         
-        window.addEventListener('keydown', goToIntro);
-        return () => window.removeEventListener('keydown', goToIntro);
-    }, [navigate]);
+    //     window.addEventListener('keydown', goToIntro);
+    //     return () => window.removeEventListener('keydown', goToIntro);
+    // }, [navigate]);
 
     // 导航到游戏大厅的函数
     const goToIntro = () => {

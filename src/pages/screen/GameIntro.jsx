@@ -39,7 +39,7 @@ const GameIntro = () => {
                 <header className="flex flex-col items-center justify-center text-center gap-4">
                     <h1 
                         className="font-pixel leading-tight text-5xl font-bold text-cyan-300 tracking-wide cursor-pointer hover:text-cyan-200 transition-colors duration-200"
-                        onClick={goWaitingPage}//点击标题跳转到手机投票页面（之后可删）
+                        onClick={goToGameDashboard}//点击标题跳转到手机投票页面（之后可删）
                     >
                         {title}
                     </h1>
@@ -52,7 +52,7 @@ const GameIntro = () => {
                 <main className="flex-1 flex flex-col justify-center items-center gap-15 px-4 py-2 w-8/10">
                     <div className="h-full w-full flex flex-col justify-center  px-20 py-15 items-center border-5 border-cyan-400 rounded-4xl">
                         <section className="flex-1 overflow-hidden">
-                            <h2 className="pb-12 font-pixel text-6xl text-cyan-400 font-semibold mb-4">Background</h2>
+                            <h2 className="pb-12 font-pixel text-6xl text-cyan-400 font-semibold mb-4" onClick={goWaitingPage}>Background</h2>
                             <p className="pb-8 text-4xl leading-relaxed text-cyan-200">
                             In the future, memory is no longer private—it is stored, traded, and controlled like currency. Governments and corporations manipulate recollections to shape loyalty, erase dissent, or invent false lives. Markets thrive on selling curated pasts, while citizens guard their memories as tightly as bank accounts. 
                             </p>
