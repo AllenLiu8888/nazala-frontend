@@ -1,0 +1,107 @@
+# Cursor AI Coding Rules for NaZaLa Frontend
+
+## Import Rules File
+Read and follow ALL rules in `rules/frontend-coding-rules.md` before generating any code.
+
+## Quick Reference for Cursor
+
+### Core Principles (MANDATORY)
+1. **SOLID** - Single responsibility, composition over inheritance
+2. **DRY** - Extract reusable components and hooks
+3. **KISS** - Simple, explicit solutions over clever ones
+4. **Readability** - Self-documenting, descriptive naming
+
+### React Component Structure (REQUIRED)
+```javascript
+// 1. Imports (React, external, internal, components, styles)
+// 2. Component with hooks first
+// 3. Effects
+// 4. Event handlers
+// 5. Early returns for loading/error
+// 6. Main render
+```
+
+### File Naming Convention (STRICT)
+- Components: `PascalCase.jsx`
+- Utilities: `camelCase.js`
+- Styles: `kebab-case.css`
+
+### State Management (ENFORCE)
+- Local state first for component-specific data
+- Context for shared app state
+- Custom hooks for complex logic
+
+### API Integration (REQUIRED)
+- Always use `gameApi` service layer
+- Consistent error handling with try/catch
+- Loading states for all async operations
+
+### Performance (MANDATORY)
+- `useMemo` for expensive calculations
+- `useCallback` for event handlers
+- `React.memo` for stable props
+- Early returns for conditional rendering
+
+### Accessibility (STRICT)
+- Semantic HTML elements
+- ARIA labels for interactive elements
+- Keyboard navigation support
+
+### Error Handling (REQUIRED)
+- Try/catch for all async operations
+- Graceful degradation for optional features
+- User-friendly error messages
+
+### Security (MANDATORY)
+- Input validation and sanitization
+- Environment variables for configuration
+- No hardcoded sensitive data
+
+## Code Generation Rules for Cursor
+
+### When Generating Components:
+1. Check `rules/frontend-coding-rules.md` for detailed patterns
+2. Follow exact file structure shown in rules
+3. Apply SOLID principles to component design
+4. Include proper error handling and loading states
+5. Add accessibility attributes
+6. Use existing design patterns from codebase
+
+### When Suggesting Refactoring:
+1. Reference specific rule violations
+2. Suggest SOLID principle improvements
+3. Identify DRY opportunities
+4. Simplify complex code (KISS)
+5. Improve readability
+
+### Auto-completion Preferences:
+1. Prefer functional components over class components
+2. Use hooks over lifecycle methods
+3. Apply TypeScript-like prop validation
+4. Include error boundaries for risky operations
+5. Follow established naming conventions
+
+### Code Review Integration:
+Before suggesting code completion:
+- [ ] Follows single responsibility principle
+- [ ] No code duplication
+- [ ] Simple and straightforward solution
+- [ ] Readable and self-documenting
+- [ ] Proper error handling
+- [ ] Accessibility compliant
+- [ ] Performance optimized
+
+## Context: NaZaLa Project
+- Multiplayer educational game about biotechnology ethics
+- React 19 + Vite + TailwindCSS
+- Dual-screen experience (large screen + mobile)
+- Real-time synchronization via WebSocket
+- Educational focus on memory technology implications
+
+## Integration with Other AI Tools
+These rules apply to ALL AI tools working on this project:
+- Claude Code
+- GitHub Copilot
+- Any other AI coding assistant
+
+**CRITICAL**: Every code suggestion MUST reference and follow the comprehensive rules in `rules/frontend-coding-rules.md`
