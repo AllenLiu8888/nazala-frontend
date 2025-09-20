@@ -1,17 +1,23 @@
 import { useState, useEffect } from 'react';
-// import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Question from '../../components/dashboard/main/Queston';
 import VotingOption from '../../components/dashboard/main/VotingOption';
 
 const VotingPage = () => {
   const [selectedOption, setSelectedOption] = useState('');
   const [countdown, setCountdown] = useState(30);
-  // const { gameId } = useParams();
+  const { gameId } = useParams();
+  const navigate = useNavigate();
 
-  // const goHistoryPage = () => {
-  //   navigate(`/game/${gameId}/history`);
-  // };
-  // const navigate = useNavigate();
+  const goPersonalSummary = () => {
+    const currentGameId = gameId || 'demo-game';
+    navigate(`/game/${currentGameId}/summary`);
+  };
+
+  const goTimelinePage = () => {
+    const currentGameId = gameId || 'demo-game';
+    navigate(`/game/${currentGameId}/timeline`);
+  };
   // 写死的数据，将来从后端获取
   const question = 'Memories is:';
   const votingOptions = ['a right', 'a resource', 'a responsibility', 'a trade'];
@@ -55,6 +61,25 @@ const VotingPage = () => {
               onClick={handleOptionSelect}
             />
           ))}
+        </div>
+
+        {/* 跳转链接 */}
+        <div className="text-center mt-8">
+          <button
+            onClick={goPersonalSummary}
+            className="text-cyan-400 text-sm underline hover:text-cyan-300 transition-colors duration-200"
+          >
+            查看个人总结
+          </button>
+        </div>
+                {/* 跳转链接 */}
+                <div className="text-center mt-8">
+          <button
+            onClick={goTimelinePage}
+            className="text-cyan-400 text-sm underline hover:text-cyan-300 transition-colors duration-200"
+          >
+            查看时间轴
+          </button>
         </div>
       </div>
     </>
