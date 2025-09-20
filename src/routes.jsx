@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 // 大屏幕页面组件 - 管理员/主持人使用
 import HomePage from './pages/screen/HomePage'; // 游戏首页
 import GameIntro from './pages/screen/GameIntro'; // 游戏介绍
+import GameLobby from './pages/screen/GameLobby'; // 游戏大厅
 import GameDashboard from './pages/screen/GameDashboard'; // 游戏主界面 (Dashboard)
 import GameOver from './pages/screen/GameOver'; // 游戏结束页
 
@@ -12,6 +13,9 @@ import VotingPage from './pages/mobile/VotingPage'; // 投票页面
 import WaitingPage from './pages/mobile/WaitingPage'; // 等待页面
 import TimelinePage from './pages/mobile/Timeline'; // 玩家查看时间线的页面
 import PersonalSummary from './pages/mobile/PersonalSummary'; // 个人总结页面
+
+// 管理员页面组件
+import AdminDashboard from './pages/admin/AdminDashboard'; // 管理员仪表板
 
 // 创建简化的路由配置
 import App from './App.jsx';  // 导入 App 组件
@@ -30,10 +34,15 @@ export const router = createBrowserRouter([
         path: "screen",
         children: [
           { path: "home", element: <HomePage /> },
+          { path: "lobby", element: <GameLobby /> },
           { path: "intro", element: <GameIntro /> },
           { path: "game", element: <GameDashboard /> },
           { path: "gameover", element: <GameOver /> },
         ]
+      },
+      {
+        path: "admin",
+        element: <AdminDashboard />
       },
       {
         path: "game/:gameId",

@@ -37,6 +37,7 @@ export const gameApi = {
     return await http.post(`/api/game/${gameId}/turn/submit`, null, token);
   },
 
+  
   // 获取我的资料
   async getMyProfile(token) {
     return await http.get('/api/game/my_profile/', token);
