@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Question from '../../components/dashboard/main/Queston';
-import VotingOption from '../../components/dashboard/main/VotingOption';
+import Question from '../../components/mobile/Queston'; 
+import VotingOption from '../../components/mobile/VotingOption';
 
 const VotingPage = () => {
   const [selectedOption, setSelectedOption] = useState('');
