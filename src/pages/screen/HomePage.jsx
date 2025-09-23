@@ -32,7 +32,7 @@ const HomePage = () => {
             setLoading(false);
         }
     };
-
+    
     const HomePageTitle = "Memory Trading & Editing";
     const HomePageSubtitle = "An Interactive Art Installation";
 

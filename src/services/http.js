@@ -1,8 +1,8 @@
 // 网络基础层 - 封装 fetch 和错误处理
-const IS_DEV = 0;
-
-const API_BASE_URL = IS_DEV ? 'http://127.0.0.1:8001' : 'http://34.70.141.127:8001';
-
+// 自动检测环境：开发环境使用本地服务器，生产环境使用远程服务器
+const API_BASE_URL = import.meta.env.DEV 
+    ? 'http://127.0.0.1:8001' 
+    : 'http://34.70.141.127:8001';
 
 class APIError extends Error {
     constructor(message, status, code) {
