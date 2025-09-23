@@ -43,18 +43,33 @@ const QRCode = () => {
         getPlayers();
     }, []);
 
+    const getQRCodeURL = () => {
+        return `${import.meta.env.VITE_ROOT_URL || 'http://localhost:5173'}/game/${gameId}/waiting`
+    }
+
+    const handleQRCodeClick = () => {
+        const url = getQRCodeURL();
+        window.open(url, '_blank');
+    }
+
     return (
         <section className="overflow-hidden">
             <div className="h-full w-full flex flex-col items-center justify-center gap-10">
                 <div className="w-100 h-100 bg-gray-700 rounded-3xl p-8 flex flex-col items-center justify-center">
                     {gameId ? (
-                        <QRCodeCanvas 
-                            value={`${import.meta.env.VITE_ROOT_URL || 'http://localhost:5173'}/game/${gameId}/waiting`} 
-                            size={300}
-                            level="H"
-                            bgColor="transparent"  // 背景透明
-                            fgColor="#ffffff" // 前景色
-                        />
+                        <div
+                            onClick={handleQRCodeClick}
+                            className="cursor-pointer hover:opacity-80 transition-opacity"
+                            title="Click to open URL in new tab"
+                        >
+                            <QRCodeCanvas
+                                value={getQRCodeURL()}
+                                size={300}
+                                level="H"
+                                bgColor="transparent"  // 背景透明
+                                fgColor="#ffffff" // 前景色
+                            />
+                        </div>
                     ) : (
                         <div className="text-cyan-300 text-6xl text-center">
                             Loading QR...
