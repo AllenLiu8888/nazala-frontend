@@ -20,9 +20,9 @@ VotingPage：
 Player selection phase
 http://localhost:5173/game/demo-game/voting
 
-History：
-Players can view their past choices here
-http://localhost:5173/game/demo-game/history
+http://localhost:5173/game/demo-game/summary
+
+http://localhost:5173/game/demo-game/timeline
 
 移动端页面切换说明：
 进入http://localhost:****/screen/intro之后

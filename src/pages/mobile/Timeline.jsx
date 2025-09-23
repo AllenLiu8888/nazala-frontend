@@ -14,9 +14,8 @@ const Timeline = () => {
   const timelineEvents = [
     {
       id: 1,
-      time: '14:30',
-      title: '游戏开始',
-      description: '所有玩家加入游戏，开始第一轮决策',
+      time: '2050',
+      options: 'a right',
       status: 'completed',
       icon: '🚀'
     },
@@ -72,31 +71,6 @@ const Timeline = () => {
     }
   ];
 
-  const getStatusClass = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'timeline-start timeline-box-success';
-      case 'active':
-        return 'timeline-start timeline-box-warning';
-      case 'pending':
-        return 'timeline-start timeline-box-neutral';
-      default:
-        return 'timeline-start';
-    }
-  };
-
-  const getIconClass = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'timeline-middle badge badge-success badge-outline';
-      case 'active':
-        return 'timeline-middle badge badge-warning badge-outline animate-pulse';
-      case 'pending':
-        return 'timeline-middle badge badge-neutral badge-outline';
-      default:
-        return 'timeline-middle badge badge-neutral badge-outline';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
@@ -112,38 +86,39 @@ const Timeline = () => {
 
       {/* DaisyUI 时间轴 */}
       <div className="px-4 pb-20">
-        <ul className="timeline timeline-vertical">
+        <ul className="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
           {timelineEvents.map((event, index) => (
             <li key={event.id}>
-              {index > 0 && <hr className="bg-cyan-400 opacity-30" />}
-              
-              <div className="timeline-start timeline-box bg-slate-800 border-cyan-400 text-white shadow-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">{event.icon}</span>
-                    <h3 className="font-bold text-cyan-300">{event.title}</h3>
-                  </div>
-                  <time className="text-xs text-cyan-400 bg-slate-700 px-2 py-1 rounded">
-                    {event.time}
-                  </time>
+              <div className="timeline-middle">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className={`h-5 w-5 ${event.status === 'completed' ? 'text-green-500' : event.status === 'active' ? 'text-yellow-500' : 'text-gray-400'}`}
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className={`${index % 2 === 0 ? 'timeline-start mb-10 md:text-end' : 'timeline-end md:mb-10'}`}>
+                <time className="font-mono italic text-cyan-400">{event.time}</time>
+                <div className="text-lg font-black text-cyan-300 flex items-center gap-2">
+                  <span>{event.icon}</span>
+                  {event.title}
                 </div>
-                
-                <p className="text-gray-300 text-sm mb-2">
+                <p className="text-gray-300 text-sm">
                   {event.description}
                 </p>
-                
                 {event.result && (
-                  <div className="text-xs text-cyan-300 bg-slate-700 px-2 py-1 rounded inline-block">
+                  <div className="text-xs text-cyan-300 bg-slate-700 px-2 py-1 rounded inline-block mt-2">
                     {event.result}
                   </div>
                 )}
               </div>
-              
-              <div className={getIconClass(event.status)}>
-                <div className="w-2 h-2 bg-white rounded-full"></div>
-              </div>
-              
-              {index < timelineEvents.length - 1 && <hr className="bg-cyan-400 opacity-30" />}
+              <hr className="bg-cyan-400 opacity-30" />
             </li>
           ))}
         </ul>
