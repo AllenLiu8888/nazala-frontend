@@ -61,11 +61,11 @@ export const http = {
     },
 
   // POST 请求
-    post(endpoint, body = null, token = null) {
+    post(endpoint, body = null, token = null, customHeaders = {}) {
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         return this.request(endpoint, {
         method: 'POST',
-        headers,
+        headers: { ...headers, ...customHeaders },
         body: body ? JSON.stringify(body) : null,
         });
     },

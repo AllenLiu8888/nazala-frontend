@@ -1,68 +1,81 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { gameApi } from '../../services/gameApi';
 
 const WaitingPage = () => {
-  const [hasStartedCreation, setHasStartedCreation] = useState(false);
-  const { gameId } = useParams();
-
+  // const gameId = localStorage.getItem('currentGameId');//之后从localStorage中获取
+  const gameId = '1';
   const navigate = useNavigate();
+  const hasInitialized = useRef(false);
 
-  // 自动创建用户
+  // 自动创建/获取用户
   const createPlayer = async (gameId) => {
-    if (hasStartedCreation) {
-      console.log('⚠️ 已经开始创建用户，跳过重复执行');
-      return;
-    }
-    
-    setHasStartedCreation(true);
-    
     try {
-      console.log('🎮 开始创建用户，游戏ID:', gameId);
+      console.log('🎮 开始处理用户，游戏ID:', gameId);
       
-      // 检查本地是否已有 authToken
+      // 获取现有的 authToken（如果有的话）
       const existingToken = localStorage.getItem('authToken');
-      if (existingToken) {
-        console.log('✅ 已有 authToken，跳过用户创建', existingToken);
-        return;
-      }
+      console.log('🔍 现有 authToken:', existingToken);
       
-      // 没有 authToken，创建新用户
-      console.log('📝 没有 authToken，开始创建用户...', gameId);
-      const testName = `玩家_${Date.now()}`;
-      const result = await gameApi.joinGame(gameId, testName);
-      console.log('✅ 用户创建成功:', result, gameId);
-      
-      // 保存获得的 authToken
-      if (result.player && result.player.auth_token) {
-        localStorage.setItem('authToken', result.player.auth_token);
-        localStorage.setItem('playerId', result.player.id);
-        localStorage.setItem('playerName', testName);
-        console.log('💾 authToken 已保存', result.player.auth_token);
-      } else if (result.auth_token) {
-        // 兼容不同的返回格式
-        localStorage.setItem('authToken', result.auth_token);
-        localStorage.setItem('playerId', result.id);
-        localStorage.setItem('playerName', testName);
-        console.log('💾 authToken 已保存 (兼容格式)', result.auth_token);
-      } else {
-        console.error('❌ 未收到 authToken', result);
-      }
+      // 直接调用API，让后端决定是返回现有用户还是创建新用户
+      const result = await gameApi.joinGame(gameId, existingToken);
+      console.log('✅ 用户处理成功:', result, gameId);
+      localStorage.setItem('authToken', result.player.auth_token);
+      localStorage.setItem('playerId', result.player.id);
+      console.log('💾 authToken，playerId已保存', result.player.auth_token);
       
     } catch (error) {
-      console.error('❌ 创建用户失败:', error, gameId);
+      console.error('❌ 处理用户失败:', error, gameId);
     }
   };
 
-
+  //检测游戏是否开始：如果游戏已经开始，则跳转到投票页
+  const checkGameStarted = async () => {
+    try {
+      const gameData = await gameApi.getGameDetail(gameId);
+      console.log('🔍 完整响应:', gameData);
+      const game = gameData.game;
+      console.log('🎮 游戏对象:', game);
+      console.log('🎮 游戏状态:', game.status, '类型:', typeof game.status);
+      
+      if (game && game.status === 0) {
+        console.log('✅ 条件满足，准备跳转');
+        navigate(`/game/${gameId}/voting`);
+        // console.log('🎮 游戏已经开始，跳转到投票页');
+      } else {
+        console.log('⚠️ 游戏未开始，继续等待');
+        // console.log('🔍 条件检查: game存在?', !!game, 'status值:', game?.status, 'status类型:', typeof game?.status);
+      }
+    } catch (error) {
+      console.error('❌ 检查游戏状态失败:', error);
+    }
+  };
   const goVotingPage = () => {
     navigate(`/game/${gameId}/voting`);
   };
 
   // 页面加载时自动创建用户
   useEffect(() => {
-    createPlayer(gameId);
-  }, []);
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      createPlayer(gameId);
+    }
+  }, [gameId]);
+
+  // 定期检查游戏状态
+  useEffect(() => {
+    // 立即检查一次
+    checkGameStarted();
+    
+    // 设置定时器，每3秒检查一次
+    const interval = setInterval(() => {
+      checkGameStarted();
+    }, 3000);
+
+    // 清理定时器
+    return () => clearInterval(interval);
+  }, [gameId]);
+
 
 
   return (
@@ -85,6 +98,8 @@ const WaitingPage = () => {
             >
               Waiting for players to join...
             </h1>
+            {/* todo：显示加载人数：从api获取 */}
+
           </div>
          </div>
          {/* </div>

@@ -44,8 +44,9 @@ export const gameApi = {
   },
 
   // 加入游戏
-  async joinGame(gameId, displayName) {
-    return await http.post(`/api/game/${gameId}/player/init/`, { display_name: displayName });
+  async joinGame(gameId, authToken = null) {
+    console.log('📤 发送给API的authToken:', authToken);
+    return await http.post(`/api/game/${gameId}/player/init/`, null, authToken);
   },
 
   // 提交选择
