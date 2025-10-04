@@ -1,7 +1,9 @@
+import useGameStore from '../../../store';
+
 const Round = () => {
-    const round = 1;
-    const totalRounds = 10;
-    const year = 2075;
+    const round = useGameStore(s => s.turn.index);
+    const totalRounds = useGameStore(s => s.gameMeta.maxRounds);
+    const year = useGameStore(s => s.turn.year);
 
     return (
         <div className="flex-1 flex gap-4 p-8">

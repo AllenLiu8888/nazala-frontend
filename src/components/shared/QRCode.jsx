@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { gameApi } from '../../services/gameApi';
+import useGameStore from '../../store';
 
 const QRCode = () => {
     // 1. 在组件内部定义状态
@@ -14,16 +15,16 @@ const QRCode = () => {
         try {
             setLoading(true);
             
-            // 从 localStorage 获取当前游戏ID
-            const currentGameId = localStorage.getItem('currentGameId');
-            console.log('gameId:', currentGameId);
+            // 优先从 store 读取 gameId
+            const currentId = useGameStore.getState().gameMeta.id || localStorage.getItem('currentGameId');
+            console.log('gameId:', currentId);
             
-            if (currentGameId) {
+            if (currentId) {
                 // 设置游戏ID状态
-                setGameId(currentGameId);
+                setGameId(currentId);
                 
                 // 调用API获取游戏详情
-                const gameDetail = await gameApi.getGameDetail(currentGameId);
+                const gameDetail = await gameApi.getGameDetail(currentId);
                 console.log('gameDetail:', gameDetail); //打印游戏详情
                 setPlayers(gameDetail?.players_count ?? 0); //知识点：短路求值
             } else {

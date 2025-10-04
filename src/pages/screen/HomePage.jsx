@@ -21,7 +21,11 @@ const HomePage = () => {
             // 大屏端无需持久化 gameId，进入后续页面由轮询获取最新状态
 
             // 跳转到intro页面
-            navigate('/screen/lobby'); //跳转到lobby页面
+            if (currentGame?.id) {
+                navigate(`/game/${currentGame.id}/lobby`);
+            } else {
+                navigate('/');
+            }
 
         } catch (error) {
             console.error('get game info failed:', error);

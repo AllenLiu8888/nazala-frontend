@@ -1,26 +1,50 @@
 import { useEffect } from 'react';
 import QRCode from '../../components/shared/QRCode';
 import useGameStore from '../../store';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const GameLobby = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
     const subtitle = "2075 | The boundary between memory and privacy";
     const navigate = useNavigate();
+    const { gameId } = useParams();
+    const gameState = useGameStore(s => s.gameMeta.state);
+    const turnIndex = useGameStore(s => s.turn.index);
 
     const onStartGame = async () => {
+        // 非 waiting：根据回合跳转
+        if (gameState !== 'waiting') {
+            if (!gameId) {
+                navigate('/');
+                return;
+            }
+            if (turnIndex === 0) {
+                navigate(`/game/${gameId}/intro`);
+            } else if (turnIndex >= 1 && turnIndex < 11) {
+                navigate(`/game/${gameId}/game`);
+            } else if (turnIndex >= 11) {
+                navigate(`/game/${gameId}/gameover`);
+            } else {
+                navigate(`/game/${gameId}/game`);
+            }
+            return;
+        }
+        // waiting：调用后端开始游戏，完成后进入 dashboard（按你最初需求保留）
         const { startGame } = useGameStore.getState();
-        const success = await startGame();
+        const success = await startGame(gameId);
         if (success) {
-            navigate('/screen/game');
+            if (gameId) navigate(`/game/${gameId}/game`);
+            else navigate('/');
         }
     };
 
     useEffect(() => {
         const { startPolling, stopPolling } = useGameStore.getState();
-        startPolling();
+        startPolling(gameId);
         return () => stopPolling();
-    }, []);
+    }, [gameId]);
+
+    // 不自动跳转；仅在按钮点击时根据状态决定行为
     return (
         <>
             <div className="h-full overflow-hidden flex flex-col items-center justify-center gap-6 py-10">
@@ -64,7 +88,7 @@ const GameLobby = () => {
                                 <QRCode />
                             </div>
                             <div className="flex flex-col items-center justify-center">
-                                <button className="text-2xl  border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200" onClick={onStartGame}>Game Start
+                                <button className="text-2xl  border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200" onClick={onStartGame}>{gameState === 'waiting' ? 'Game Start' : 'Back to Game'}
                                 </button>
                             </div>
                         </section>

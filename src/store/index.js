@@ -5,7 +5,7 @@ export const useGameStore = create((set, get) => ({
   // 元数据：与整局游戏相关
   gameMeta: {
     id: null,
-    state: 'waiting', // waiting | ongoing | archived （由后端 status 数值映射）
+    state: 'waiting', // waiting | ongoing | finished | archived （由后端 status 数值映射）
     statusCode: null, // 后端原始数值状态，便于排查
     totalRounds: 0,   // 总回合数，来自 max_turns（后备 turns_count）
     maxRounds: 0,     // = max_turns
@@ -18,8 +18,11 @@ export const useGameStore = create((set, get) => ({
 
   // 回合与阶段
   turn: {
+    id: null,
+    gameId: null,
     index: 0, // 0 表示 intro，对应后端第 0 轮
-    year: null,
+    status: 0, // 0 表示 intro，1 表示 voting，2 表示 result
+    year: 2075, // 目前常量，如后端提供可替换
     phase: 'intro', // intro | voting | result
     questionText: null,
     options: [],
@@ -70,12 +73,13 @@ export const useGameStore = create((set, get) => ({
     try {
       const data = await gameApi.getCurrentGame();
       const game = data?.game ?? data;
-      // 后端 status 数值 -> 文本
+      // 后端 status 数值 -> 文本（参考 API_Documentation.md）
       const toStateText = (code) => {
         switch (code) {
           case 0: return 'waiting';
           case 1: return 'ongoing';
-          case 2: return 'archived';
+          case 10: return 'finished';
+          case 20: return 'archived';
           default: return 'waiting';
         }
       };
@@ -85,7 +89,7 @@ export const useGameStore = create((set, get) => ({
           ...state.gameMeta,
           id: game?.id ?? state.gameMeta.id,
           statusCode: game?.status ?? state.gameMeta.statusCode,
-          state: game?.state ?? toStateText(game?.status) ?? state.gameMeta.state,
+          state: toStateText(game?.status ?? state.gameMeta.statusCode),
           // 后端字段映射
           maxRounds: game?.max_turns ?? state.gameMeta.maxRounds,
           turnsCount: game?.turns_count ?? state.gameMeta.turnsCount,
@@ -111,12 +115,22 @@ export const useGameStore = create((set, get) => ({
     try {
       const data = await gameApi.getGameDetail(gameId);
       const game = data?.game ?? data;
+      // 与 fetchCurrentGame 一致的状态映射
+      const toStateText = (code) => {
+        switch (code) {
+          case 0: return 'waiting';
+          case 1: return 'ongoing';
+          case 10: return 'finished';
+          case 20: return 'archived';
+          default: return 'waiting';
+        }
+      };
       set((state) => ({
         gameMeta: {
           ...state.gameMeta,
           id: game?.id ?? state.gameMeta.id,
           statusCode: game?.status ?? state.gameMeta.statusCode,
-          state: game?.state ?? state.gameMeta.state,
+          state: toStateText(game?.status ?? state.gameMeta.statusCode),
           maxRounds: game?.max_turns ?? state.gameMeta.maxRounds,
           turnsCount: game?.turns_count ?? state.gameMeta.turnsCount,
           playersCount: game?.players_count ?? state.gameMeta.playersCount,
@@ -150,11 +164,15 @@ export const useGameStore = create((set, get) => ({
       set((state) => ({
         turn: {
           ...state.turn,
+          id: turn?.id ?? state.turn.id,
+          gameId: (turn?.game?.id ?? gameId ?? state.turn.gameId),
           index: typeof turn?.index === 'number' ? turn.index : state.turn.index,
+          status: typeof turn?.status === 'number' ? turn.status : state.turn.status,
           year: state.turn.year, // 如后端未来提供年份可替换
           phase: toPhaseText(turn?.status),
           questionText: turn?.question_text ?? state.turn.questionText,
           options: Array.isArray(turn?.options) ? turn.options : state.turn.options,
+          
         },
         players: {
           ...state.players,
@@ -171,8 +189,8 @@ export const useGameStore = create((set, get) => ({
   },
 
   // 启动轮询：每 2s 并行拉取 detail + currentTurn（不断线）
-  startPolling: async () => {
-    let gameId = get().gameMeta.id;
+  startPolling: async (providedGameId = null) => {
+    let gameId = providedGameId || get().gameMeta.id;
     if (!gameId) {
       try {
         const current = await get().fetchCurrentGame();
@@ -194,7 +212,7 @@ export const useGameStore = create((set, get) => ({
     if (existing) return;
 
     const id = setInterval(() => {
-      const gid = get().gameMeta.id;
+      const gid = providedGameId || get().gameMeta.id;
       if (!gid) return;
       Promise.allSettled([
         get().fetchGameDetail(gid),
@@ -215,9 +233,9 @@ export const useGameStore = create((set, get) => ({
   },
 
   // 开始游戏：调用后端并将前端状态置为 ongoing
-  startGame: async (token = null) => {
+  startGame: async (maybeGameId = null, token = null) => {
     try {
-      let gameId = get().gameMeta.id;
+      let gameId = maybeGameId || get().gameMeta.id;
       if (!gameId) {
         const current = await get().fetchCurrentGame();
         gameId = current?.id || get().gameMeta.id;

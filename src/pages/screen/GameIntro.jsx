@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 
 const GameIntro = () => {
@@ -6,9 +6,11 @@ const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
     const subtitle = "2075 | The boundary between memory and privacy";
     const navigate = useNavigate();
+    const { gameId } = useParams();
     // 导航到游戏大厅的函数
     const goToGameDashboard = () => {
-        navigate('/screen/game');
+        if (gameId) navigate(`/game/${gameId}/game`);
+        else navigate('/');
     };
     
     // 导航到投票页面的函数
@@ -21,12 +23,13 @@ const GameIntro = () => {
     // 键盘事件监听
     useEffect(() => {
         const goToGameDashboard = () => {
-            navigate('/screen/game');
+            if (gameId) navigate(`/game/${gameId}/game`);
+            else navigate('/');
         };
         
         window.addEventListener('keydown', goToGameDashboard);
         return () => window.removeEventListener('keydown', goToGameDashboard);
-    }, [navigate]);
+    }, [navigate, gameId]);
 
     return (
         <>
