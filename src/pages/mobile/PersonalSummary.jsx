@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import SmallRadarChart from '../../components/mobile/SmallRadarChart.jsx';
 
 const PersonalSummary = () => {
   const { gameId } = useParams();
@@ -48,9 +49,9 @@ const PersonalSummary = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="h-screen overflow-y-auto bg-black relative">
       {/* 网格背景 - 顶部 */}
-      <div className="absolute top-0 left-0 right-0 h-32">
+      <div className="absolute top-0 left-0 right-0 h-16">
         <div className="w-full h-full opacity-30">
           <svg viewBox="0 0 400 100" className="w-full h-full">
             <defs>
@@ -77,7 +78,7 @@ const PersonalSummary = () => {
       </div>
 
       {/* 网格背景 - 底部 */}
-      <div className="absolute bottom-0 left-0 right-0 h-32">
+      <div className="absolute bottom-0 left-0 right-0 h-16">
         <div className="w-full h-full opacity-30">
           <svg viewBox="0 0 400 100" className="w-full h-full">
             <defs>
@@ -103,58 +104,91 @@ const PersonalSummary = () => {
         </div>
       </div>
 
-      {/* 主要内容区域 */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-sm">
+      {/* 主要内容区域（整页自然滚动） */}
+      <div className="relative z-10 min-h-screen p-4">
+        <div className="w-full max-w-sm mx-auto">
+          {/* 顶部标题 */}
+          <h1 className="text-center text-3xl font-extrabold tracking-wider text-cyan-300 mb-3">
+            Game Over
+          </h1>
+
           {/* 主要卡片 */}
-          <div className="border-2 border-cyan-400 rounded-lg bg-black bg-opacity-80 backdrop-blur-sm p-6">
-            
-            {/* 图表/可视化区域 */}
-            <div className="h-48 bg-gray-300 rounded mb-6 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-cyan-400 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <span className="text-black font-bold text-xl">
-                    {Math.round((personalData.score.idealism + personalData.score.individualism) / 2)}%
-                  </span>
-                </div>
-                <p className="text-gray-600 text-sm">Your Alignment Score</p>
+          <div className="border-2 border-cyan-400 rounded-xl bg-black/80 backdrop-blur-sm p-4">
+            {/* 雷达图（小尺寸组件） */}
+            <div className="flex justify-center">
+              <SmallRadarChart />
+            </div>
+
+            {/* 叙事文本（收紧段落间距与行高） */}
+            <div className="text-cyan-200 text-[12px] leading-[18px] space-y-1 mb-2">
+              <p>
+                The chamber releases a final surge of light. Your chosen memory vanishes, leaving a hollow echo in your mind. On the giant screen, the crowd reacts—some cheer your sacrifice, others whisper doubts.
+              </p>
+              <p>
+                Outside, society tilts: new rules form, trust shifts, and the balance of power bends to your decision. You step back into the world changed, carrying both the loss and the weight of its consequence. Game Over—your choice has written history.
+              </p>
+            </div>
+
+            {/* Personality 区块 */}
+            <div className="mb-4">
+              <h2 className="text-white text-lg font-bold text-center">Personality</h2>
+              <p className="text-[11px] text-gray-300 text-center mt-2 leading-5">
+                This is the final world we have created. Based on your outstanding contributions in xxx and xxx, you embody more of the characteristics of a visionary innovator.
+              </p>
+            </div>
+
+            {/* 角色形象 */}
+            <div className="flex justify-center mb-1">
+              <div className="w-36 h-44 rounded-xl border border-cyan-500/70 bg-black/40 flex items-center justify-center overflow-hidden">
+                {/* 占位图片，可替换为实际资源 */}
+                <img
+                  src="https://placehold.co/160x200/png"
+                  alt="character"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 
-            {/* 个人评估文本 */}
-            <div className="text-white space-y-4">
-              <h2 className="text-lg font-bold">
-                Based on your choices,
-              </h2>
-              <h3 className="text-xl font-bold text-cyan-300">
-                you are {personalData.personality}
+            {/* 角色称号与说明 */}
+            <div className="text-center text-white">
+              <p className="text-[11px] text-gray-300">Base on your choices, you are</p>
+              <h3 className="text-xl font-extrabold text-cyan-300 mt-1">
+                {personalData.personality || 'Memory Sentinel'}
               </h3>
-              <p className="text-sm leading-relaxed">
-                {personalData.description}
-              </p>
-              
-              {/* 特征列表 */}
-              <div className="mt-4">
-                <ul className="text-xs space-y-1 text-gray-300">
-                  {personalData.traits.map((trait, index) => (
-                    <li key={index}>• {trait}</li>
-                  ))}
-                </ul>
-              </div>
             </div>
+
+            <div className="mt-2 text-[12px] leading-5 text-gray-200 space-y-2">
+              <p>
+                You live in a world where memories are traded like coins, yet you refuse to let truth be corrupted. Fairness is your compass; you believe that every memory must remain unaltered to keep society honest.
+              </p>
+              <p>
+                At the same time, you guard your own mind with fierce independence—no one has the right to decide what you remember or forget. This rare balance makes you both protector and rebel.
+              </p>
+              <p>
+                Justice without freedom is hollow, and freedom without justice is fragile. You stand as a constant in the shifting memory market, a figure of resilience and clarity. When others sell fragments of themselves, you remain whole.
+              </p>
+            </div>
+
+            {/* 特征列表 */}
+            <div className="mt-3">
+              <ul className="text-[11px] space-y-1 text-gray-300">
+                {personalData.traits.map((trait, index) => (
+                  <li key={index}>• {trait}</li>
+                ))}
+              </ul>
+            </div>
+
 
             {/* 底部按钮区域 */}
-            <div className="mt-6">
-              <button 
-                className="w-full bg-gray-400 text-black py-2 rounded text-sm font-medium hover:bg-gray-300 transition-colors duration-200"
+            <div className="mt-4">
+              <button
+                className="w-full bg-cyan-400 text-black py-2 rounded text-sm font-semibold hover:bg-cyan-300 transition-colors duration-200"
                 onClick={goTimelinePage}
               >
-                view timeline
+                View timeline
               </button>
             </div>
           </div>
-
-
         </div>
       </div>
     </div>
