@@ -14,62 +14,63 @@ const VotingPage = () => {
   const timeLeft = useGameStore(s => s.turn.timeLeft);
   const updateCountdown = useGameStore(s => s.updateCountdown);
   const isGameArchived = useGameStore(s => s.gameMeta.state === 'archived');
-
+  const startPolling = useGameStore(s => s.startPolling);
+  const stopPolling = useGameStore(s => s.stopPolling);
   // 本地提交反馈与选中状态
   const [selectedId, setSelectedId] = useState(null);
   const [submitOk, setSubmitOk] = useState(false);
 
-  // 初始化状态
-  // const [isInitializing, setIsInitializing] = useState(true);
-  // const [initError, setInitError] = useState(null);
+  //初始化状态
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [initError, setInitError] = useState(null);
 
-  // useEffect(() => {
-  //   const initializeGame = async () => {
-  //     try {
-  //       console.info('[VotingPage] 🚀 开始完整游戏初始化流程...');
-  //       setIsInitializing(true);
-  //       setInitError(null);
+  useEffect(() => {
+    const initializeGame = async () => {
+      try {
+        console.info('[VotingPage] 🚀 开始完整游戏初始化流程...');
+        setIsInitializing(true);
+        setInitError(null);
 
-  //       const {
-  //         fetchGameDetail,
-  //         fetchCurrentTurn,
-  //         startGame,
-  //         initCurrentTurn,
-  //         joinGame,
-  //         gameMeta: { id },
-  //       } = useGameStore.getState();
+        const {
+          fetchGameDetail,
+          fetchCurrentTurn,
+          // startGame,
+          // initCurrentTurn,
+          joinGame,
+          gameMeta: { id },
+        } = useGameStore.getState();
 
-  //       // 优先使用路由参数中的 gameId，其次使用 store 中的 id
-  //       const paramId = Number(gameIdParam);
-  //       const gameId = Number.isFinite(paramId) ? paramId : id;
-  //       if (Number.isFinite(paramId) && id !== paramId) {
-  //         useGameStore.getState().setGameMeta({ id: paramId });
-  //       }
-  //       console.info('[VotingPage] 📋 使用的游戏ID:', gameId, '（route param:', gameIdParam, ' store id:', id, '）');
+        // 优先使用路由参数中的 gameId，其次使用 store 中的 id
+        const paramId = Number(gameIdParam);
+        const gameId = Number.isFinite(paramId) ? paramId : id;
+        if (Number.isFinite(paramId) && id !== paramId) {
+          useGameStore.getState().setGameMeta({ id: paramId });
+        }
+        console.info('[VotingPage] 📋 使用的游戏ID:', gameId, '（route param:', gameIdParam, ' store id:', id, '）');
 
   //       // 1) 确保玩家已加入
-  //       let token = localStorage.getItem('authToken');
-  //       if (!token) {
-  //         console.info('[VotingPage] 🎮 玩家未加入，开始加入游戏...');
-  //         await joinGame(gameId, null);
-  //         token = localStorage.getItem('authToken');
-  //         if (!token) {
-  //           throw new Error('加入游戏失败，未获取到 token');
-  //         }
-  //         console.info('[VotingPage] ✅ 玩家加入完成');
-  //       } else {
-  //         console.info('[VotingPage] ✅ 玩家已加入');
-  //       }
+        let token = localStorage.getItem('authToken');
+        if (!token) {
+          console.info('[VotingPage] 🎮 玩家未加入，开始加入游戏...');
+          await joinGame(gameId, null);
+          token = localStorage.getItem('authToken');
+          if (!token) {
+            throw new Error('加入游戏失败，未获取到 token');
+          }
+          console.info('[VotingPage] ✅ 玩家加入完成');
+        } else {
+          console.info('[VotingPage] ✅ 玩家已加入');
+        }
 
-  //       // 2) 获取游戏详情
-  //       console.info('[VotingPage] 🔄 获取游戏详情...');
-  //       const game = await fetchGameDetail(gameId);
-  //       if (!game) {
-  //         throw new Error('获取游戏详情失败');
-  //       }
+        // 2) 获取游戏详情
+        console.info('[VotingPage] 🔄 获取游戏详情...');
+        const game = await fetchGameDetail(gameId);
+        if (!game) {
+          throw new Error('获取游戏详情失败');
+        }
         
-  //       const state = game?.state ?? (game?.status === 0 ? 'waiting' : game?.status === 1 ? 'ongoing' : 'archived');
-  //       console.info('[VotingPage] 📊 当前后端状态:', state);
+        const state = game?.state ?? (game?.status === 0 ? 'waiting' : game?.status === 1 ? 'ongoing' : 'archived');
+        console.info('[VotingPage] 📊 当前后端状态:', state);
 
   //       // 3) 根据游戏状态处理
   //       if (state === 'waiting') {
@@ -83,29 +84,29 @@ const VotingPage = () => {
 
   //       // 4) 确保有当前回合
   //       console.info('[VotingPage] 🔍 检查当前回合...');
-  //       let turn = null;
+        let turn = null;
         
-  //       // 先尝试获取回合
-  //       turn = await fetchCurrentTurn(gameId, token);
-  //       console.info('[VotingPage] 📊 fetchCurrentTurn 返回结果:', {
-  //         hasTurn: !!turn,
-  //         turnIndex: turn?.index,
-  //         questionText: turn?.question_text,
-  //         optionsCount: turn?.options?.length
-  //       });
+        // 先尝试获取回合
+        turn = await fetchCurrentTurn(gameId, token);
+        console.info('[VotingPage] 📊 fetchCurrentTurn 返回结果:', {
+          hasTurn: !!turn,
+          turnIndex: turn?.index,
+          questionText: turn?.question_text,
+          optionsCount: turn?.options?.length
+        });
         
   //       // 如果回合存在且有效，直接使用
-  //       if (turn && typeof turn.index === 'number') {
-  //         console.info('[VotingPage] ✅ 当前回合已存在且有效');
-  //       } else {
-  //         // 回合不存在或无效，尝试创建
-  //         console.warn('[VotingPage] ⚠️ 回合不存在或无效，尝试创建...');
-  //         console.info('[VotingPage] 🔑 使用 token 创建回合:', !!token);
-  //         console.info('[VotingPage] 🎮 游戏状态:', game?.state);
-  //         console.info('[VotingPage] 🎮 游戏状态码:', game?.status);
-          
-  //         const okInit = await initCurrentTurn(token);
-  //         console.info('[VotingPage] 📋 initCurrentTurn 返回结果:', okInit);
+        if (turn && typeof turn.index === 'number') {
+          console.info('[VotingPage] ✅ 当前回合已存在且有效');
+        } else {
+          // 回合不存在或无效，尝试创建
+          console.warn('[VotingPage] ⚠️ 回合不存在或无效，尝试创建...');
+          console.info('[VotingPage] 🔑 使用 token 创建回合:', !!token);
+          console.info('[VotingPage] 🎮 游戏状态:', game?.state);
+          console.info('[VotingPage] 🎮 游戏状态码:', game?.status);
+        }
+          // const okInit = await initCurrentTurn(token);
+          // console.info('[VotingPage] 📋 initCurrentTurn 返回结果:', okInit);
           
   //         if (!okInit) {
   //           // 获取 store 中的错误信息
@@ -122,38 +123,38 @@ const VotingPage = () => {
   //         console.info('[VotingPage] ✅ 回合创建成功');
   //       }
 
-  //       // 5) 验证回合数据
-  //       console.info('[VotingPage] 🔍 验证回合数据:', {
-  //         hasTurn: !!turn,
-  //         hasQuestionText: !!turn?.question_text,
-  //         hasOptions: !!turn?.options,
-  //         optionsLength: turn?.options?.length || 0,
-  //         turnData: turn
-  //       });
+        // 5) 验证回合数据
+        console.info('[VotingPage] 🔍 验证回合数据:', {
+          hasTurn: !!turn,
+          hasQuestionText: !!turn?.question_text,
+          hasOptions: !!turn?.options,
+          optionsLength: turn?.options?.length || 0,
+          turnData: turn
+        });
 
-  //       console.info('[VotingPage] ✅ 游戏初始化完成！');
-  //       setIsInitializing(false);
-  //     } catch (error) {
-  //       console.error('[VotingPage] ❌ 初始化失败:', error);
-  //       setInitError(error.message);
-  //       setIsInitializing(false);
-  //     }
-  //   };
+        console.info('[VotingPage] ✅ 游戏初始化完成！');
+        setIsInitializing(false);
+      } catch (error) {
+        console.error('[VotingPage] ❌ 初始化失败:', error);
+        setInitError(error.message);
+        setIsInitializing(false);
+      }
+    };
 
-  //   initializeGame();
-  // }, []);
+    initializeGame();
+  }, []);
   
   // 启动/停止轮询（只在初始化完成后）
-  // useEffect(() => {
-  //   if (!isInitializing && !initError) {
-  //     console.info('[VotingPage] 🔄 启动轮询机制...');
-  //     startPolling();
-  //     return () => {
-  //       console.info('[VotingPage] ⏹️ 停止轮询机制...');
-  //       stopPolling();
-  //     };
-  //   }
-  // }, [isInitializing, initError, startPolling, stopPolling]);
+  useEffect(() => {
+    if (!isInitializing && !initError) {
+      console.info('[VotingPage] 🔄 启动轮询机制...');
+      startPolling();
+      return () => {
+        console.info('[VotingPage] ⏹️ 停止轮询机制...');
+        stopPolling();
+      };
+    }
+  }, [isInitializing, initError, startPolling, stopPolling]);
 
   // 判断回合索引：第 0 或第 9 轮，其他情况打印索引
   useEffect(() => {
