@@ -265,7 +265,7 @@ export const useGameStore = create((set, get) => ({
             
             // 修复：当时间过期时，无论是否是新回合都要重置时间
             if (isNewTurn || isExpired || hasNoTime) {
-              const newTime = new Date(Date.now() + 5000).toISOString();
+              const newTime = new Date(Date.now() + 10000).toISOString();
               console.info('[Store] ⏰ 设置新的结束时间:', newTime);
               return newTime;
             }
