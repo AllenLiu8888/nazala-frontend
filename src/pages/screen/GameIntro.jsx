@@ -12,57 +12,42 @@ const GameIntro = () => {
     // 从 store 读取数据
     const playersTotal = useGameStore(s => s.players.total);
     const playersVoted = useGameStore(s => s.players.voted);
+    const turnIndex = useGameStore(s => s.turn.index);
     
-    // 导航到游戏大厅的函数
-    // 在跳转前先调用 advanceTurn 创建/进入下一回合
-    const goToGameDashboard = async () => {
-        if (!gameId) {
-            navigate('/');
-            return;
-        }
-
-        try {
-            // 智能进入下一回合（自动判断是 initTurn 还是 submitTurn）
-            const success = await useGameStore.getState().advanceTurn(gameId);
-            
-            if (success) {
-                // 成功后跳转到 dashboard
-                navigate(`/game/${gameId}/game`);
-            } else {
-                // 失败：可能是后端错误（500），也可能已经有回合了
-                console.warn('advanceTurn 失败，尝试直接跳转到 Dashboard');
-                
-                // 检查是否真的有 turn 数据
-                const turnsCount = useGameStore.getState().gameMeta.turnsCount;
-                console.log(`当前 turnsCount: ${turnsCount}`);
-                
-                // 无论如何都尝试跳转（轮询会自动更新数据）
-                navigate(`/game/${gameId}/game`);
-            }
-        } catch (error) {
-            console.error('进入下一回合时出错：', error);
-            // 即使出错也尝试跳转
-            navigate(`/game/${gameId}/game`);
-        }
-    };
-
-    // 启动轮询
+    // 页面打开时立即创建 turn
     useEffect(() => {
-        if (gameId) {
-            useGameStore.getState().startPolling(gameId);
-        }
+        const initializeTurn = async () => {
+            if (!gameId) return;
+            
+            console.log('🎬 GameIntro 打开，准备创建 turn...');
+            const { advanceTurn, startPolling } = useGameStore.getState();
+            
+            // 尝试创建/进入回合
+            await advanceTurn(gameId);
+            
+            // 启动轮询以获取玩家选择数据
+            startPolling(gameId);
+        };
+        
+        initializeTurn();
         
         return () => {
             useGameStore.getState().stopPolling();
         };
     }, [gameId]);
 
+    // 监听 turn index 变化，自动跳转到 dashboard
+    useEffect(() => {
+        if (turnIndex >= 1) {
+            console.log(`🎯 检测到 turn index 变化: ${turnIndex}，跳转到 Dashboard`);
+            navigate(`/game/${gameId}/game`);
+        }
+    }, [turnIndex, gameId, navigate]);
+
     return (
         <>
-            {/* 点击任意位置跳转 */}
             <div 
-                className="h-full overflow-hidden flex flex-col items-center justify-center gap-10 py-10 cursor-pointer"
-                onClick={goToGameDashboard}
+                className="h-full overflow-hidden flex flex-col items-center justify-center gap-10 py-10"
             >
                 {/* Title 部分 */}
                 <header className="flex flex-col items-center justify-center text-center gap-4">
@@ -94,13 +79,6 @@ const GameIntro = () => {
                             </p>
                         </section>
                     </div>
-                    
-                    {/* 底部提示和人数统计 */}
-                    <section className="flex flex-col items-center gap-4">
-                        <h2 className="font-pixel text-4xl text-cyan-50 font-semibold animate-pulse">
-                            Click anywhere to continue
-                        </h2>
-                    </section>
                 </main>
             </div>
         </>
