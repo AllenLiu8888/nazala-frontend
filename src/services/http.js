@@ -1,8 +1,6 @@
 // 网络基础层 - 封装 fetch 和错误处理
-// 自动检测环境：开发环境使用本地服务器，生产环境使用远程服务器
-const API_BASE_URL = import.meta.env.DEV 
-    ? 'http://127.0.0.1:8001' 
-    : 'http://34.70.141.127:8001';
+// 从环境变量读取 API 地址，如果没有配置则使用默认值
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001';
 
 class APIError extends Error {
     constructor(message, status, code) {
@@ -31,10 +29,26 @@ export const http = {
         const response = await fetch(url, config);
         
         if (!response.ok) {
+            // 尝试解析后端返回的错误信息
+            let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                if (errorData.error) {
+                    errorMessage = errorData.error;
+                } else if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                } else if (errorData.message) {
+                    errorMessage = errorData.message;
+                }
+                console.error('后端错误详情:', errorData);
+            } catch {
+                // 如果无法解析 JSON，使用默认错误信息
+            }
+            
             throw new APIError(
-            `HTTP ${response.status}: ${response.statusText}`,
-            response.status,
-            'HTTP_ERROR'
+                errorMessage,
+                response.status,
+                'HTTP_ERROR'
             );
         }
 

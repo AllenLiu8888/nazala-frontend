@@ -14,9 +14,36 @@ const GameIntro = () => {
     const playersVoted = useGameStore(s => s.players.voted);
     
     // 导航到游戏大厅的函数
-    const goToGameDashboard = () => {
-        if (gameId) navigate(`/game/${gameId}/game`);
-        else navigate('/');
+    // 在跳转前先调用 advanceTurn 创建/进入下一回合
+    const goToGameDashboard = async () => {
+        if (!gameId) {
+            navigate('/');
+            return;
+        }
+
+        try {
+            // 智能进入下一回合（自动判断是 initTurn 还是 submitTurn）
+            const success = await useGameStore.getState().advanceTurn(gameId);
+            
+            if (success) {
+                // 成功后跳转到 dashboard
+                navigate(`/game/${gameId}/game`);
+            } else {
+                // 失败：可能是后端错误（500），也可能已经有回合了
+                console.warn('advanceTurn 失败，尝试直接跳转到 Dashboard');
+                
+                // 检查是否真的有 turn 数据
+                const turnsCount = useGameStore.getState().gameMeta.turnsCount;
+                console.log(`当前 turnsCount: ${turnsCount}`);
+                
+                // 无论如何都尝试跳转（轮询会自动更新数据）
+                navigate(`/game/${gameId}/game`);
+            }
+        } catch (error) {
+            console.error('进入下一回合时出错：', error);
+            // 即使出错也尝试跳转
+            navigate(`/game/${gameId}/game`);
+        }
     };
 
     // 启动轮询

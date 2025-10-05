@@ -17,9 +17,6 @@ import PersonalSummary from './pages/mobile/PersonalSummary'; // 个人总结页
 // 管理员页面组件
 import AdminDashboard from './pages/admin/AdminDashboard'; // 管理员仪表板
 
-// 开发调试页面
-import DevControlPanel from './pages/mobile/DevControlPanel.jsx'; // 开发控制面板
-
 // 创建简化的路由配置
 import App from './App.jsx';  // 导入 App 组件
 
@@ -37,10 +34,6 @@ export const router = createBrowserRouter([
       {
         path: "admin",
         element: <AdminDashboard />
-      },
-      {
-        path: "dev",
-        element: <DevControlPanel />
       },
       {
         path: "game/:gameId",
