@@ -20,6 +20,7 @@ const DevControlPanel = () => {
     startGame,
     startGameWithPlayerCheck,
     createNewGame,
+    archiveGame,
     initCurrentTurn,
     submitCurrentTurn,
     joinGame,
@@ -168,6 +169,16 @@ const DevControlPanel = () => {
       addLog(`✅ 创建结果: ${result}`, 'success');
     } catch (error) {
       addLog(`❌ 创建失败: ${error.message}`, 'error');
+    }
+  };
+
+  const handleArchiveGame = async () => {
+    try {
+      addLog('🔄 归档游戏...');
+      const result = await archiveGame(Number(gameId) || null, token || null);
+      addLog(`✅ 归档结果: ${result}`, 'success');
+    } catch (error) {
+      addLog(`❌ 归档失败: ${error.message}`, 'error');
     }
   };
 
@@ -335,74 +346,82 @@ const DevControlPanel = () => {
               onClick={handleFetchCurrentGame}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm"
             >
-              获取当前游戏
+              获取currentgame
             </button>
             <button
               onClick={handleFetchGameDetail}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm"
             >
-              获取游戏详情
+              获取gamedetail
             </button>
             <button
               onClick={handleFetchCurrentTurn}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-sm"
             >
-              获取当前回合
+              获取currentturn
+            </button>
+          </div>
+          
+          {/* 第二行按钮组 */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <button
+              onClick={handleCreateNewGame}
+              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded text-sm"
+            >
+              创建新游戏（waiting）
+            </button>
+            <button
+              onClick={handleJoinGame}
+              className="px-4 py-2 bg-orange-600 hover:bg-purple-700 rounded text-sm"
+            >
+              创建玩家
+            </button>
+            <button
+              onClick={handleStartGameWithPlayerCheck}
+              className="px-4 py-2 bg-orange-600 hover:bg-green-600 rounded text-sm"
+            >
+              检查玩家后启动
             </button>
             <button
               onClick={handleStartGame}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-sm"
             >
-              启动游戏
-            </button>
-            <button
-              onClick={handleStartGameWithPlayerCheck}
-              className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded text-sm"
-            >
-              检查玩家后启动
+              启动游戏（ongoing）
             </button>
             <button
               onClick={handleInitTurn}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-sm"
+              className="px-4 py-2 bg-orange-600 hover:bg-green-700 rounded text-sm"
             >
-              初始化回合
+              第一个回合
             </button>
             <button
               onClick={handleSubmitTurn}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-sm"
+              className="px-4 py-2 bg-orange-600 hover:bg-green-700 rounded text-sm"
             >
-              提交回合
+              提交选项（创建新回合）
             </button>
             <button
-              onClick={handleJoinGame}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm"
+              onClick={handleArchiveGame}
+              className="px-4 py-2 bg-purple-600 hover:bg-red-700 rounded text-sm"
             >
-              加入游戏
-            </button>
-            <button
-              onClick={handleSubmitChoice}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm"
-            >
-              提交选择
-            </button>
-            <button
-              onClick={handleCreateNewGame}
-              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded text-sm"
-            >
-              创建新游戏
+              归档游戏
             </button>
             <button
               onClick={handleCountdownEnd}
-              className="px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded text-sm"
+              className="px-4 py-2 bg-green-600 hover:bg-orange-700 rounded text-sm"
             >
               处理倒计时结束
             </button>
             <button
               onClick={handleUpdateCountdown}
-              className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-sm"
+              className="px-4 py-2 bg-green-600 hover:bg-yellow-700 rounded text-sm"
             >
               更新倒计时
             </button>
+          </div>
+          
+          {/* 第三行按钮组 */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             <button
               onClick={handleStartPolling}
               className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded text-sm"
