@@ -332,6 +332,7 @@ export const useGameStore = create((set, get) => ({
     // 已存在轮询则跳过
     const existing = get()._pollerId;
     if (existing) return;
+
     const id = setInterval(async () => {
       const gid = get().gameMeta.id;
       if (!gid) return;
