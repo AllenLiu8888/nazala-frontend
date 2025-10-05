@@ -1,26 +1,71 @@
 import { useEffect } from 'react';
 import QRCode from '../../components/shared/QRCode';
 import useGameStore from '../../store';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const GameLobby = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
     const subtitle = "2075 | The boundary between memory and privacy";
     const navigate = useNavigate();
+    const { gameId } = useParams();
+    const gameState = useGameStore(s => s.gameMeta.state);
+    const turnsCount = useGameStore(s => s.gameMeta.turnsCount);
 
+    // 开始游戏：只在 waiting 状态下调用后端 API，并跳转到 intro
     const onStartGame = async () => {
+        if (gameState !== 'waiting') return;
+        
         const { startGame } = useGameStore.getState();
-        const success = await startGame();
-        if (success) {
-            navigate('/screen/game');
+        const success = await startGame(gameId);
+        if (success && gameId) {
+            navigate(`/game/${gameId}/intro`);
         }
     };
 
+    // 启动轮询 + 自动跳转逻辑
     useEffect(() => {
-        const { startPolling, stopPolling } = useGameStore.getState();
-        startPolling();
+        const { startPolling, stopPolling, fetchGameDetail } = useGameStore.getState();
+        
+        // 立即获取一次游戏数据
+        if (gameId) {
+            fetchGameDetail(gameId);
+        }
+        
+        // 启动轮询
+        startPolling(gameId);
         return () => stopPolling();
-    }, []);
+    }, [gameId]);
+
+    // 根据 game state 和 turns_count 自动跳转
+    useEffect(() => {
+        if (!gameId) return;
+
+        // archived → 跳转到首页
+        if (gameState === 'archived') {
+            navigate('/');
+            return;
+        }
+
+        // ongoing → 根据 turns_count 判断
+        if (gameState === 'ongoing') {
+            if (turnsCount === 0) {
+                navigate(`/game/${gameId}/intro`);
+            } else {
+                navigate(`/game/${gameId}/game`);
+            }
+            return;
+        }
+
+        // finished → 跳转到 gameover
+        if (gameState === 'finished') {
+            navigate(`/game/${gameId}/gameover`);
+            return;
+        }
+
+        // waiting → 保持在本页面，不做任何跳转
+    }, [gameState, turnsCount, gameId, navigate]);
+
+    // 不自动跳转；仅在按钮点击时根据状态决定行为
     return (
         <>
             <div className="h-full overflow-hidden flex flex-col items-center justify-center gap-6 py-10">
@@ -64,7 +109,12 @@ const GameLobby = () => {
                                 <QRCode />
                             </div>
                             <div className="flex flex-col items-center justify-center">
-                                <button className="text-2xl  border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200" onClick={onStartGame}>Game Start
+                                <button 
+                                    className="text-2xl border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                                    onClick={onStartGame}
+                                    disabled={gameState !== 'waiting'}
+                                >
+                                    Game Start
                                 </button>
                             </div>
                         </section>

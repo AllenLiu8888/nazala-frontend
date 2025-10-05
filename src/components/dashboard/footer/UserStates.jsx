@@ -1,10 +1,10 @@
 import ScoreRing from './RingScore';
-
+import useGameStore from '../../../store';
 
 
 const UserStates = () => {
-    const value = 3;
-    const max = 5;
+    const value = useGameStore(s => s.players.voted);
+    const max = useGameStore(s => s.players.total);
 
     return (    
         <div className="flex flex-col items-center gap-6 p-3 px-6">

@@ -1,9 +1,11 @@
 // 第1步：最基础的雷达图
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
-
+import useGameStore from '../../../store';
 
 const RadarChart = () => {
+    const radarData = useGameStore(s => s.world.radarData);
+    const categories = useGameStore(s => s.world.categories);
         const options = {
             chart: {
                 type: 'radar',
@@ -30,7 +32,7 @@ const RadarChart = () => {
                 }
             },
             xaxis: {
-                categories: ['Memory Fidelity', 'Technical Control', 'Pattern Cohesion', 'Autonomic Control'],
+                categories,
                 labels: {
                     style: {
                         colors: '#00ffff',
@@ -44,7 +46,7 @@ const RadarChart = () => {
     
         const series = [{
         name: 'Score',
-        data: [85, 90, 80, 75]
+        data: Array.isArray(radarData) && radarData.length ? radarData : [0,0,0,0]
         }];
     
         return (

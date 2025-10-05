@@ -33,16 +33,7 @@ export const router = createBrowserRouter([
         index: true,   // 默认路由
         element: <HomePage />,
       },
-      {
-        path: "screen",
-        children: [
-          { path: "home", element: <HomePage /> },
-          { path: "lobby", element: <GameLobby /> },
-          { path: "intro", element: <GameIntro /> },
-          { path: "game", element: <GameDashboard /> },
-          { path: "gameover", element: <GameOver /> },
-        ]
-      },
+      // 将 screen 与 mobile 合并到同一前缀：/game/:gameId
       {
         path: "admin",
         element: <AdminDashboard />
@@ -54,6 +45,12 @@ export const router = createBrowserRouter([
       {
         path: "game/:gameId",
         children: [
+          // 大屏入口
+          { path: "lobby", element: <GameLobby /> },
+          { path: "intro", element: <GameIntro /> },
+          { path: "game", element: <GameDashboard /> },
+          { path: "gameover", element: <GameOver /> },
+          // 手机端页面
           { path: "waiting", element: <WaitingPage /> },
           { path: "voting", element: <VotingPage /> },
           { path: "timeline", element: <TimelinePage /> },
