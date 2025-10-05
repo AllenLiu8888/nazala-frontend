@@ -14,23 +14,23 @@ const GameIntro = () => {
     const playersVoted = useGameStore(s => s.players.voted);
     const turnIndex = useGameStore(s => s.turn.index);
     
-    // 页面打开时立即创建 turn
+    // 页面打开时立即创建 turn 并启动轮询
     useEffect(() => {
+        if (!gameId) return;
+        
         const initializeTurn = async () => {
-            if (!gameId) return;
-            
             console.log('🎬 GameIntro 打开，准备创建 turn...');
-            const { advanceTurn, startPolling } = useGameStore.getState();
             
             // 尝试创建/进入回合
-            await advanceTurn(gameId);
+            await useGameStore.getState().advanceTurn(gameId);
             
             // 启动轮询以获取玩家选择数据
-            startPolling(gameId);
+            useGameStore.getState().startPolling(gameId);
         };
         
         initializeTurn();
         
+        // 清理函数：停止轮询
         return () => {
             useGameStore.getState().stopPolling();
         };

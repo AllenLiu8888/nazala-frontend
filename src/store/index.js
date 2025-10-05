@@ -40,6 +40,8 @@ export const useGameStore = create((set, get) => ({
     phase: 'intro', // intro | voting | result
     questionText: null,
     options: [],
+    timeLeft: null, // 倒计时剩余秒数（前端计算）
+    turnEndsAt: null, // 回合结束时间戳（从后端获取，如果后端提供的话）
   },
 
   // 玩家状态汇总
@@ -439,6 +441,55 @@ export const useGameStore = create((set, get) => ({
     } catch (err) {
       console.error('advanceTurn 失败:', err);
       set((state) => ({ ui: { ...state.ui, error: err?.message || '进入下一回合失败' } }));
+      return false;
+    }
+  },
+
+  // 更新倒计时：计算剩余时间并更新 store
+  // 注意：目前后端不提供 turnEndsAt，此方法作为占位符
+  // 如果后端提供了结束时间，可以基于此计算剩余秒数
+  updateCountdown: () => {
+    const { turn } = get();
+    
+    // 如果后端提供了结束时间，计算剩余秒数
+    if (turn.turnEndsAt) {
+      const now = Date.now();
+      const endsAt = new Date(turn.turnEndsAt).getTime();
+      const remaining = Math.max(0, Math.floor((endsAt - now) / 1000));
+      
+      set((state) => ({
+        turn: { ...state.turn, timeLeft: remaining }
+      }));
+      
+      return remaining;
+    }
+    
+    // 如果没有结束时间，返回当前的 timeLeft 或 0
+    return turn.timeLeft ?? 0;
+  },
+
+  // 处理倒计时结束：自动提交回合或其他逻辑
+  // 注意：目前作为占位符，实际逻辑取决于游戏需求
+  handleCountdownEnd: async () => {
+    console.log('[Store] ⏰ 倒计时结束');
+    
+    try {
+      const { turn } = get();
+      
+      // 检查回合是否存在
+      if (!turn.id) {
+        console.warn('[Store] ⚠️ 回合不存在，跳过倒计时处理');
+        return false;
+      }
+      
+      // 可以在这里添加自动提交回合的逻辑
+      // 例如：
+      // const { gameMeta } = get();
+      // await get().advanceTurn(gameMeta.id, token);
+      
+      return true;
+    } catch (err) {
+      console.error('[Store] ❌ 处理倒计时结束失败:', err);
       return false;
     }
   },
