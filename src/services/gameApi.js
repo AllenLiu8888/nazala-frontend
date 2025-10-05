@@ -22,6 +22,11 @@ export const gameApi = {
     return await http.post(`/api/game/${gameId}/archive/`, null, token);
   },
 
+  // 结束游戏（将状态设为 finished）
+  async finishGame(gameId, token) {
+    return await http.post(`/api/game/${gameId}/finish/`, null, token);
+  },
+
   // 获取当前回合
   async getCurrentTurn(gameId, token) {
     return await http.get(`/api/game/${gameId}/turn/current`, token);

@@ -14,6 +14,7 @@ const VotingPage = () => {
   const timeLeft = useGameStore(s => s.turn.timeLeft);
   const updateCountdown = useGameStore(s => s.updateCountdown);
   const isGameArchived = useGameStore(s => s.gameMeta.state === 'archived');
+  const isGameFinished = useGameStore(s => s.gameMeta.state === 'finished');
   const startPolling = useGameStore(s => s.startPolling);
   const stopPolling = useGameStore(s => s.stopPolling);
   // 本地提交反馈与选中状态
@@ -142,6 +143,7 @@ const VotingPage = () => {
     };
 
     initializeGame();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   // 启动/停止轮询（只在初始化完成后）
@@ -196,6 +198,15 @@ const VotingPage = () => {
     { id: 3, text: 'a responsibility', display_number: 3 },
     { id: 4, text: 'a trade', display_number: 4 }
   ];
+
+  // 监听游戏状态变化：finished 时跳转到 summary
+  useEffect(() => {
+    if (isGameFinished) {
+      console.info('[VotingPage] 🏁 检测到游戏状态为 finished，跳转到 summary 页面');
+      const currentGameId = gameMetaId || gameIdParam || 'demo-game';
+      navigate(`/game/${currentGameId}/summary`);
+    }
+  }, [isGameFinished, gameMetaId, gameIdParam, navigate]);
 
   // 启动倒计时更新器
   useEffect(() => {

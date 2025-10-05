@@ -729,7 +729,8 @@ export const useGameStore = create((set, get) => ({
     }
   },
 
-  // 倒计时结束：检查投票状态并处理，这里我应该只要检查turn的status是ture就行了吧？
+  // 倒计时结束：无论投票状态如何，都提交回合
+  // 当回合索引为 10（第 11 轮，最后一轮）时，将游戏状态设为 finished
   handleCountdownEnd: async (token = null) => {
     console.info('[Store] ⏰ 倒计时结束');
     try {
@@ -743,33 +744,48 @@ export const useGameStore = create((set, get) => ({
         return false;
       }
 
-      // 限制只处理12个回合 (0-11)
-      if (turn?.index > 11) {
-        console.info('[Store] ⏹️ 游戏结束，已超过12个回合', turn.index);
-        // 将游戏状态设为已归档
-        set((state) => ({
-          gameMeta: {
-            ...state.gameMeta,
-            state: 'archived',
-            statusCode: 2,
-            endedAt: new Date().toISOString(),
+      const currentIndex = turn?.index || 0;
+      console.info(`[Store] 当前回合索引: ${currentIndex}`);
+
+      // 如果是第 11 轮（index = 10），倒计时结束后将游戏状态设为 finished
+      if (currentIndex === 10) {
+        console.info('[Store] 🏁 最后一轮倒计时结束，将游戏状态设为 finished');
+        
+        // 先提交当前回合
+        const submitSuccess = await get().submitCurrentTurn(token);
+        
+        if (submitSuccess) {
+          // 调用后端 API 将游戏状态设为 finished
+          try {
+            await gameApi.finishGame(gameId, token);
+            console.info('[Store] ✅ 游戏已标记为 finished');
+          } catch (err) {
+            console.error('[Store] ❌ 调用 finishGame API 失败:', err);
           }
-        }));
+          
+          // 更新前端状态
+          set((state) => ({
+            gameMeta: {
+              ...state.gameMeta,
+              state: 'finished',
+              statusCode: 10,
+              endedAt: new Date().toISOString(),
+            }
+          }));
+        }
+        
+        return submitSuccess;
+      }
+
+      // 限制只处理12个回合 (0-11)
+      if (currentIndex > 11) {
+        console.info('[Store] ⏹️ 游戏结束，已超过12个回合', currentIndex);
         return false;
       }
       
-      // 只能在所有玩家已投票时提交，避免后端报错；之后要根据turn.statusRaw来判断
-      const choices = typeof turn?.total_choices === 'number' ? turn.total_choices : get().players.voted;
-      const total = typeof turn?.total_players === 'number' ? turn.total_players : get().players.total;
-      const canSubmit = total > 0 && choices >= total;
-      
-      if (canSubmit) {
-        console.info('[Store] ✅ 可以提交当前回合 (all players voted)');
-        return await get().submitCurrentTurn(token);
-      }
-      
-      console.info('[Store] ❌ 不能提交当前回合');
-      return false;
+      // 倒计时结束，直接提交回合（不检查是否所有玩家都已投票）
+      console.info('[Store] ⏰ 倒计时结束，提交当前回合');
+      return await get().submitCurrentTurn(token);
     } catch (err) {
       console.error('[Store] ❌ 倒计时处理失败:', err);
       set((state) => ({ ui: { ...state.ui, error: err?.message || '倒计时处理失败' } }));
