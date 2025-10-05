@@ -46,13 +46,15 @@ const GameLobby = () => {
             return;
         }
 
-        // ongoing → 根据 turns_count 判断
-        if (gameState === 'ongoing') {
-            if (turnsCount === 0) {
-                navigate(`/game/${gameId}/intro`);
-            } else {
-                navigate(`/game/${gameId}/game`);
-            }
+        // ongoing + turnsCount = 0 → 跳转到 intro（intro 会自动创建 turn）
+        if (gameState === 'ongoing' && turnsCount === 0) {
+            navigate(`/game/${gameId}/intro`);
+            return;
+        }
+
+        // ongoing + turnsCount > 0 → 跳转到 dashboard
+        if (gameState === 'ongoing' && turnsCount > 0) {
+            navigate(`/game/${gameId}/game`);
             return;
         }
 
