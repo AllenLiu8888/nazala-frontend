@@ -326,7 +326,8 @@ export const useGameStore = create((set, get) => ({
     // 立即拉一次，失败也不阻塞
     await Promise.allSettled([
       get().fetchGameDetail(gameId),
-      get().fetchCurrentTurn(gameId),
+      // 只有在非 waiting 状态时才请求 turn
+      get().gameMeta.state !== 'waiting' ? get().fetchCurrentTurn(gameId) : Promise.resolve(),
     ]);
 
     // 已存在轮询则跳过
@@ -337,7 +338,18 @@ export const useGameStore = create((set, get) => ({
       const gid = get().gameMeta.id;
       if (!gid) return;
       
-      // 检查当前倒计时状态
+      // 检查游戏状态，只有在非 waiting 状态时才请求 turn
+      const gameState = get().gameMeta.state;
+      
+      // 如果游戏状态是 waiting，只请求 gameDetail
+      if (gameState === 'waiting') {
+        await Promise.allSettled([
+          get().fetchGameDetail(gid),
+        ]);
+        return;
+      }
+      
+      // 非 waiting 状态：检查当前倒计时状态
       const { turn } = get();
       const timeLeft = get().calculateTimeLeft();
       
@@ -347,7 +359,7 @@ export const useGameStore = create((set, get) => ({
         await get().handleCountdownEnd();
       }
       
-      // 正常轮询获取数据
+      // 正常轮询获取数据（包括 turn）
       await Promise.allSettled([
         get().fetchGameDetail(gid),
         get().fetchCurrentTurn(gid),
