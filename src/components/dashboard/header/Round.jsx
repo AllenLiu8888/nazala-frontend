@@ -8,11 +8,12 @@ const Round = () => {
     // 显示轮数 = max_turns - 2（排除 intro 和最后测试轮）
     const displayTotalRounds = maxRounds > 2 ? maxRounds - 2 : maxRounds;
     
-    // 当前显示轮数：Turn 0 不显示，Turn 1-11 显示为 1-10，Turn 12 显示为 10
+    // 当前显示轮数：Turn 0-11 显示为 1-10
+    // Turn 0 → 1, Turn 1 → 2, ..., Turn 9 → 10, Turn 10 → 10, Turn 11 → 10
     const getDisplayRound = () => {
-        if (round === 0) return 'Intro';
-        if (round >= maxRounds - 1) return displayTotalRounds; // 最后一轮显示为 10
-        return round; // Turn 1-11 显示为 1-10
+        if (round === 0) return 1; // Turn 0 显示为 1
+        if (round >= displayTotalRounds) return displayTotalRounds; // Turn 10-11 显示为 10
+        return round + 1; // Turn 1-9 显示为 2-10
     };
 
     return (

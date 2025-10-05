@@ -8,7 +8,10 @@ const QRCode = () => {
     const playersCount = useGameStore(s => s.gameMeta.playersCount);
 
     const getQRCodeURL = () => {
-        return `${import.meta.env.VITE_ROOT_URL || 'http://localhost:5173'}/game/${gameId}/waiting`
+        // 使用当前窗口的地址前缀（协议 + 域名 + 端口）
+        // return `${import.meta.env.VITE_ROOT_URL || 'http://localhost:5173'}/game/${gameId}/waiting`
+        const baseUrl = window.location.origin;
+        return `${baseUrl}/game/${gameId}/waiting`;
     }
 
     const handleQRCodeClick = () => {

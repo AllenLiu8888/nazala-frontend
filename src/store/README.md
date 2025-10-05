@@ -61,17 +61,52 @@
   - 用于大屏整体面板（玩家数、总回合、进度等）。
 
 - `fetchCurrentTurn(gameId, token?)`：
-  - 调“当前回合”，更新 turn 与 players：
+  - 调"当前回合"，更新 turn 与 players：
     - index/status→phase、questionText/options、total_players/total_choices → players.total/voted。
   - 用于驱动回合/投票进度与组件展示。
 
+- `startGame(gameId?, token?)`：
+  - 调用后端"开始游戏" API，将游戏状态从 `waiting` 改为 `ongoing`。
+  - 前置条件：游戏必须是 `waiting` 状态。
+  - 成功后更新前端状态为 `ongoing`。
+
+- `archiveGame(gameId?, token?)`：
+  - 调用后端"归档游戏" API，将游戏状态从 `finished` 改为 `archived`。
+  - 前置条件：游戏必须是 `finished` 状态。
+  - 用于游戏结束后返回首页前的清理。
+
+- `initTurn(gameId?, token?)`：
+  - 调用后端"初始化回合" API，在 `ongoing` 状态下创建第一个 turn。
+  - 前置条件：游戏必须是 `ongoing` 状态，且当前没有进行中的回合。
+  - 用途：创建游戏的第一个正式回合。
+  - 成功后立即调用 `fetchCurrentTurn` 获取新创建的回合数据。
+
+- `submitTurn(gameId?, token?)`：
+  - 调用后端"提交回合" API，提交当前回合并生成下一回合。
+  - 前置条件：游戏必须是 `ongoing` 状态，所有玩家都已做出选择。
+  - 用途：Dashboard 检测到所有玩家完成投票时调用。
+  - 成功后立即调用 `fetchGameDetail` 和 `fetchCurrentTurn` 获取新回合数据。
+
+- `advanceTurn(gameId?, token?)`：
+  - **智能进入下一回合**：根据当前状态自动选择 `initTurn` 或 `submitTurn`。
+  - 策略：
+    - 如果 `turnsCount = 0`：调用 `initTurn`（创建第一个回合）
+    - 如果 `turnsCount > 0`：调用 `submitTurn`（进入下一回合）
+  - 用途：统一的"进入下一回合"接口，适用于：
+    - `GameIntro`：点击进入 Dashboard 时
+    - `GameDashboard`：检测到所有玩家完成投票时
+
 ## 轮询机制（start/stop）
 
-- `startPolling()`：
+- `startPolling(providedGameId?)`：
   - 若无 `gameId` 先 `fetchCurrentGame()` 获取。
-  - 立即并行拉取 `fetchGameDetail + fetchCurrentTurn`（`Promise.allSettled`，失败不中断）。
-  - 若已在轮询则跳过；否则 `setInterval` 每 2s 并行拉取上述两者，并把句柄存 `_pollerId`。
-  - 每轮读取最新 `gameMeta.id`，避免使用过期值。
+  - **条件性请求 turn**：
+    - `waiting` 状态：只请求 `fetchGameDetail`，不请求 turn（避免报错）
+    - `ongoing` 且 `turnsCount === 0`：只请求 `fetchGameDetail`，不请求 turn（intro 页面阶段）
+    - 其他情况：并行请求 `fetchGameDetail + fetchCurrentTurn`
+  - 立即拉取一次（`Promise.allSettled`，失败不中断）。
+  - 若已在轮询则跳过；否则 `setInterval` 每 2s 拉取，并把句柄存 `_pollerId`。
+  - 每轮读取最新 `gameMeta.id` 和状态，避免使用过期值。
 
 - `stopPolling()`：
   - 读取 `_pollerId` 并 `clearInterval`，将其置空；幂等安全。

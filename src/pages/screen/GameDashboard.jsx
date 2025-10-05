@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import WorldStatus from '../../components/dashboard/header/WorldStatus';
 import Round from '../../components/dashboard/header/Round';
@@ -12,6 +12,11 @@ export default function Game() {
     const { gameId } = useParams();
     const navigate = useNavigate();
     const gameState = useGameStore(s => s.gameMeta.state);
+    const playersTotal = useGameStore(s => s.players.total);
+    const playersVoted = useGameStore(s => s.players.voted);
+    
+    // 使用 ref 防止重复提交
+    const isSubmittingRef = useRef(false);
 
     // 组件挂载时启动轮询，卸载时停止
     useEffect(() => {
@@ -29,6 +34,35 @@ export default function Game() {
             navigate(`/game/${gameId}/gameover`);
         }
     }, [gameState, gameId, navigate]);
+
+    // 监听玩家投票状态，所有人完成投票时自动进入下一回合
+    useEffect(() => {
+        const shouldAdvance = 
+            gameState === 'ongoing' && 
+            playersTotal > 0 && 
+            playersVoted === playersTotal &&
+            !isSubmittingRef.current;
+
+        if (shouldAdvance) {
+            isSubmittingRef.current = true;
+            console.log('🎯 所有玩家已完成投票，准备进入下一回合');
+            
+            useGameStore.getState().advanceTurn(gameId)
+                .then((success) => {
+                    if (success) {
+                        console.log('✅ 成功进入下一回合');
+                    } else {
+                        console.error('❌ 进入下一回合失败');
+                    }
+                })
+                .finally(() => {
+                    // 2 秒后重置标志，允许下一次提交
+                    setTimeout(() => {
+                        isSubmittingRef.current = false;
+                    }, 2000);
+                });
+        }
+    }, [gameState, playersTotal, playersVoted, gameId]);
 
     return (
         <div className="h-full w-full flex flex-col">
