@@ -38,7 +38,7 @@ const WaitingPage = () => {
       console.log('🎮 游戏对象:', game);
       console.log('🎮 游戏状态:', game.status, '类型:', typeof game.status);
       
-      if (game && game.status === 0) {
+      if (game && game.status === 1) {
         console.log('✅ 条件满足，准备跳转');
         navigate(`/game/${gameId}/voting`);
         // console.log('🎮 游戏已经开始，跳转到投票页');
