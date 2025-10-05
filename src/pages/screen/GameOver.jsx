@@ -1,8 +1,27 @@
+import { useNavigate, useParams } from 'react-router-dom';
 import RadarChart from '../../components/dashboard/main/RadarChart';
+import useGameStore from '../../store';
 
 const GameOver = () => {
+    const navigate = useNavigate();
+    const { gameId } = useParams();
+    
     const title = "GAME OVER";
-    const subtitle = "After 10 years of decisions, here's the world you created...";
+    const subtitle = "After 10 years of decisions, here's the world you created...";
+
+    // 归档游戏并返回首页
+    const handleBackToHome = async () => {
+        try {
+            // 调用 archiveGame API
+            await useGameStore.getState().archiveGame(gameId);
+        } catch (error) {
+            console.error('归档游戏失败:', error);
+        } finally {
+            // 无论成功或失败，都导航到首页
+            navigate('/');
+        }
+    };
+
     return (
         <>
             <div className="h-full overflow-hidden flex flex-col items-center justify-center gap-6 py-12">
@@ -27,6 +46,16 @@ const GameOver = () => {
                         <RadarChart />
                     </div>
                 </main>
+
+                {/* 返回首页按钮 */}
+                <footer className="flex justify-center pb-8">
+                    <button
+                        onClick={handleBackToHome}
+                        className="btn btn-lg btn-primary pixel-text"
+                    >
+                        Back to Home
+                    </button>
+                </footer>
             </div>
         </>
 );
