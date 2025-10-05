@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { gameApi } from '../../services/gameApi';
 
 const WaitingPage = () => {
-  // const gameId = localStorage.getItem('currentGameId');//之后从localStorage中获取
-  const gameId = '1';
+  // 从 URL 参数获取真实的 gameId
+  const { gameId } = useParams();
   const navigate = useNavigate();
   const hasInitialized = useRef(false);
   const [gameStatus, setGameStatus] = useState(null);
@@ -47,11 +47,10 @@ const WaitingPage = () => {
         navigate(`/game/${gameId}/voting`);
         // console.log('🎮 游戏已经开始，跳转到投票页');
       } else if (game && game.status === 10) {
-        console.log('⚠️ 游戏已完成，跳转到personal summary页面');
-        navigate(`/game/${gameId}/personal-summary`);
-        // console.log('🔍 条件检查: game存在?', !!game, 'status值:', game?.status, 'status类型:', typeof game?.status);
-      }else if (game && game.status === 20) {
-        console.log('⚠️ 游戏未开始');
+        console.log('⚠️ 游戏已完成，跳转到 summary 页面');
+        navigate(`/game/${gameId}/summary`);
+      } else if (game && game.status === 20) {
+        console.log('⚠️ 游戏已归档');
       }
     } catch (error) {
       console.error('❌ 检查游戏状态失败:', error);
@@ -63,6 +62,11 @@ const WaitingPage = () => {
 
   // 页面加载时自动创建用户
   useEffect(() => {
+    if (!gameId) {
+      console.error('❌ 未找到 gameId，无法初始化');
+      return;
+    }
+    
     if (!hasInitialized.current) {
       hasInitialized.current = true;
       createPlayer(gameId);
@@ -71,6 +75,11 @@ const WaitingPage = () => {
 
   // 定期检查游戏状态
   useEffect(() => {
+    if (!gameId) {
+      console.error('❌ 未找到 gameId，无法检查游戏状态');
+      return;
+    }
+    
     // 立即检查一次
     checkGameStarted();
     
@@ -81,6 +90,7 @@ const WaitingPage = () => {
 
     // 清理定时器
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
 

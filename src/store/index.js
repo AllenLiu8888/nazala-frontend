@@ -694,6 +694,41 @@ export const useGameStore = create((set, get) => ({
     }
   },
 
+  // 智能进入下一回合：根据当前状态自动选择 initCurrentTurn 或 submitCurrentTurn
+  // 策略：
+  // - 如果 turnsCount = 0：使用 initCurrentTurn（创建第一个回合）
+  // - 如果 turnsCount > 0：使用 submitCurrentTurn（进入下一回合）
+  // 用途：统一的"进入下一回合"接口，适用于 Intro 和 Dashboard
+  advanceTurn: async (maybeGameId = null, token = null) => {
+    try {
+      let gameId = maybeGameId || get().gameMeta.id;
+      if (!gameId) throw new Error('未获取到 gameId');
+
+      // 先刷新一次游戏数据，确保 turnsCount 是最新的
+      await get().fetchGameDetail(gameId);
+      
+      const turnsCount = get().gameMeta.turnsCount;
+      const gameState = get().gameMeta.state;
+
+      console.log(`[Store] 当前游戏状态: state=${gameState}, turnsCount=${turnsCount}`);
+
+      // 根据 turnsCount 决定调用哪个 API
+      if (turnsCount === 0) {
+        // 没有回合 → 初始化第一个回合
+        console.log('[Store] 当前没有回合 (turnsCount=0)，调用 initCurrentTurn 创建第一个回合');
+        return await get().initCurrentTurn(token);
+      } else {
+        // 已有回合 → 提交当前回合，进入下一回合
+        console.log(`[Store] 已有 ${turnsCount} 个回合，调用 submitCurrentTurn 进入下一回合`);
+        return await get().submitCurrentTurn(token);
+      }
+    } catch (err) {
+      console.error('[Store] advanceTurn 失败:', err);
+      set((state) => ({ ui: { ...state.ui, error: err?.message || '进入下一回合失败' } }));
+      return false;
+    }
+  },
+
   // 倒计时结束：检查投票状态并处理，这里我应该只要检查turn的status是ture就行了吧？
   handleCountdownEnd: async (token = null) => {
     console.info('[Store] ⏰ 倒计时结束');
