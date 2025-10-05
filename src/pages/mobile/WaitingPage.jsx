@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { gameApi } from '../../services/gameApi';
 
@@ -7,6 +7,7 @@ const WaitingPage = () => {
   const gameId = '1';
   const navigate = useNavigate();
   const hasInitialized = useRef(false);
+  const [gameStatus, setGameStatus] = useState(null);
 
   // 自动创建/获取用户
   const createPlayer = async (gameId) => {
@@ -38,13 +39,19 @@ const WaitingPage = () => {
       console.log('🎮 游戏对象:', game);
       console.log('🎮 游戏状态:', game.status, '类型:', typeof game.status);
       
-      if (game && game.status === 0) {
+      // 将API获取的游戏状态保存到state中
+      setGameStatus(game.status);
+      
+      if (game && game.status === 1) {
         console.log('✅ 条件满足，准备跳转');
         navigate(`/game/${gameId}/voting`);
         // console.log('🎮 游戏已经开始，跳转到投票页');
-      } else {
-        console.log('⚠️ 游戏未开始，继续等待');
+      } else if (game && game.status === 10) {
+        console.log('⚠️ 游戏已完成，跳转到personal summary页面');
+        navigate(`/game/${gameId}/personal-summary`);
         // console.log('🔍 条件检查: game存在?', !!game, 'status值:', game?.status, 'status类型:', typeof game?.status);
+      }else if (game && game.status === 20) {
+        console.log('⚠️ 游戏未开始');
       }
     } catch (error) {
       console.error('❌ 检查游戏状态失败:', error);
@@ -96,7 +103,7 @@ const WaitingPage = () => {
             <h1 className="text-3xl font-bold mb-2 text-cyan-300" 
               onClick={goVotingPage}
             >
-              Waiting for players to join...
+              {gameStatus === 20 ? '游戏未开始' : 'Waiting for players to join...'}
             </h1>
             {/* todo：显示加载人数：从api获取 */}
 
