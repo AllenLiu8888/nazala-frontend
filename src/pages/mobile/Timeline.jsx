@@ -1,14 +1,14 @@
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+// import { useParams } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 
 const Timeline = () => {
-  const { gameId } = useParams();
-  const navigate = useNavigate();
+  // const { gameId } = useParams();
+  // const navigate = useNavigate();
 
-  const goVotingPage = () => {
-    const currentGameId = gameId || 'demo-game';
-    navigate(`/game/${currentGameId}/voting`);
-  };
+  // const goVotingPage = () => {
+  //   const currentGameId = gameId || 'demo-game';
+  //   navigate(`/game/${currentGameId}/voting`);
+  // };
 
   // 模拟时间轴数据
   const timelineEvents = [
