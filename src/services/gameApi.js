@@ -50,12 +50,16 @@ export const gameApi = {
 
   // 加入游戏
   async joinGame(gameId, authToken = null) {
-    console.log('📤 发送给API的authToken:', authToken);
     return await http.post(`/api/game/${gameId}/player/init/`, null, authToken);
   },
 
   // 提交选择
   async submitChoice(gameId, optionId, token) {
     return await http.post(`/api/game/${gameId}/player/submit/`, { option_id: optionId }, token);
+  },
+
+  // 获取游戏timeline
+  async getGameTimeline(gameId, token) {
+    return await http.get(`/api/game/${gameId}/player/history/`, token);
   },
 };
