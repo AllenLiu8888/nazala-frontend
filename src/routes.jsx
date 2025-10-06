@@ -16,7 +16,7 @@ import PersonalSummary from './pages/mobile/PersonalSummary'; // 个人总结页
 
 // 管理员页面组件
 import AdminDashboard from './pages/admin/AdminDashboard'; // 管理员仪表板
-
+import DevControlPanel from './pages/mobile/DevControlPanel'; // 管理员控制面板
 // 创建简化的路由配置
 import App from './App.jsx';  // 导入 App 组件
 
@@ -31,13 +31,25 @@ export const router = createBrowserRouter([
         element: <HomePage />,
       },
       // 将 screen 与 mobile 合并到同一前缀：/game/:gameId
+      // 将 screen 与 mobile 合并到同一前缀：/game/:gameId
       {
         path: "admin",
         element: <AdminDashboard />
       },
       {
+        path: "dev",
+        element: <DevControlPanel />  
+      },
+      {
+
         path: "game/:gameId",
         children: [
+          // 大屏入口
+          { path: "lobby", element: <GameLobby /> },
+          { path: "intro", element: <GameIntro /> },
+          { path: "game", element: <GameDashboard /> },
+          { path: "gameover", element: <GameOver /> },
+          // 手机端页面
           // 大屏入口
           { path: "lobby", element: <GameLobby /> },
           { path: "intro", element: <GameIntro /> },

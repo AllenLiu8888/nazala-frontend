@@ -17,6 +17,7 @@ const DevControlPanel = () => {
     fetchCurrentGame,
     fetchGameDetail,
     fetchCurrentTurn,
+    fetchGameTimeline,
     startGame,
     startGameWithPlayerCheck,
     createNewGame,
@@ -206,6 +207,21 @@ const DevControlPanel = () => {
     }
   };
 
+  const handleAutoSetGameId = async () => {
+    try {
+      addLog('🔄 自动获取游戏ID...', 'info');
+      const currentGame = await fetchCurrentGame();
+      if (currentGame?.id) {
+        setGameId(currentGame.id.toString());
+        addLog(`✅ 自动设置游戏ID: ${currentGame.id}`, 'success');
+      } else {
+        addLog('❌ 未找到当前游戏', 'error');
+      }
+    } catch (error) {
+      addLog(`❌ 自动获取游戏ID失败: ${error.message}`, 'error');
+    }
+  };
+
   const handleClearError = () => {
     clearError();
     addLog('✅ 清除错误', 'success');
@@ -257,6 +273,80 @@ const DevControlPanel = () => {
       }
     } catch (error) {
       addLog(`❌ 检查游戏状态失败: ${error.message}`, 'error');
+    }
+  };
+
+  const handleFetchTimeline = async () => {
+    if (!gameId) {
+      addLog('❌ 请输入游戏ID', 'error');
+      return;
+    }
+    try {
+      addLog(`🔄 获取游戏时间轴 (ID: ${gameId})...`);
+      const result = await fetchGameTimeline(Number(gameId), token || null);
+      addLog(`✅ 获取成功: 找到 ${result?.length || 0} 个历史事件`, 'success');
+      if (result && result.length > 0) {
+        addLog(`📜 时间轴预览:`, 'info');
+        result.slice(0, 3).forEach((event, index) => {
+          addLog(`   ${index + 1}. ${event.title || event.question_text || '历史事件'}`, 'info');
+        });
+        if (result.length > 3) {
+          addLog(`   ... 还有 ${result.length - 3} 个事件`, 'info');
+        }
+      }
+    } catch (error) {
+      addLog(`❌ 获取失败: ${error.message}`, 'error');
+    }
+  };
+
+  const handleTestAllAPIs = async () => {
+    try {
+      addLog('🚀 开始测试所有API...', 'info');
+      
+      // 1. 获取当前游戏
+      addLog('1️⃣ 测试获取当前游戏...', 'info');
+      await handleFetchCurrentGame();
+      
+      // 2. 获取游戏详情
+      if (gameId) {
+        addLog('2️⃣ 测试获取游戏详情...', 'info');
+        await handleFetchGameDetail();
+      }
+      
+      // 3. 获取当前回合
+      if (gameId) {
+        addLog('3️⃣ 测试获取当前回合...', 'info');
+        await handleFetchCurrentTurn();
+      }
+      
+      // 4. 获取时间轴
+      if (gameId) {
+        addLog('4️⃣ 测试获取时间轴...', 'info');
+        await handleFetchTimeline();
+      }
+      
+      addLog('✅ 所有API测试完成', 'success');
+    } catch (error) {
+      addLog(`❌ API测试失败: ${error.message}`, 'error');
+    }
+  };
+
+  const handleClearAllData = () => {
+    try {
+      addLog('🧹 清除所有数据...', 'info');
+      
+      // 清除localStorage
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('playerId');
+      
+      // 重置状态
+      setToken('');
+      setGameId('');
+      clearLogs();
+      
+      addLog('✅ 所有数据已清除', 'success');
+    } catch (error) {
+      addLog(`❌ 清除数据失败: ${error.message}`, 'error');
     }
   };
 
@@ -422,6 +512,12 @@ const DevControlPanel = () => {
               设置游戏ID
             </button>
             <button
+              onClick={handleAutoSetGameId}
+              className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded text-sm"
+            >
+              自动获取游戏ID
+            </button>
+            <button
               onClick={handleClearError}
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm"
             >
@@ -438,6 +534,24 @@ const DevControlPanel = () => {
               className="px-4 py-2 bg-pink-600 hover:bg-pink-700 rounded text-sm"
             >
               检查游戏状态
+            </button>
+            <button
+              onClick={handleFetchTimeline}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-sm"
+            >
+              获取时间轴
+            </button>
+            <button
+              onClick={handleTestAllAPIs}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm"
+            >
+              测试所有API
+            </button>
+            <button
+              onClick={handleClearAllData}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded text-sm"
+            >
+              清除所有数据
             </button>
           </div>
         </div>

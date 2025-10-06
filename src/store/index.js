@@ -64,6 +64,13 @@ export const useGameStore = create((set, get) => ({
     narrative: '',
   },
 
+  // 时间轴数据
+  timeline: {
+    events: [], // 历史事件列表
+    loading: false,
+    error: null,
+  },
+
   // UI 辅助状态
   // loading：请求中；error：最近一次错误信息（不断线策略）
   ui: {
@@ -88,6 +95,9 @@ export const useGameStore = create((set, get) => ({
   })),
   setWorld: (partial) => set((state) => ({
     world: { ...state.world, ...partial },
+  })),
+  setTimeline: (partial) => set((state) => ({
+    timeline: { ...state.timeline, ...partial },
   })),
   clearError: () => set((state) => ({
     ui: { ...state.ui, error: null },
@@ -828,6 +838,49 @@ export const useGameStore = create((set, get) => ({
     }));
     
     return remaining;
+  },
+
+  // 获取游戏时间轴历史
+  // API: GET /api/game/{game_id}/player/history/
+  // 用途：获取游戏的历史事件，用于Timeline页面展示
+  fetchGameTimeline: async (gameId, token = null) => {
+    console.info('[Store] 📜 开始获取游戏时间轴...', { gameId, hasToken: !!token });
+    
+    set((state) => ({
+      timeline: { ...state.timeline, loading: true, error: null }
+    }));
+
+    try {
+      const data = await gameApi.getGameTimeline(gameId, token);
+      console.info('[Store] 📡 时间轴API调用成功:', data);
+      
+      // 处理API返回的数据格式: { status: true, data: { history: [...] } }
+      const events = Array.isArray(data?.history) ? data.history : [];
+      
+      set((state) => ({
+        timeline: {
+          ...state.timeline,
+          events: events,
+          loading: false,
+          error: null
+        }
+      }));
+
+      console.info('[Store] ✅ 时间轴数据已更新:', { eventsCount: events.length });
+      return events;
+    } catch (err) {
+      console.error('[Store] ❌ 获取时间轴失败:', err);
+      
+      set((state) => ({
+        timeline: {
+          ...state.timeline,
+          loading: false,
+          error: err?.message || '获取时间轴失败'
+        }
+      }));
+      
+      throw err;
+    }
   },
 }));
 
