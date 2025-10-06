@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import useGameStore from '../../store';
 import RingScore from '../../components/dashboard/footer/RingScore';
 
@@ -14,9 +14,20 @@ const GameIntro = () => {
     const playersVoted = useGameStore(s => s.players.voted);
     const turnIndex = useGameStore(s => s.turn.index);
     
+    // 使用 ref 防止 StrictMode 导致的重复调用
+    const hasInitialized = useRef(false);
+    
     // 页面打开时立即创建 turn 并启动轮询
     useEffect(() => {
         if (!gameId) return;
+        
+        // 防止 React StrictMode 导致的重复初始化
+        if (hasInitialized.current) {
+            console.log('⏭️ GameIntro 已初始化，跳过重复调用');
+            return;
+        }
+        
+        hasInitialized.current = true;
         
         const initializeTurn = async () => {
             console.log('🎬 GameIntro 打开，准备创建 turn...');
@@ -30,9 +41,11 @@ const GameIntro = () => {
         
         initializeTurn();
         
-        // 清理函数：停止轮询
+        // 清理函数：停止轮询并重置标志
         return () => {
+            console.log('🧹 GameIntro 卸载，停止轮询');
             useGameStore.getState().stopPolling();
+            hasInitialized.current = false;
         };
     }, [gameId]);
 
