@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Question from '../../components/mobile/Queston';
 import VotingOption from '../../components/mobile/VotingOption';
@@ -7,162 +7,148 @@ import useGameStoreMobile from '../../store/index_mobile';
 const VotingPage = () => {
   const { gameId: gameIdParam } = useParams();
   const navigate = useNavigate();
-  // 所有 hooks 必须在任何条件返回之前调用
+  
+  // Store状态
   const gameState = useGameStoreMobile(s => s.gameMeta.state);
   const gameMetaId = useGameStoreMobile(s => s.gameMeta.id);
   const turn = useGameStoreMobile(s => s.turn);
-  const timeLeft = useGameStoreMobile(s => s.turn.timeLeft);
-  const updateCountdown = useGameStoreMobile(s => s.updateCountdown);
   const isGameArchived = useGameStoreMobile(s => s.gameMeta.state === 'archived');
   const isGameFinished = useGameStoreMobile(s => s.gameMeta.state === 'finished');
   const startPolling = useGameStoreMobile(s => s.startPolling);
   const stopPolling = useGameStoreMobile(s => s.stopPolling);
-  // 本地提交反馈与选中状态
+  
+  // 本地状态
   const [selectedId, setSelectedId] = useState(null);
   const [submitOk, setSubmitOk] = useState(false);
-
-  //初始化状态
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState(null);
+  
+  // 用于跟踪当前turn_index，检测变化
+  const currentTurnIndexRef = useRef(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
+  // 1. 页面加载时初始化游戏
   useEffect(() => {
-    const initializeGame = async () => {
+    const loadPage = async () => {
       try {
-        console.info('[VotingPage] 🚀 开始完整游戏初始化流程...');
+        console.info('[VotingPage] 🚀 开始加载页面...');
         setIsInitializing(true);
         setInitError(null);
+        setHasSubmitted(false);
+        setSelectedId(null);
+        setSubmitOk(false);
 
         const {
           fetchGameDetail,
           fetchCurrentTurn,
-          // startGame,
           joinGame,
           gameMeta: { id },
         } = useGameStoreMobile.getState();
 
-        // 优先使用路由参数中的 gameId，其次使用 store 中的 id
+        // 获取游戏ID
         const paramId = Number(gameIdParam);
         const gameId = Number.isFinite(paramId) ? paramId : id;
         if (Number.isFinite(paramId) && id !== paramId) {
           useGameStoreMobile.getState().setGameMeta({ id: paramId });
         }
-        console.info('[VotingPage] 📋 使用的游戏ID:', gameId, '（route param:', gameIdParam, ' store id:', id, '）');
+        // 获取token
+        const token = localStorage.getItem('authToken');
 
-        // 1) 确保玩家已加入
-        let token = localStorage.getItem('authToken');
-        if (!token) {
-          console.info('[VotingPage] 🎮 玩家未加入，开始加入游戏...');
-          await joinGame(gameId, null);
-          token = localStorage.getItem('authToken');
-          if (!token) {
-            throw new Error('加入游戏失败，未获取到 token');
-          }
-          console.info('[VotingPage] ✅ 玩家加入完成');
-        } else {
-          console.info('[VotingPage] ✅ 玩家已加入');
-        }
+        // 获取游戏详情和当前回合
+        console.info('[VotingPage] 🔄 获取游戏数据...');
+        const [game, currentTurn] = await Promise.all([
+          fetchGameDetail(gameId),
+          fetchCurrentTurn(gameId, token)
+        ]);
 
-        // 2) 获取游戏详情
-        console.info('[VotingPage] 🔄 获取游戏详情...');
-        const game = await fetchGameDetail(gameId);
         if (!game) {
           throw new Error('获取游戏详情失败');
         }
-        
-        const state = game?.state ?? (game?.status === 0 ? 'waiting' : game?.status === 1 ? 'ongoing' : 'archived');
-        console.info('[VotingPage] 📊 当前后端状态:', state);
 
-  //       // 4) 确保有当前回合
-  //       console.info('[VotingPage] 🔍 检查当前回合...');
-        let turn = null;
-        
-        // 先尝试获取回合
-        turn = await fetchCurrentTurn(gameId, token);
-        console.info('[VotingPage] 📊 fetchCurrentTurn 返回结果:', {
-          hasTurn: !!turn,
-          turnIndex: turn?.index,
-          questionText: turn?.question_text,
-          optionsCount: turn?.options?.length
-        });
-        
-  //       // 如果回合存在且有效，直接使用
-        if (turn && typeof turn.index === 'number') {
-          console.info('[VotingPage] ✅ 当前回合已存在且有效');
+        // 记录当前turn_index
+        if (currentTurn && typeof currentTurn.index === 'number') {
+          currentTurnIndexRef.current = currentTurn.index;
+          console.info('[VotingPage] ✅ 当前回合:', currentTurn.index);
         } else {
-          // 回合不存在或无效，尝试创建
-          console.warn('[VotingPage] ⚠️ 回合不存在或无效，尝试创建...');
-          console.info('[VotingPage] 🔑 使用 token 创建回合:', !!token);
-          console.info('[VotingPage] 🎮 游戏状态:', game?.state);
-          console.info('[VotingPage] 🎮 游戏状态码:', game?.status);
+          console.warn('[VotingPage] ⚠️ 回合数据无效');
         }
 
-        // 5) 验证回合数据
-        console.info('[VotingPage] 🔍 验证回合数据:', {
-          hasTurn: !!turn,
-          hasQuestionText: !!turn?.question_text,
-          hasOptions: !!turn?.options,
-          optionsLength: turn?.options?.length || 0,
-          turnData: turn
-        });
-
-        console.info('[VotingPage] ✅ 游戏初始化完成！');
+        console.info('[VotingPage] ✅ 页面加载完成');
         setIsInitializing(false);
       } catch (error) {
-        console.error('[VotingPage] ❌ 初始化失败:', error);
+        console.error('[VotingPage] ❌ 页面加载失败:', error);
         setInitError(error.message);
         setIsInitializing(false);
       }
     };
 
-    initializeGame();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    loadPage();
+  }, [gameIdParam]);
   
-  // 启动/停止轮询（只在初始化完成后）
+  // 2. 启动轮询（只在用户提交选择后）
   useEffect(() => {
-    if (!isInitializing && !initError) {
-      console.info('[VotingPage] 🔄 启动轮询机制...');
+    if (!isInitializing && !initError && hasSubmitted) {
+      console.info('[VotingPage] 🔄 用户已提交，启动轮询机制...');
       startPolling();
       return () => {
         console.info('[VotingPage] ⏹️ 停止轮询机制...');
         stopPolling();
       };
     }
-  }, [isInitializing, initError, startPolling, stopPolling]);
+  }, [isInitializing, initError, hasSubmitted, startPolling, stopPolling]);
 
-  // 判断回合索引：第 0 或第 9 轮，其他情况打印索引
+  // 3. 检测turn_index变化，如果已提交且turn_index变化则重新加载页面
   useEffect(() => {
-    const idx = typeof turn?.index === 'number' ? turn.index : null;
-    if (idx == null) return;
+    const currentTurnIndex = turn?.index;
     
-    if (idx === 0 || idx === 9) {
-      if (idx === 0) {
-        console.info('[VotingPage] 反思问题1', idx);
-      } else if (idx === 9) {
-        console.info('[VotingPage] 反思问题2', idx);
+    // 如果turn_index有效且与之前记录的不同
+    if (typeof currentTurnIndex === 'number' && 
+        currentTurnIndexRef.current !== null && 
+        currentTurnIndex !== currentTurnIndexRef.current) {
+      
+      console.info('[VotingPage] 🔄 检测到turn_index变化:', 
+        currentTurnIndexRef.current, '→', currentTurnIndex);
+      
+      // 如果用户已经提交过选择，则重新加载页面
+      if (hasSubmitted) {
+        console.info('[VotingPage] 🔄 用户已提交，重新加载页面...');
+        // 重新加载页面
+        window.location.reload();
+        return;
       }
-    } else {
-      console.info('[VotingPage] 当前回合 index:', idx);
+      
+      // 更新记录的turn_index
+      currentTurnIndexRef.current = currentTurnIndex;
     }
-  }, [turn?.index]);
+  }, [turn?.index, hasSubmitted]);
 
-  // 提交选择（直接使用 store 的方法）
+  // 5. 用户选择和提交逻辑
   const submitChoice = async (chosen) => {
-    console.info('[VotingPage] 🗳️ 用户点击选择选项:', chosen);
-    const authToken = localStorage.getItem('authToken');
-    const { submitPlayerChoice } = useGameStoreMobile.getState();
-    const success = await submitPlayerChoice(chosen, authToken);
-    if (success) {
-      console.info('[VotingPage] ✅ 选项提交成功');
-      setSelectedId(chosen);
-      setSubmitOk(true);
-      setTimeout(() => setSubmitOk(false), 1500);
-    } else {
-      console.error('[VotingPage] ❌ 选项提交失败');
+
+    console.info('[VotingPage] 🗳️ 用户选择选项:', chosen);
+    setSelectedId(chosen);
+    
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const { submitPlayerChoice } = useGameStoreMobile.getState();
+      
+      const success = await submitPlayerChoice(chosen, authToken);
+      if (success) {
+        console.info('[VotingPage] ✅ 选项提交成功');
+        setHasSubmitted(true);
+        setSubmitOk(true);
+        setTimeout(() => setSubmitOk(false), 1500);
+      } else {
+        console.error('[VotingPage] ❌ 选项提交失败');
+        setSelectedId(null); // 重置选择
+      }
+    } catch (error) {
+      console.error('[VotingPage] ❌ 提交过程出错:', error);
+      setSelectedId(null); // 重置选择
     }
   };
 
-  // 获取显示数据
+  // 6. 获取显示数据
   const question = turn?.questionText || 'Memories is:';
   const votingOptions = turn?.options || [
     { id: 1, text: 'a right', display_number: 1 },
@@ -171,54 +157,45 @@ const VotingPage = () => {
     { id: 4, text: 'a trade', display_number: 4 }
   ];
 
-  // 监听游戏状态变化：finished 时跳转到 summary
+  // 7. 监听游戏状态变化：finished 时跳转到 summary
   useEffect(() => {
     if (isGameFinished) {
-      console.info('[VotingPage] 🏁 检测到游戏状态为 finished，跳转到 summary 页面');
+      console.info('[VotingPage] 🏁 游戏结束，跳转到总结页面');
       const currentGameId = gameMetaId || gameIdParam || 'demo-game';
       navigate(`/game/${currentGameId}/summary`);
     }
   }, [isGameFinished, gameMetaId, gameIdParam, navigate]);
 
-  // 启动倒计时更新器
-  useEffect(() => {
-    console.info('[VotingPage] ⏱️ 启动倒计时更新器...');
-    const timer = setInterval(() => {
-      updateCountdown();
-    }, 1000);
 
-    return () => {
-      console.info('[VotingPage] ⏹️ 停止倒计时更新器');
-      clearInterval(timer);
-    };
-  }, [updateCountdown]);
+  // 8. 渲染逻辑
+  // 加载中状态
+  if (isInitializing) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-cyan-400 text-xl">正在加载游戏...</div>
+      </div>
+    );
+  }
 
-  // 统一的状态显示
-  // if (isInitializing) {
-  //   return (
-  //     <div className="min-h-screen bg-black flex items-center justify-center">
-  //       <div className="text-cyan-400 text-xl">正在初始化游戏...</div>
-  //     </div>
-  //   );
-  // }
+  // 错误状态
+  if (initError) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 text-xl mb-4">加载失败</div>
+          <div className="text-red-200 text-sm mb-4">{initError}</div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700"
+          >
+            重新加载
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  // if (initError || uiError) {
-  //   return (
-  //     <div className="min-h-screen bg-black flex items-center justify-center">
-  //       <div className="text-center">
-  //         <div className="text-red-400 text-xl mb-4">错误</div>
-  //         <div className="text-red-200 text-sm mb-4">{initError || uiError}</div>
-  //         <button 
-  //           onClick={() => window.location.reload()} 
-  //           className="px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700"
-  //         >
-  //           重新加载
-  //         </button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
+  // 游戏已归档状态
   if (isGameArchived) {
     const goToPersonalSummary = () => {
       const currentGameId = gameMetaId || gameIdParam || 'demo-game';
@@ -240,50 +217,49 @@ const VotingPage = () => {
     );
   }
 
+  // 8. 主渲染 - 投票界面
   return (
-    <>
-      <div className="min-h-screen bg-black flex flex-col justify-center px-6 py-8">
-        {/* 游戏状态显示 */}
-        {(gameMetaId != null) && (
-          <div className="text-center mb-4">
-            <div className="text-cyan-400 text-sm">
-              游戏 #{gameMetaId} | 状态: {gameState === 'ongoing' ? '进行中' : '等待中'} | 回合: {(turn?.index ?? -1) + 1}
-            </div>
+    <div className="min-h-screen bg-black flex flex-col justify-center px-6 py-8">
+      {/* 游戏状态显示 */}
+      {(gameMetaId != null) && (
+        <div className="text-center mb-4">
+          <div className="text-cyan-400 text-sm">
+            游戏 #{gameMetaId} | 状态: {gameState === 'ongoing' ? '进行中' : '等待中'} | 回合: {(turn?.index ?? -1) + 1}
           </div>
+        </div>
+      )}
+      
+      {/* 投票标题 */}
+      <Question question={question} />
+      
+      {/* 提交状态显示 */}
+      <div className="text-center mb-8">
+        {submitOk && (
+          <div className="text-green-400 text-lg mb-4">提交成功</div>
         )}
-        
-        {/* 投票标题 */}
-        <Question question={question} />
-        {/* 倒计时显示 */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full border-4 border-cyan-400 mb-4">
-            <span className="text-3xl font-bold text-cyan-200">
-              {timeLeft || 0}
-            </span>
-          </div>
-          {submitOk && (
-            <div className="text-green-400 text-sm mt-2">提交成功</div>
-          )}
-        </div>
-
-
-        {/* 投票选项 */}
-        <div className="max-w-sm mx-auto w-full space-y-4">
-          {votingOptions.map((option, index) => (
-            <VotingOption
-              key={option.id || index}
-              option={option}
-              isSelected={selectedId === option.id}
-              onClick={() => { const chosen = option.id; console.info('[VotingPage] 点击选择 optionId=', chosen); submitChoice(chosen); }}
-            />
-          ))}
-        </div>
-
-        {/* 末尾无额外跳转按钮 */}
+        {hasSubmitted && !submitOk && (
+          <div className="text-yellow-400 text-lg mb-4">等待下一回合...</div>
+        )}
       </div>
 
-      {/* 开发辅助按钮已移除：新游戏由后端在 archived -> GET /current 时自动创建 */}
-    </>
+      {/* 投票选项 */}
+      <div className="max-w-sm mx-auto w-full space-y-4">
+        {votingOptions.map((option, index) => (
+          <VotingOption
+            key={option.id || index}
+            option={option}
+            isSelected={selectedId === option.id}
+            onClick={() => {
+              if (!hasSubmitted) {
+                const chosen = option.id;
+                console.info('[VotingPage] 点击选择 optionId=', chosen);
+                submitChoice(chosen);
+              }
+            }}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 
