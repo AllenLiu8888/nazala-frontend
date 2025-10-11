@@ -1,41 +1,48 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import SmallRadarChart from '../../components/mobile/SmallRadarChart.jsx';
+import { useGameStoreMobile } from '../../store/index_mobile';
 
 const PersonalSummary = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const [personalData, setPersonalData] = useState(null);
+  
+  // 从store获取方法和状态
+  const { fetchPlayerResult, ui } = useGameStoreMobile();
 
   const goTimelinePage = () => {
     const currentGameId = gameId || 'demo-game';
     navigate(`/game/${currentGameId}/timeline`);
   };
   
-  // 模拟个人数据
+  // 获取玩家结果数据
   useEffect(() => {
-    // 这里将来会从后端获取数据
-    const mockData = {
-      choices: ['a right', 'a resource', 'a responsibility'],
-      personality: 'Idealistic Protector',
-      description: 'you are someone who values freedom and believes in protecting individual rights while considering the collective good',
-      traits: [
-        'Values personal autonomy',
-        'Considers long-term consequences',
-        'Balances individual and collective needs',
-        'Seeks sustainable solutions'
-      ],
-      score: {
-        idealism: 85,
-        pragmatism: 65,
-        collectivism: 70,
-        individualism: 80
+    const loadPlayerResult = async () => {
+      try {
+        const result = await fetchPlayerResult(gameId);
+        setPersonalData(result);
+        console.log('🔍 PersonalSummary: 获取玩家结果数据', result);
+      } catch (error) {
+        console.error('❌ 获取玩家结果失败:', error);
+        // 如果API调用失败，使用模拟数据作为fallback
+        const mockData = {
+          personality: 'Memory Sentinel',
+          description: 'You live in a world where memories are traded like coins, yet you refuse to let truth be corrupted. Fairness is your compass; you believe that every memory must remain unaltered to keep society honest.',
+          traits: [
+            'Values personal autonomy',
+            'Considers long-term consequences', 
+            'Balances individual and collective needs',
+            'Seeks sustainable solutions'
+          ],
+          portraitUrl: 'https://placehold.co/160x200/png'
+        };
+        setPersonalData(mockData);
       }
     };
-    
-    // 立即设置数据，不再模拟网络延迟
-    setPersonalData(mockData);
-  }, []);
+
+    loadPlayerResult();
+  }, [fetchPlayerResult, gameId]);
 
   if (!personalData) {
     return (
@@ -119,32 +126,35 @@ const PersonalSummary = () => {
               <SmallRadarChart />
             </div>
 
-            {/* 叙事文本（收紧段落间距与行高） */}
-            <div className="text-cyan-200 text-[12px] leading-[18px] space-y-1 mb-2">
+            {/* <div className="text-cyan-200 text-[12px] leading-[18px] space-y-1 mb-2">
               <p>
                 The chamber releases a final surge of light. Your chosen memory vanishes, leaving a hollow echo in your mind. On the giant screen, the crowd reacts—some cheer your sacrifice, others whisper doubts.
               </p>
               <p>
                 Outside, society tilts: new rules form, trust shifts, and the balance of power bends to your decision. You step back into the world changed, carrying both the loss and the weight of its consequence. Game Over—your choice has written history.
               </p>
-            </div>
+            </div> */}
 
             {/* Personality 区块 */}
             <div className="mb-4">
               <h2 className="text-white text-lg font-bold text-center">Personality</h2>
               <p className="text-[11px] text-gray-300 text-center mt-2 leading-5">
-                This is the final world we have created. Based on your outstanding contributions in xxx and xxx, you embody more of the characteristics of a visionary innovator.
+                This is the final world we have created. Based on your outstanding contributions in  and xxx, you embody more of the characteristics of a visionary innovator.
               </p>
             </div>
 
             {/* 角色形象 */}
             <div className="flex justify-center mb-1">
               <div className="w-36 h-44 rounded-xl border border-cyan-500/70 bg-black/40 flex items-center justify-center overflow-hidden">
-                {/* 占位图片，可替换为实际资源 */}
+                {/* 使用API返回的角色头像 */}
                 <img
-                  src="https://placehold.co/160x200/png"
+                  src={personalData.portraitUrl || "https://placehold.co/160x200/png"}
                   alt="character"
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // 如果API图片加载失败，使用占位图片
+                    e.target.src = "https://placehold.co/160x200/png";
+                  }}
                 />
               </div>
             </div>
@@ -159,14 +169,14 @@ const PersonalSummary = () => {
 
             <div className="mt-2 text-[12px] leading-5 text-gray-200 space-y-2">
               <p>
-                You live in a world where memories are traded like coins, yet you refuse to let truth be corrupted. Fairness is your compass; you believe that every memory must remain unaltered to keep society honest.
+                {personalData.description || "You live in a world where memories are traded like coins, yet you refuse to let truth be corrupted. Fairness is your compass; you believe that every memory must remain unaltered to keep society honest."}
               </p>
-              <p>
-                At the same time, you guard your own mind with fierce independence—no one has the right to decide what you remember or forget. This rare balance makes you both protector and rebel.
-              </p>
-              <p>
-                Justice without freedom is hollow, and freedom without justice is fragile. You stand as a constant in the shifting memory market, a figure of resilience and clarity. When others sell fragments of themselves, you remain whole.
-              </p>
+              {!personalData.description && (
+                <>
+                  <p>人格描述（占位）
+                  </p>
+                </>
+              )}
             </div>
 
             {/* 特征列表 */}

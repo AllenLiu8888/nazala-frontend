@@ -572,6 +572,68 @@ export const useGameStoreMobile = create((set, get) => ({
       throw err;
     }
   },
+
+  // 获取玩家最终结果和角色档案
+  // API: GET /api/player/result
+  // 用途：获取玩家的最终游戏结果，用于PersonalSummary页面展示
+  fetchPlayerResult: async (gameId, token = null) => {
+    console.info('[Store] 🎮 开始获取玩家结果数据...', { gameId, hasToken: !!token });
+    
+    set((state) => ({
+      ui: { ...state.ui, loading: true, error: null }
+    }));
+
+    try {
+      const auth = token || storage.getAuthToken();
+      if (!auth) throw new Error('未获取到认证token');
+
+      const response = await gameApi.getPlayerResult(gameId, auth);
+      console.info('[Store] 📡 玩家结果API调用成功:', response);
+      
+      if (response.status && response.data) {
+        const { attribute_totals, profile, top_attributes } = response.data;
+        
+        // 转换API数据格式以匹配前端需求
+        const transformedData = {
+          choices: top_attributes.map(attr => attr.name),
+          personality: profile.title,
+          description: profile.description,
+          traits: [
+            'Values personal autonomy',
+            'Considers long-term consequences', 
+            'Balances individual and collective needs',
+            'Seeks sustainable solutions'
+          ],
+          score: {
+            idealism: attribute_totals.MemoryEquity || 0,
+            pragmatism: attribute_totals.PersonalAgency || 0,
+            collectivism: attribute_totals.SocialCohesion || 0,
+            individualism: attribute_totals.TechnologicalControl || 0
+          },
+          // 保存原始API数据以供其他用途
+          rawData: response.data,
+          portraitUrl: profile.portrait_url
+        };
+        
+        set((state) => ({
+          ui: { ...state.ui, loading: false, error: null }
+        }));
+
+        console.info('[Store] ✅ 玩家结果数据已处理:', transformedData);
+        return transformedData;
+      } else {
+        throw new Error('API响应格式错误');
+      }
+    } catch (err) {
+      console.error('[Store] ❌ 获取玩家结果失败:', err);
+      
+      set((state) => ({
+        ui: { ...state.ui, loading: false, error: err?.message || '获取玩家结果失败' }
+      }));
+      
+      throw err;
+    }
+  },
 }));
 
 export default useGameStoreMobile;
