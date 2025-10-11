@@ -1,5 +1,5 @@
 import React from 'react';
-import useGameStore from '../../../store';
+import useGameStoreScreen from '../../../store/index_screen';
 
 
 /**
@@ -37,8 +37,8 @@ const RadarChart = ({
     showPercentage = true,
 }) => {
     // 从 store 读取四维属性数据
-    const categories = useGameStore(s => s.world.categories);
-    const radarData = useGameStore(s => s.world.radarData);
+    const categories = useGameStoreScreen(s => s.world.categories);
+    const radarData = useGameStoreScreen(s => s.world.radarData);
 
     // 将世界属性值归一化为 0-100（后端可能提供 -100~100 或已是 0~100）
     const normalizeToPercent = (value) => {

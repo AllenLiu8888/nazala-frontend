@@ -1,37 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useGameStore from '../../store';
+import useGameStoreScreen from '../../store/index_screen';
 import { gameApi } from '../../services/gameApi';
 
 function AdminDashboard() {
   const navigate = useNavigate();
   
   // 从 store 读取数据
-  const gameId = useGameStore(s => s.gameMeta.id);
-  const gameState = useGameStore(s => s.gameMeta.state);
-  const statusCode = useGameStore(s => s.gameMeta.statusCode);
-  const maxRounds = useGameStore(s => s.gameMeta.maxRounds);
-  const turnsCount = useGameStore(s => s.gameMeta.turnsCount);
-  const playersCount = useGameStore(s => s.gameMeta.playersCount);
-  const joinToken = useGameStore(s => s.gameMeta.joinToken);
-  const startedAt = useGameStore(s => s.gameMeta.startedAt);
-  const endedAt = useGameStore(s => s.gameMeta.endedAt);
+  const gameId = useGameStoreScreen(s => s.gameMeta.id);
+  const gameState = useGameStoreScreen(s => s.gameMeta.state);
+  const statusCode = useGameStoreScreen(s => s.gameMeta.statusCode);
+  const maxRounds = useGameStoreScreen(s => s.gameMeta.maxRounds);
+  const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
+  const playersCount = useGameStoreScreen(s => s.gameMeta.playersCount);
+  const joinToken = useGameStoreScreen(s => s.gameMeta.joinToken);
+  const startedAt = useGameStoreScreen(s => s.gameMeta.startedAt);
+  const endedAt = useGameStoreScreen(s => s.gameMeta.endedAt);
   
-  const turnId = useGameStore(s => s.turn.id);
-  const turnIndex = useGameStore(s => s.turn.index);
-  const turnStatus = useGameStore(s => s.turn.status);
-  const turnPhase = useGameStore(s => s.turn.phase);
-  const questionText = useGameStore(s => s.turn.questionText);
-  const options = useGameStore(s => s.turn.options);
+  const turnId = useGameStoreScreen(s => s.turn.id);
+  const turnIndex = useGameStoreScreen(s => s.turn.index);
+  const turnStatus = useGameStoreScreen(s => s.turn.status);
+  const turnPhase = useGameStoreScreen(s => s.turn.phase);
+  const questionText = useGameStoreScreen(s => s.turn.questionText);
+  const options = useGameStoreScreen(s => s.turn.options);
   
-  const playersTotal = useGameStore(s => s.players.total);
-  const playersVoted = useGameStore(s => s.players.voted);
+  const playersTotal = useGameStoreScreen(s => s.players.total);
+  const playersVoted = useGameStoreScreen(s => s.players.voted);
   
-  const worldCategories = useGameStore(s => s.world.categories);
-  const radarData = useGameStore(s => s.world.radarData);
+  const worldCategories = useGameStoreScreen(s => s.world.categories);
+  const radarData = useGameStoreScreen(s => s.world.radarData);
   
-  const uiLoading = useGameStore(s => s.ui.loading);
-  const uiError = useGameStore(s => s.ui.error);
+  const uiLoading = useGameStoreScreen(s => s.ui.loading);
+  const uiError = useGameStoreScreen(s => s.ui.error);
 
   // 本地状态
   const [testPlayer, setTestPlayer] = useState(null);
@@ -43,14 +43,14 @@ function AdminDashboard() {
   // 启动轮询
   useEffect(() => {
     if (gameId) {
-      useGameStore.getState().startPolling(gameId);
+      useGameStoreScreen.getState().startPolling(gameId);
     } else {
       // 如果没有 gameId，获取当前游戏
-      useGameStore.getState().fetchCurrentGame();
+      useGameStoreScreen.getState().fetchCurrentGame();
     }
     
     return () => {
-      useGameStore.getState().stopPolling();
+      useGameStoreScreen.getState().stopPolling();
     };
   }, [gameId]);
 
@@ -83,15 +83,15 @@ function AdminDashboard() {
 
   // 游戏管理操作
   const handleGetCurrentGame = async () => {
-    await executeAction('获取当前游戏', () => useGameStore.getState().fetchCurrentGame());
+    await executeAction('获取当前游戏', () => useGameStoreScreen.getState().fetchCurrentGame());
   };
 
   const handleStartGame = async () => {
-    await executeAction('开始游戏', () => useGameStore.getState().startGame(gameId));
+    await executeAction('开始游戏', () => useGameStoreScreen.getState().startGame(gameId));
   };
 
   const handleArchiveGame = async () => {
-    await executeAction('归档游戏', () => useGameStore.getState().archiveGame(gameId));
+    await executeAction('归档游戏', () => useGameStoreScreen.getState().archiveGame(gameId));
   };
 
   // 回合管理操作
@@ -99,7 +99,7 @@ function AdminDashboard() {
     await executeAction('初始化回合', async () => {
       const result = await gameApi.initTurn(gameId);
       // 立即刷新数据
-      await useGameStore.getState().fetchCurrentTurn(gameId);
+      await useGameStoreScreen.getState().fetchCurrentTurn(gameId);
       return result;
     });
   };
@@ -108,7 +108,7 @@ function AdminDashboard() {
     await executeAction('提交回合', async () => {
       const result = await gameApi.submitTurn(gameId);
       // 立即刷新数据
-      await useGameStore.getState().fetchCurrentTurn(gameId);
+      await useGameStoreScreen.getState().fetchCurrentTurn(gameId);
       return result;
     });
   };
@@ -120,7 +120,7 @@ function AdminDashboard() {
       const player = playerData.player;
       setTestPlayer(player);
       // 立即刷新数据
-      await useGameStore.getState().fetchGameDetail(gameId);
+      await useGameStoreScreen.getState().fetchGameDetail(gameId);
       return player;
     });
   };
@@ -135,7 +135,7 @@ function AdminDashboard() {
       const randomOption = options[Math.floor(Math.random() * options.length)];
       const result = await gameApi.submitChoice(gameId, randomOption.id, testPlayer.auth_token);
       // 立即刷新数据
-      await useGameStore.getState().fetchCurrentTurn(gameId);
+      await useGameStoreScreen.getState().fetchCurrentTurn(gameId);
       return result;
     });
   };
@@ -161,7 +161,7 @@ function AdminDashboard() {
   const handleSaveWorldValues = () => {
     setEditingWorld(false);
     // 直接更新 store 中的世界数据
-    useGameStore.getState().setWorld({ radarData: worldValues });
+    useGameStoreScreen.getState().setWorld({ radarData: worldValues });
     setActionResult({ success: true, message: '世界状态已更新（仅前端）' });
     setTimeout(() => setActionResult(null), 3000);
   };
@@ -180,7 +180,7 @@ function AdminDashboard() {
     
     await executeAction('手动结束游戏', async () => {
       // 直接更新 store 状态
-      useGameStore.getState().setGameMeta({
+    useGameStoreScreen.getState().setGameMeta({
         state: 'finished',
         statusCode: 10,
         endedAt: new Date().toISOString(),
@@ -657,7 +657,7 @@ function AdminDashboard() {
               <div className="mt-3">
                 <button
                   onClick={() => {
-                    console.log('📊 当前 Store 状态:', useGameStore.getState());
+                    console.log('📊 当前 Store 状态:', useGameStoreScreen.getState());
                   }}
                   className="w-full px-3 py-2 bg-orange-600 hover:bg-orange-700 rounded text-sm"
                 >

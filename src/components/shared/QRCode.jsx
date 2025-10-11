@@ -1,11 +1,11 @@
 // QRCode.jsx
 import { QRCodeCanvas } from 'qrcode.react';
-import useGameStore from '../../store';
+import useGameStoreScreen from '../../store/index_screen'; 
 
 const QRCode = () => {
     // 直接从 store 读取数据（轮询会自动更新）
-    const gameId = useGameStore(s => s.gameMeta.id);
-    const playersCount = useGameStore(s => s.gameMeta.playersCount);
+    const gameId = useGameStoreScreen(s => s.gameMeta.id);
+    const playersCount = useGameStoreScreen(s => s.gameMeta.playersCount);
 
     const getQRCodeURL = () => {
         // 使用当前窗口的地址前缀（协议 + 域名 + 端口）

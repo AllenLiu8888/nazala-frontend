@@ -42,6 +42,7 @@ export const useGameStoreMobile = create((set, get) => ({
     statusRaw: null, // 保留后端原始 status，目前只有0
     questionText: null,
     options: [],
+    attrs: [],
     total_players: 0,
     total_choices: 0,
     timeLeft: null, // 倒计时剩余秒数（前端计算）
@@ -169,25 +170,50 @@ export const useGameStoreMobile = create((set, get) => ({
       }
 
       set((state) => {
-        // 从所有选项聚合 $Attributes 平均值，用于可视化
         const attrOrder = state.world.categories || ['Memory Equality', 'Technical Control', 'Society Cohesion', 'Autonomy Control'];
-        const totals = Object.create(null);
-        const counts = Object.create(null);
-        if (Array.isArray(turn?.options)) {
-          for (const opt of turn.options) {
-            const attrs = Array.isArray(opt?.attrs) ? opt.attrs : [];
-            for (const a of attrs) {
-              if (!a || typeof a.value !== 'number' || !a.name) continue;
-              totals[a.name] = (totals[a.name] || 0) + a.value;
-              counts[a.name] = (counts[a.name] || 0) + 1;
+
+        // 规范化后端字段名到前端展示名
+        const normalizeAttrName = (raw) => {
+          switch (raw) {
+            case 'TechnologicalControl': return 'Technical Control';
+            case 'SocialCohesion': return 'Society Cohesion';
+            case 'MemoryEquity': return 'Memory Equality';
+            case 'PersonalAgency': return 'Autonomy Control';
+            default: return raw;
+          }
+        };
+
+        const turnLevelAttrs = Array.isArray(turn?.attrs) ? turn.attrs : null;
+
+        const computeFromOptions = () => {
+          const totals = Object.create(null);
+          const counts = Object.create(null);
+          if (Array.isArray(turn?.options)) {
+            for (const opt of turn.options) {
+              const attrs = Array.isArray(opt?.attrs) ? opt.attrs : [];
+              for (const a of attrs) {
+                if (!a || typeof a.value !== 'number' || !a.name) continue;
+                const name = normalizeAttrName(a.name);
+                totals[name] = (totals[name] || 0) + a.value;
+                counts[name] = (counts[name] || 0) + 1;
+              }
             }
           }
-        }
-        const averaged = attrOrder.map((name) => {
-          if (counts[name]) return totals[name] / counts[name];
-          // 若后端数据缺失该维度，使用 0 填充
-          return 0;
-        });
+          return attrOrder.map((name) => (counts[name] ? totals[name] / counts[name] : 0));
+        };
+
+        const computeFromTurnAttrs = () => {
+          const nameToValue = Object.create(null);
+          for (const a of turnLevelAttrs) {
+            if (!a || typeof a.value !== 'number' || !a.name) continue;
+            const name = normalizeAttrName(a.name);
+            nameToValue[name] = a.value;
+          }
+          return attrOrder.map((name) => (typeof nameToValue[name] === 'number' ? nameToValue[name] : 0));
+        };
+
+        const radarValues = turnLevelAttrs ? computeFromTurnAttrs() : computeFromOptions();
+
         return ({
           turn: {
             ...state.turn,
@@ -195,11 +221,12 @@ export const useGameStoreMobile = create((set, get) => ({
             gameId: (turn?.game?.id ?? gameId ?? state.turn.gameId),
             index: typeof turn?.index === 'number' ? turn.index : state.turn.index,
             status: typeof turn?.status === 'number' ? turn.status : state.turn.status,
-            year: state.turn.year, // 如后端未来提供年份可替换
+            year: (typeof turn?.year === 'number' ? turn.year : state.turn.year),
             phase: toPhaseText(turn?.status),
             statusRaw: (turn?.status !== undefined ? turn.status : state.turn.statusRaw),
             questionText: turn?.question_text ?? state.turn.questionText,
             options: Array.isArray(turn?.options) ? turn.options : state.turn.options,
+            attrs: Array.isArray(turnLevelAttrs) ? turnLevelAttrs : state.turn.attrs,
             total_players: typeof turn?.total_players === 'number' ? turn.total_players : state.turn.total_players,
             total_choices: typeof turn?.total_choices === 'number' ? turn.total_choices : state.turn.total_choices,
             // 新回合时将结束时间设为 5 秒后，或者如果当前时间已过期也重新设置
@@ -240,7 +267,7 @@ export const useGameStoreMobile = create((set, get) => ({
           world: {
             ...state.world,
             categories: attrOrder,
-            radarData: averaged,
+            radarData: radarValues,
           },
         });
       });

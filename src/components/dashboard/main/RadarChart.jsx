@@ -1,11 +1,11 @@
 // 第1步：最基础的雷达图
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
-import useGameStore from '../../../store';
+import useGameStoreScreen from '../../../store/index_screen';
 
 const RadarChart = () => {
-    const radarData = useGameStore(s => s.world.radarData);
-    const categories = useGameStore(s => s.world.categories);
+    const radarData = useGameStoreScreen(s => s.world.radarData);
+    const categories = useGameStoreScreen(s => s.world.categories);
         const options = {
             chart: {
                 type: 'radar',

@@ -1,11 +1,11 @@
 import Timeline from './TimeLine';
-import useGameStore from '../../../store';
+import useGameStoreScreen from '../../../store/index_screen';
 // 使用示例
 const DecisionProgress = () => {
-    const currentPoint = useGameStore(s => s.turn.index);
-    const maxRounds = useGameStore(s => s.gameMeta.maxRounds);
-    const startYear = useGameStore(s => s.gameMeta.startYear);
-    const endYear = useGameStore(s => s.gameMeta.endYear);
+    const currentPoint = useGameStoreScreen(s => s.turn.index);
+    const maxRounds = useGameStoreScreen(s => s.gameMeta.maxRounds);
+    const startYear = useGameStoreScreen(s => s.gameMeta.startYear);
+    const endYear = useGameStoreScreen(s => s.gameMeta.endYear);
 
     // 显示点数 = max_turns - 2（排除 intro 和最后测试轮）
     const displayTotalPoints = maxRounds > 2 ? maxRounds - 2 : maxRounds;

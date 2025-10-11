@@ -1,9 +1,9 @@
-import useGameStore from '../../../store';
+import useGameStoreScreen from '../../../store/index_screen';
 
 const Round = () => {
-    const round = useGameStore(s => s.turn.index);
-    const maxRounds = useGameStore(s => s.gameMeta.maxRounds);
-    const year = useGameStore(s => s.turn.year);
+    const round = useGameStoreScreen(s => s.turn.index);
+    const maxRounds = useGameStoreScreen(s => s.gameMeta.maxRounds);
+    const year = useGameStoreScreen(s => s.turn.year);
 
     // 显示轮数 = max_turns - 2（排除 intro 和最后测试轮）
     const displayTotalRounds = maxRounds > 2 ? maxRounds - 2 : maxRounds;
