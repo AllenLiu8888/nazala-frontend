@@ -49,11 +49,14 @@ const GameIntro = () => {
         };
     }, [gameId]);
 
-    // 监听 turn index 变化，自动跳转到 dashboard
+    // 监听 turn index 变化，自动跳转到对应页面
     useEffect(() => {
-        if (turnIndex >= 1) {
-            console.log(`🎯 检测到 turn index 变化: ${turnIndex}，跳转到 Dashboard`);
+        if (turnIndex >= 1 && turnIndex <= 10) {
+            console.log(`🎯 Turn index = ${turnIndex}，跳转到 Dashboard`);
             navigate(`/game/${gameId}/game`);
+        } else if (turnIndex === 11) {
+            console.log(`🎯 Turn index = 11，跳转到 Reflection`);
+            navigate(`/game/${gameId}/reflection`);
         }
     }, [turnIndex, gameId, navigate]);
 

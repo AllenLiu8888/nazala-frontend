@@ -4,7 +4,7 @@ import { GAME_STATUS } from '../constants/constants';
 export const CONFIG = {
   TURN_DURATION_MS: 10000,     // 回合倒计时时长：10秒
   POLLING_INTERVAL_MS: 2000,    // 轮询间隔：2秒
-  LAST_TURN_INDEX: 10,          // 最后一轮的索引（第11轮）
+  LAST_TURN_INDEX: 11,          // 最后一轮的索引（第12轮，即 Reflection）
   MAX_TURN_INDEX: 11,           // 最大回合索引（0-11共12轮）
 };
 

@@ -53,6 +53,8 @@ const GameLobby = () => {
         }
 
         // ongoing + turnsCount > 0 → 跳转到 dashboard
+        // 注意：不在这里判断 turnIndex，因为 Lobby 阶段还没有 turn 数据
+        // turnIndex 的判断交给 GameIntro 和 GameDashboard 处理
         if (gameState === 'ongoing' && turnsCount > 0) {
             navigate(`/game/${gameId}/game`);
             return;

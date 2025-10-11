@@ -6,6 +6,7 @@ import HomePage from './pages/screen/HomePage'; // 游戏首页
 import GameIntro from './pages/screen/GameIntro'; // 游戏介绍
 import GameLobby from './pages/screen/GameLobby'; // 游戏大厅
 import GameDashboard from './pages/screen/GameDashboard'; // 游戏主界面 (Dashboard)
+import GameReflection from './pages/screen/GameReflection'; // 反思页面
 import GameOver from './pages/screen/GameOver'; // 游戏结束页
 
 // 手机端页面组件 - 玩家扫码后使用
@@ -43,12 +44,7 @@ export const router = createBrowserRouter([
           { path: "lobby", element: <GameLobby /> },
           { path: "intro", element: <GameIntro /> },
           { path: "game", element: <GameDashboard /> },
-          { path: "gameover", element: <GameOver /> },
-          // 手机端页面
-          // 大屏入口
-          { path: "lobby", element: <GameLobby /> },
-          { path: "intro", element: <GameIntro /> },
-          { path: "game", element: <GameDashboard /> },
+          { path: "reflection", element: <GameReflection /> },
           { path: "gameover", element: <GameOver /> },
           // 手机端页面
           { path: "waiting", element: <WaitingPage /> },
@@ -58,7 +54,7 @@ export const router = createBrowserRouter([
           // 默认进入等待页面
           {
             index: true,
-              element: <Navigate to="waiting" replace />,
+            element: <Navigate to="waiting" replace />,
           },
         ]
       }

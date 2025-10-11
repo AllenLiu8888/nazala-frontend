@@ -12,6 +12,7 @@ export default function Game() {
     const { gameId } = useParams();
     const navigate = useNavigate();
     const gameState = useGameStoreScreen(s => s.gameMeta.state);
+    const turnIndex = useGameStoreScreen(s => s.turn.index);
 
     // 组件挂载时启动轮询，卸载时停止
     useEffect(() => {
@@ -23,12 +24,20 @@ export default function Game() {
         };
     }, [gameId]);
 
-    // 监听游戏状态，finished/archived 时自动跳转到 gameover
+    // 监听 turn index 和游戏状态变化，自动跳转
     useEffect(() => {
+        // Turn 11 时跳转到 Reflection 页面
+        if (turnIndex === 11) {
+            console.log('🎯 Turn index = 11，跳转到 Reflection');
+            navigate(`/game/${gameId}/reflection`);
+            return;
+        }
+        
+        // 游戏结束时跳转到 GameOver
         if (gameState === 'finished' || gameState === 'archived') {
             navigate(`/game/${gameId}/gameover`);
         }
-    }, [gameState, gameId, navigate]);
+    }, [gameState, turnIndex, gameId, navigate]);
 
     return (
         <div className="h-full w-full flex flex-col">
