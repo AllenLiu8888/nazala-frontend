@@ -45,8 +45,6 @@ export const useGameStoreScreen = create((set, get) => ({
     attrs: [],
     total_players: 0,
     total_choices: 0,
-    timeLeft: null, // 倒计时剩余秒数（前端计算）
-    turnEndsAt: null, // 回合结束时间戳（从后端获取，如果后端提供的话）
   },
 
   // 玩家状态汇总
@@ -58,7 +56,6 @@ export const useGameStoreScreen = create((set, get) => ({
   },
 
   // 世界/可视化所需数据
-  // 如需展示雷达图与叙事，可在 fetchGameDetail/fetchCurrentTurn 后续扩展写入
   world: {
     // 雷达图数据（按固定顺序聚合 $Attributes 平均值）
     categories: ['Memory Equality', 'Technical Control', 'Society Cohesion', 'Autonomy Control'],
@@ -81,8 +78,9 @@ export const useGameStoreScreen = create((set, get) => ({
   },
 
   // 轮询句柄（内部使用）
-  // 用于确保全局只存在一个 setInterval，便于 stopPolling 清理
-  _pollerId: null,
+  _lobbyPollerId: null,
+  _introPollerId: null,
+  _dashboardPollerId: null,
 
   // setters（便于逐步接线时手动注入/测试）
   // 仅进行“局部合并更新”（partial），避免整对象被覆盖
@@ -151,21 +149,9 @@ export const useGameStoreScreen = create((set, get) => ({
     try {
       const data = await gameApi.getCurrentTurn(gameId, token);
       const turn = data?.turn ?? data;
-      
-      console.info('[Store] 📊 获取到回合数据:', {
-        hasData: !!data,
-        hasTurn: !!turn,
-        turnKeys: turn ? Object.keys(turn) : [],
-        questionText: turn?.question_text,
-        optionsCount: turn?.options?.length || 0,
-        turnIndex: turn?.index,
-        currentTurnEndsAt: turn?.turnEndsAt,
-        oldTurnEndsAt: get().turn.turnEndsAt
-      });
-      
+    
       // 检查回合数据是否有效
       if (!turn || typeof turn.index !== 'number') {
-        console.warn('[Store] ⚠️ 回合数据无效:', turn);
         return null;
       }
 
@@ -229,34 +215,6 @@ export const useGameStoreScreen = create((set, get) => ({
             attrs: Array.isArray(turnLevelAttrs) ? turnLevelAttrs : state.turn.attrs,
             total_players: typeof turn?.total_players === 'number' ? turn.total_players : state.turn.total_players,
             total_choices: typeof turn?.total_choices === 'number' ? turn.total_choices : state.turn.total_choices,
-            // 新回合时将结束时间设为 5 秒后，或者如果当前时间已过期也重新设置
-            turnEndsAt: (() => {
-              const newIndex = typeof turn?.index === 'number' ? turn.index : null;
-              const oldIndex = state.turn.index;
-              const isNewTurn = newIndex !== null && newIndex !== oldIndex;
-              const isExpired = state.turn.turnEndsAt && new Date(state.turn.turnEndsAt) <= new Date();
-              const hasNoTime = !state.turn.turnEndsAt;
-              
-              console.info('[Store] 🕐 时间设置逻辑:', {
-                newIndex,
-                oldIndex,
-                isNewTurn,
-                isExpired,
-                hasNoTime,
-                currentTime: new Date().toISOString(),
-                oldTurnEndsAt: state.turn.turnEndsAt
-              });
-              
-              // 修复：当时间过期时，无论是否是新回合都要重置时间
-              if (isNewTurn || isExpired || hasNoTime) {
-                const newTime = new Date(Date.now() + CONFIG.TURN_DURATION_MS).toISOString();
-                console.info('[Store] ⏰ 设置新的结束时间:', newTime);
-                return newTime;
-              }
-              
-              console.info('[Store] ⏰ 保持原有时间:', state.turn.turnEndsAt);
-              return state.turn.turnEndsAt;
-            })(),
           },
           players: {
             ...state.players,
@@ -292,68 +250,10 @@ export const useGameStoreScreen = create((set, get) => ({
     }
   },
 
-  // 启动轮询：每 2s 并行拉取 detail + currentTurn（不断线）
-  // 目的：让大屏实时反映玩家加入/投票/回合推进；失败写 ui.error 但不停止
-  // 策略：Promise.allSettled 并行请求；用 _pollerId 确保仅一个 interval；卸载时 stopPolling 清理
-  startPolling: async (providedGameId = null) => {
-    // 已存在轮询则跳过
-    const existing = get()._pollerId;
-    if (existing) return;
-
-    let gameId;
-    try {
-      gameId = await getGameId(get, providedGameId, true);
-    } catch {
-      // 无法获取 gameId，终止轮询
-      return;
-    }
-
-    // 立即拉一次，失败也不阻塞
-    await Promise.allSettled([
-      get().fetchGameDetail(gameId),
-      // 只有在非 waiting 状态时才请求 turn
-      get().gameMeta.state !== 'waiting' ? get().fetchCurrentTurn(gameId) : Promise.resolve(),
-    ]);
-
-    const id = setInterval(async () => {
-      const gid = get().gameMeta.id;
-      if (!gid) return;
-      
-      // 检查游戏状态，只有在非 waiting 状态时才请求 turn
-      const gameState = get().gameMeta.state;
-      
-      // 如果游戏状态是 waiting，只请求 gameDetail
-      if (gameState === 'waiting') {
-        await Promise.allSettled([
-          get().fetchGameDetail(gid),
-        ]);
-        return;
-      }
-      
-      // 非 waiting 状态：检查当前倒计时状态
-      const { turn } = get();
-      const timeLeft = get().calculateTimeLeft();
-      
-      // 如果倒计时已过期，优先处理倒计时结束逻辑
-      if (timeLeft === 0 && turn?.turnEndsAt) {
-        console.info('[Store] 🔄 轮询检测到倒计时过期，触发处理...');
-        await get().handleCountdownEnd();
-      }
-      
-      // 正常轮询获取数据（包括 turn）
-      await Promise.allSettled([
-        get().fetchGameDetail(gid),
-        get().fetchCurrentTurn(gid),
-      ]);
-    }, CONFIG.POLLING_INTERVAL_MS);
-
-    set(() => ({ _pollerId: id }));
-  },
-
   // Lobby 专用轮询：仅拉取 gameDetail（不请求 turn）
   startPollingForLobby: async (providedGameId = null) => {
     // 已存在轮询则跳过
-    const existing = get()._pollerId;
+    const existing = get()._lobbyPollerId;
     if (existing) return;
 
     let gameId;
@@ -374,15 +274,16 @@ export const useGameStoreScreen = create((set, get) => ({
       await Promise.allSettled([
         get().fetchGameDetail(gid),
       ]);
+      console.log("Lobby fetchGameDetail");
     }, CONFIG.POLLING_INTERVAL_MS);
 
-    set(() => ({ _pollerId: id }));
+    set(() => ({ _lobbyPollerId: id }));
   },
 
-  // Intro 专用轮询：始终并行拉取 detail + currentTurn，并处理倒计时结束
+  // Intro 专用轮询：仅拉取 currentTurn, 供外部调用方获知当前 turn 是否全部玩家已提交,
   startPollingForIntro: async (providedGameId = null) => {
     // 已存在轮询则跳过
-    const existing = get()._pollerId;
+    const existing = get()._introPollerId;
     if (existing) return;
 
     let gameId;
@@ -394,7 +295,6 @@ export const useGameStoreScreen = create((set, get) => ({
 
     // 立即拉一次，失败也不阻塞
     await Promise.allSettled([
-      get().fetchGameDetail(gameId),
       get().fetchCurrentTurn(gameId),
     ]);
 
@@ -402,26 +302,19 @@ export const useGameStoreScreen = create((set, get) => ({
       const gid = get().gameMeta.id;
       if (!gid) return;
 
-      // 倒计时检测
-      const { turn } = get();
-      const timeLeft = get().calculateTimeLeft();
-      if (timeLeft === 0 && turn?.turnEndsAt) {
-        await get().handleCountdownEnd();
-      }
-
       await Promise.allSettled([
-        get().fetchGameDetail(gid),
         get().fetchCurrentTurn(gid),
       ]);
+      console.log("Intro fetchCurrentTurn");
     }, CONFIG.POLLING_INTERVAL_MS);
 
-    set(() => ({ _pollerId: id }));
+    set(() => ({ _introPollerId: id }));
   },
 
-  // Dashboard 专用轮询：与通用一致，等待态仅取 detail；其余 detail+turn，并处理倒计时结束
+  // Dashboard 专用轮询：仅拉取 currentTurn, 供外部调用方获知当前 turn 是否全部玩家已提交,
   startPollingForDashboard: async (providedGameId = null) => {
     // 已存在轮询则跳过
-    const existing = get()._pollerId;
+    const existing = get()._dashboardPollerId;
     if (existing) return;
 
     let gameId;
@@ -433,44 +326,45 @@ export const useGameStoreScreen = create((set, get) => ({
 
     // 立即拉一次，失败也不阻塞
     await Promise.allSettled([
-      get().fetchGameDetail(gameId),
-      get().gameMeta.state !== 'waiting' ? get().fetchCurrentTurn(gameId) : Promise.resolve(),
+      get().fetchCurrentTurn(gameId),
     ]);
 
     const id = setInterval(async () => {
       const gid = get().gameMeta.id;
       if (!gid) return;
 
-      const gameState = get().gameMeta.state;
-      if (gameState === 'waiting') {
-        await Promise.allSettled([
-          get().fetchGameDetail(gid),
-        ]);
-        return;
-      }
-
-      const { turn } = get();
-      const timeLeft = get().calculateTimeLeft();
-      if (timeLeft === 0 && turn?.turnEndsAt) {
-        await get().handleCountdownEnd();
-      }
-
       await Promise.allSettled([
-        get().fetchGameDetail(gid),
         get().fetchCurrentTurn(gid),
       ]);
+      console.log("Dashboard fetchCurrentTurn");
     }, CONFIG.POLLING_INTERVAL_MS);
 
-    set(() => ({ _pollerId: id }));
+    set(() => ({ _dashboardPollerId: id }));
   },
 
   // 停止轮询
   // 清理 setInterval，避免内存泄漏与重复请求
-  stopPolling: () => {
-    const id = get()._pollerId;
+  stopLobbyPolling: () => {
+    const id = get()._lobbyPollerId;
     if (id) {
       clearInterval(id);
-      set(() => ({ _pollerId: null }));
+      set(() => ({ _lobbyPollerId: null }));
+    }
+  },
+
+  stopIntroPolling: () => {
+    const id = get()._introPollerId;
+    if (id) {
+      clearInterval(id);
+      set(() => ({ _introPollerId: null }));
+    }
+  },
+
+  stopDashboardPolling: () => {
+    const id = get()._dashboardPollerId;
+    if (id) {
+      clearInterval(id);
+      set(() => ({ _dashboardPollerId: null }));
     }
   },
 
@@ -480,12 +374,7 @@ export const useGameStoreScreen = create((set, get) => ({
   startGame: async (maybeGameId = null, token = null) => {
     try {
       const gameId = await getGameId(get, maybeGameId);
-
-      console.info('[Store] 📡 调用 startGame API...', { gameId });
       await gameApi.startGame(gameId, token);
-      console.info('[Store] ✅ startGame API 调用成功');
-
-      const oldState = get().gameMeta.state;
       set((state) => ({
         gameMeta: {
           ...state.gameMeta,
@@ -494,18 +383,102 @@ export const useGameStoreScreen = create((set, get) => ({
           startedAt: state.gameMeta.startedAt || new Date().toISOString(),
         },
       }));
-
-      console.info('[Store] ✅ 游戏状态已更新！', {
-        旧状态: oldState,
-        新状态: 'ongoing',
-        开始时间: get().gameMeta.startedAt
-      });
       return true;
     } catch (err) {
       console.error('[Store] ❌ 开始游戏失败:', err);
       set((state) => ({ ui: { ...state.ui, error: err?.message || '开始游戏失败' } }));
       return false;
     }
+  },
+
+  // 初始化/开启当前回合（主持/管理员动作）
+  initCurrentTurn: async (token = null) => {
+    try {
+      const gameId = await getGameId(get);
+
+      // 检查游戏状态
+      const gameState = get().gameMeta.state;
+      const gameStatusCode = get().gameMeta.statusCode;
+      
+      if (gameState !== 'ongoing' && gameStatusCode !== 1) {
+        throw new Error(`游戏状态不正确，无法创建回合。当前状态: ${gameState} (${gameStatusCode})`);
+      }
+      
+      console.info('[Store] 📡 调用 initTurn API...', { gameId, hasToken: !!token });
+      try {
+        const initResult = await gameApi.initTurn(gameId, token);
+        console.info('[Store] ✅ initTurn API 调用成功:', initResult);
+      } catch (initErr) {
+        // 如果是"回合已存在"错误，说明回合已经存在，直接尝试获取
+        if (initErr.message.includes('Current turn already exists')) {
+          console.info('[Store] ℹ️ 回合已存在，直接获取回合数据...');
+        } else {
+          // 其他错误才抛出
+          throw initErr;
+        }
+      }
+
+      // 刷新当前回合
+      const turnResult = await get().fetchCurrentTurn(gameId, token);
+      
+      // 检查回合数据是否有效
+      if (!turnResult || typeof turnResult.index !== 'number') {
+        throw new Error('获取回合数据失败或数据无效');
+      }
+      
+      return true;
+    } catch (err) {
+      console.error('[Store] ❌ 初始化回合失败:', err);
+      console.error('[Store] ❌ 错误详情:', {
+        message: err.message,
+        status: err.status,
+        code: err.code
+      });
+      set((state) => ({ ui: { ...state.ui, error: err?.message || '初始化回合失败' } }));
+      return false;
+    }
+  },
+
+  // 提交/结束当前回合（主持/管理员动作）
+  submitCurrentTurn: async (token = null) => {
+    console.info('[Store] 📤 开始提交当前回合...', { hasToken: !!token });
+    try {
+      const gameId = await getGameId(get);
+      await gameApi.submitTurn(gameId, token);
+      // 成功后刷新当前回合
+      await get().fetchCurrentTurn(gameId, token);
+      return true;
+    } catch (err) {
+      console.error('[Store] ❌ 提交回合失败:', err);
+      set((state) => ({ ui: { ...state.ui, error: err?.message || '提交回合失败' } }));
+      return false;
+    }
+  },
+
+  finishGame: async () => {
+    let gameId;
+    try {
+      gameId = await getGameId(get, null, true);
+    } catch {
+      return;
+    }
+
+    // 调用后端 API 将游戏状态设为 finished
+    try {
+      await gameApi.finishGame(gameId, null);
+    } catch (err) {
+      console.error('[Store] ❌ 调用 finishGame API 失败:', err);
+    }
+    
+    // 更新前端状态
+    set((state) => ({
+      gameMeta: {
+        ...state.gameMeta,
+        state: 'finished',
+        statusCode: 10,
+        endedAt: new Date().toISOString(),
+      }
+    }));
   },
 
   // 归档游戏：调用后端并将前端状态置为 archived
@@ -533,195 +506,6 @@ export const useGameStoreScreen = create((set, get) => ({
     }
   },
 
-  // 初始化/开启当前回合（主持/管理员动作）
-  initCurrentTurn: async (token = null) => {
-    console.info('[Store] 🎯 开始初始化当前回合...', { hasToken: !!token });
-    try {
-      const gameId = await getGameId(get);
-
-      // 检查游戏状态
-      const gameState = get().gameMeta.state;
-      const gameStatusCode = get().gameMeta.statusCode;
-      console.info('[Store] 🎮 当前游戏状态:', { state: gameState, statusCode: gameStatusCode });
-      
-      if (gameState !== 'ongoing' && gameStatusCode !== 1) {
-        throw new Error(`游戏状态不正确，无法创建回合。当前状态: ${gameState} (${gameStatusCode})`);
-      }
-      
-      console.info('[Store] 📡 调用 initTurn API...', { gameId, hasToken: !!token });
-      try {
-        const initResult = await gameApi.initTurn(gameId, token);
-        console.info('[Store] ✅ initTurn API 调用成功:', initResult);
-      } catch (initErr) {
-        // 如果是"回合已存在"错误，说明回合已经存在，直接尝试获取
-        if (initErr.message.includes('Current turn already exists')) {
-          console.info('[Store] ℹ️ 回合已存在，直接获取回合数据...');
-        } else {
-          // 其他错误才抛出
-          throw initErr;
-        }
-      }
-
-      // 刷新当前回合
-      console.info('[Store] 🔄 刷新当前回合数据...');
-      const turnResult = await get().fetchCurrentTurn(gameId, token);
-      console.info('[Store] ✅ 当前回合数据已刷新:', turnResult);
-      
-      // 检查回合数据是否有效
-      if (!turnResult || typeof turnResult.index !== 'number') {
-        throw new Error('获取回合数据失败或数据无效');
-      }
-      
-      return true;
-    } catch (err) {
-      console.error('[Store] ❌ 初始化回合失败:', err);
-      console.error('[Store] ❌ 错误详情:', {
-        message: err.message,
-        status: err.status,
-        code: err.code
-      });
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '初始化回合失败' } }));
-      return false;
-    }
-  },
-
-  // 提交/结束当前回合（主持/管理员动作）
-  submitCurrentTurn: async (token = null) => {
-    console.info('[Store] 📤 开始提交当前回合...', { hasToken: !!token });
-    try {
-      const gameId = await getGameId(get);
-
-      console.info('[Store] 📡 调用 submitTurn API...', { gameId });
-      await gameApi.submitTurn(gameId, token);
-      console.info('[Store] ✅ submitTurn API 调用成功');
-
-      // 成功后刷新当前回合
-      console.info('[Store] 🔄 刷新当前回合数据...');
-      await get().fetchCurrentTurn(gameId, token);
-      console.info('[Store] ✅ 当前回合数据已刷新');
-      return true;
-    } catch (err) {
-      console.error('[Store] ❌ 提交回合失败:', err);
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '提交回合失败' } }));
-      return false;
-    }
-  },
-
-  // 智能进入下一回合：根据当前状态自动选择 initCurrentTurn 或 submitCurrentTurn
-  // 策略：
-  // - 如果 turnsCount = 0：使用 initCurrentTurn（创建第一个回合）
-  // - 如果 turnsCount > 0：使用 submitCurrentTurn（进入下一回合）
-  // 用途：统一的"进入下一回合"接口，适用于 Intro 和 Dashboard
-  advanceTurn: async (maybeGameId = null, token = null) => {
-    try {
-      const gameId = await getGameId(get, maybeGameId, false);
-
-      // 先刷新一次游戏数据，确保 turnsCount 是最新的
-      await get().fetchGameDetail(gameId);
-      
-      const turnsCount = get().gameMeta.turnsCount;
-      const gameState = get().gameMeta.state;
-
-      console.log(`[Store] 当前游戏状态: state=${gameState}, turnsCount=${turnsCount}`);
-
-      // 根据 turnsCount 决定调用哪个 API
-      if (turnsCount === 0) {
-        // 没有回合 → 初始化第一个回合
-        console.log('[Store] 当前没有回合 (turnsCount=0)，调用 initCurrentTurn 创建第一个回合');
-        return await get().initCurrentTurn(token);
-      } else {
-        // 已有回合 → 提交当前回合，进入下一回合
-        console.log(`[Store] 已有 ${turnsCount} 个回合，调用 submitCurrentTurn 进入下一回合`);
-        return await get().submitCurrentTurn(token);
-      }
-    } catch (err) {
-      console.error('[Store] advanceTurn 失败:', err);
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '进入下一回合失败' } }));
-      return false;
-    }
-  },
-
-  // 倒计时结束：无论投票状态如何，都提交回合
-  // 当回合索引为 10（第 11 轮，最后一轮）时，将游戏状态设为 finished
-  handleCountdownEnd: async (token = null) => {
-    console.info('[Store] ⏰ 倒计时结束');
-    try {
-      // 刷新一次最新回合
-      let gameId;
-      try {
-        gameId = await getGameId(get, null, true);
-      } catch {
-        return false;
-      }
-
-      const turn = await get().fetchCurrentTurn(gameId, token);
-      if (!turn) {
-        console.warn('[Store] ⚠️ 回合不存在，跳过倒计时处理');
-        return false;
-      }
-
-      const currentIndex = turn?.index || 0;
-      console.info(`[Store] 当前回合索引: ${currentIndex}`);
-
-      // 如果是第 11 轮（index = 10），倒计时结束后将游戏状态设为 finished
-      if (currentIndex === CONFIG.LAST_TURN_INDEX) {
-        console.info('[Store] 🏁 最后一轮倒计时结束，将游戏状态设为 finished');
-        
-        // 先提交当前回合
-        const submitSuccess = await get().submitCurrentTurn(token);
-        
-        if (submitSuccess) {
-          // 调用后端 API 将游戏状态设为 finished
-          try {
-            await gameApi.finishGame(gameId, token);
-            console.info('[Store] ✅ 游戏已标记为 finished');
-          } catch (err) {
-            console.error('[Store] ❌ 调用 finishGame API 失败:', err);
-          }
-          
-          // 更新前端状态
-          set((state) => ({
-            gameMeta: {
-              ...state.gameMeta,
-              state: 'finished',
-              statusCode: 10,
-              endedAt: new Date().toISOString(),
-            }
-          }));
-        }
-        
-        return submitSuccess;
-      }
-
-      // 限制只处理12个回合 (0-11)
-      if (currentIndex > CONFIG.MAX_TURN_INDEX) {
-        console.info('[Store] ⏹️ 游戏结束，已超过12个回合', currentIndex);
-        return false;
-      }
-      
-      // 倒计时结束，直接提交回合（不检查是否所有玩家都已投票）
-      console.info('[Store] ⏰ 倒计时结束，提交当前回合');
-      return await get().submitCurrentTurn(token);
-    } catch (err) {
-      console.error('[Store] ❌ 倒计时处理失败:', err);
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '倒计时处理失败' } }));
-      return false;
-    }
-  },
-
-  // 计算剩余时间（基于 turnEndsAt）
-  calculateTimeLeft: () => {
-    const { turn } = get();
-    
-    if (turn.turnEndsAt) {
-      const now = Date.now();
-      const endsAt = new Date(turn.turnEndsAt).getTime();
-      const remaining = Math.max(0, Math.floor((endsAt - now) / 1000));
-      return remaining;
-    }
-    
-    return 0;
-  },
 }));
 
 export default useGameStoreScreen;

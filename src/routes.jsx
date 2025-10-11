@@ -15,9 +15,6 @@ import WaitingPage from './pages/mobile/WaitingPage'; // 等待页面
 import TimelinePage from './pages/mobile/Timeline'; // 玩家查看时间线的页面
 import PersonalSummary from './pages/mobile/PersonalSummary'; // 个人总结页面
 
-// 管理员页面组件
-import AdminDashboard from './pages/admin/AdminDashboard'; // 管理员仪表板
-
 // 创建简化的路由配置
 import App from './App.jsx';  // 导入 App 组件
 
@@ -33,10 +30,6 @@ export const router = createBrowserRouter([
       },
       // 将 screen 与 mobile 合并到同一前缀：/game/:gameId
       // 将 screen 与 mobile 合并到同一前缀：/game/:gameId
-      {
-        path: "admin",
-        element: <AdminDashboard />
-      },
       {
         path: "game/:gameId",
         children: [
