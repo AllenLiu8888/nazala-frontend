@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import QRCode from '../../components/shared/QRCode';
 import useGameStoreScreen from '../../store/index_screen';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -10,6 +10,9 @@ const GameLobby = () => {
     const { gameId } = useParams();
     const gameState = useGameStoreScreen(s => s.gameMeta.state);
     const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
+
+    // 使用 ref 防止 StrictMode 导致的重复调用
+    const hasInitialized = useRef(false);
 
     // 开始游戏：只在 waiting 状态下调用后端 API，并跳转到 intro
     const onStartGame = async () => {
@@ -24,16 +27,19 @@ const GameLobby = () => {
 
     // 启动轮询 + 自动跳转逻辑
     useEffect(() => {
-        const { startPollingForLobby, stopPolling, fetchGameDetail } = useGameStoreScreen.getState();
-        
-        // 立即获取一次游戏数据
-        if (gameId) {
-            fetchGameDetail(gameId);
+        const { stopLobbyPolling } = useGameStoreScreen.getState();
+
+        // 防止 React StrictMode 导致的重复初始化
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            const { startPollingForLobby } = useGameStoreScreen.getState();
+            startPollingForLobby(gameId);
         }
-        
-        // 启动轮询
-        startPollingForLobby(gameId);
-        return () => stopPolling();
+
+        // 总是返回 cleanup，确保组件卸载时能清理轮询
+        return () => {
+            stopLobbyPolling();
+        }
     }, [gameId]);
 
     // 根据 game state 和 turns_count 自动跳转

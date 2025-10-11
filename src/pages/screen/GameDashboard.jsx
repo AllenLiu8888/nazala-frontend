@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import WorldStatus from '../../components/dashboard/header/WorldStatus';
 import Round from '../../components/dashboard/header/Round';
@@ -7,22 +7,48 @@ import DecisionProgress from '../../components/dashboard/footer/DecisionProgress
 import StorySection from '../../components/dashboard/main/StorySection';
 import Visualisation from '../../components/dashboard/main/Visualisation';
 import useGameStoreScreen from '../../store/index_screen';
+import { CONFIG } from '../../store/common_tools';
+
 
 export default function Game() {
     const { gameId } = useParams();
     const navigate = useNavigate();
     const gameState = useGameStoreScreen(s => s.gameMeta.state);
+
+    // 从 store 读取数据
+    const playersTotal = useGameStoreScreen(s => s.players.total);
+    const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
 
-    // 组件挂载时启动轮询，卸载时停止
+    // 使用 ref 防止 StrictMode 导致的重复调用
+    const hasInitialized = useRef(false);
+
+    // 页面渲染后启动轮询, 目的是持续更新「当前turn的已投票玩家数 playersVoted」
     useEffect(() => {
-        if (gameId) {
-            useGameStoreScreen.getState().startPollingForDashboard(gameId);
+        const { stopDashboardPolling } = useGameStoreScreen.getState();
+
+        // 防止 React StrictMode 导致的重复初始化
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            useGameStoreScreen.getState().startPollingForDashboard();
         }
+
+        // 总是返回 cleanup，确保组件卸载时能清理轮询
         return () => {
-            useGameStoreScreen.getState().stopPolling();
+            stopDashboardPolling();
         };
-    }, [gameId]);
+    }, []);
+
+    // 监听 playersVoted, 以获取「当前turn的已投票玩家数 playersVoted」, 以实现「当全部玩家已投票完毕时, 执行submit turn」
+    useEffect(() => {
+        if (playersVoted == playersTotal && playersTotal > 0) {
+            useGameStoreScreen.getState().submitCurrentTurn();
+            if (turnIndex == CONFIG.LAST_TURN_INDEX) {
+                // 最后一轮提交完毕后, 执行 finish game
+                useGameStoreScreen.getState().finishGame();
+            }
+        }
+    }, [playersVoted]);
 
     // 监听 turn index 和游戏状态变化，自动跳转
     useEffect(() => {
@@ -37,7 +63,7 @@ export default function Game() {
         if (gameState === 'finished' || gameState === 'archived') {
             navigate(`/game/${gameId}/gameover`);
         }
-    }, [gameState, turnIndex, gameId, navigate]);
+    }, [gameState]);
 
     return (
         <div className="h-full w-full flex flex-col">

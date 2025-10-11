@@ -45,8 +45,6 @@ export const http = {
         };
 
     try {
-        console.log(`🌐 API request: ${config.method || 'GET'} ${url}`);
-        
         const response = await fetch(url, config);
         
         if (!response.ok) {
@@ -79,8 +77,6 @@ export const http = {
         if (data.status === false) {
             throw new APIError(data.error || 'Business logic error', 400, 'BUSINESS_ERROR');
         }
-
-        console.log(`✅ API response:`, data);
         return data.data; // 直接返回 data 部分
 
     } catch (error) {

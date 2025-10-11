@@ -58,21 +58,17 @@ export const getGameId = async (get, providedId = null, shouldFetch = true) => {
   let gameId = providedId || get().gameMeta.id;
 
   if (!gameId && shouldFetch) {
-    console.info('[Store] 🔍 未找到 gameId，尝试获取当前游戏...');
     try {
       const current = await get().fetchCurrentGame();
       gameId = current?.id || get().gameMeta.id;
-      console.info('[Store] 📋 获取到 gameId:', gameId);
     } catch (err) {
       console.warn('[Store] ⚠️ 获取当前游戏失败:', err.message);
       gameId = get().gameMeta.id;
     }
   }
-
   if (!gameId) {
     throw new Error('未获取到 gameId');
   }
-
   return gameId;
 };
 

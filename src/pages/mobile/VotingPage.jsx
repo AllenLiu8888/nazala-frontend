@@ -14,7 +14,7 @@ const VotingPage = () => {
   const turn = useGameStoreMobile(s => s.turn);
   const isGameArchived = useGameStoreMobile(s => s.gameMeta.state === 'archived');
   const isGameFinished = useGameStoreMobile(s => s.gameMeta.state === 'finished');
-  const startPolling = useGameStoreMobile(s => s.startPolling);
+  const startPollingForVote = useGameStoreMobile(s => s.startPollingForVote);
   const stopPolling = useGameStoreMobile(s => s.stopPolling);
   
   // 本地状态
@@ -27,11 +27,11 @@ const VotingPage = () => {
   const currentTurnIndexRef = useRef(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  // 1. 页面加载时初始化游戏
+  const hasInitialized = useRef(false);
+
   useEffect(() => {
     const loadPage = async () => {
       try {
-        console.info('[VotingPage] 🚀 开始加载页面...');
         setIsInitializing(true);
         setInitError(null);
         setHasSubmitted(false);
@@ -41,7 +41,6 @@ const VotingPage = () => {
         const {
           fetchGameDetail,
           fetchCurrentTurn,
-          joinGame,
           gameMeta: { id },
         } = useGameStoreMobile.getState();
 
@@ -53,6 +52,7 @@ const VotingPage = () => {
         }
         // 获取token
         const token = localStorage.getItem('authToken');
+
 
         // 获取游戏详情和当前回合
         console.info('[VotingPage] 🔄 获取游戏数据...');
@@ -73,6 +73,7 @@ const VotingPage = () => {
           console.warn('[VotingPage] ⚠️ 回合数据无效');
         }
 
+
         console.info('[VotingPage] ✅ 页面加载完成');
         setIsInitializing(false);
       } catch (error) {
@@ -81,23 +82,27 @@ const VotingPage = () => {
         setIsInitializing(false);
       }
     };
-
-    loadPage();
+    
+    if (!hasInitialized.current) {
+      hasInitialized.current = true;
+      loadPage();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameIdParam]);
   
   // 2. 启动轮询（只在用户提交选择后）
   useEffect(() => {
     if (!isInitializing && !initError && hasSubmitted) {
-      console.info('[VotingPage] 🔄 用户已提交，启动轮询机制...');
-      startPolling();
+      console.info('[VotingPage] 🔄 启动轮询机制...');
+      startPollingForVote();
       return () => {
         console.info('[VotingPage] ⏹️ 停止轮询机制...');
         stopPolling();
       };
     }
-  }, [isInitializing, initError, hasSubmitted, startPolling, stopPolling]);
+  }, [isInitializing, initError, hasSubmitted, startPollingForVote, stopPolling]);
 
-  // 3. 检测turn_index变化，如果已提交且turn_index变化则重新加载页面
+  // 3. 检测turn_index变化，重置组件状态以进入新回合
   useEffect(() => {
     const currentTurnIndex = turn?.index;
     
@@ -109,32 +114,32 @@ const VotingPage = () => {
       console.info('[VotingPage] 🔄 检测到turn_index变化:', 
         currentTurnIndexRef.current, '→', currentTurnIndex);
       
-      // 如果用户已经提交过选择，则重新加载页面
+      // 如果用户已经提交过选择，则重置组件状态进入新回合
       if (hasSubmitted) {
-        console.info('[VotingPage] 🔄 用户已提交，重新加载页面...');
-        // 重新加载页面
-        window.location.reload();
-        return;
+        console.info('[VotingPage] 🔄 用户已提交，重置组件状态进入新回合...');
+        
+        // 重置本地状态
+        setHasSubmitted(false);
+        setSelectedId(null);
+        setSubmitOk(false);
+        
+        // 停止轮询（将在用户下次提交后重新启动）
+        stopPolling();
       }
       
       // 更新记录的turn_index
       currentTurnIndexRef.current = currentTurnIndex;
     }
-  }, [turn?.index, hasSubmitted]);
+  }, [turn?.index, hasSubmitted, stopPolling]);
 
   // 5. 用户选择和提交逻辑
   const submitChoice = async (chosen) => {
-
-    console.info('[VotingPage] 🗳️ 用户选择选项:', chosen);
     setSelectedId(chosen);
-    
     try {
       const authToken = localStorage.getItem('authToken');
       const { submitPlayerChoice } = useGameStoreMobile.getState();
-      
       const success = await submitPlayerChoice(chosen, authToken);
       if (success) {
-        console.info('[VotingPage] ✅ 选项提交成功');
         setHasSubmitted(true);
         setSubmitOk(true);
         setTimeout(() => setSubmitOk(false), 1500);
