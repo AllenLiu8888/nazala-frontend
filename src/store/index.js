@@ -12,6 +12,7 @@ export const useGameStore = create((set, get) => ({
   // - state ← game.status（0 waiting / 1 ongoing / 10 finished / 20 archived）
   // - maxRounds ← game.max_turns；turnsCount ← game.turns_count；playersCount ← game.players_count
   // - joinToken/startedAt/endedAt 同名映射
+  // - startYear/endYear ← game.start_year / game.end_year
   gameMeta: {
     id: null,
     state: 'waiting', // waiting | ongoing | archived （由后端 status 数值映射）//状态
@@ -23,6 +24,8 @@ export const useGameStore = create((set, get) => ({
     joinToken: null,  // = join_token（如需要）
     startedAt: null,
     endedAt: null,
+    startYear: null,
+    endYear: null,
   },
 
   // 回合与阶段
@@ -31,16 +34,18 @@ export const useGameStore = create((set, get) => ({
   // - index ← turn.index（约定 0 为 intro）
   // - status ← turn.status（0 intro / 1 voting / 2 result）→ phase 文本
   // - questionText/options ← 对应字段（options 内含 attrs 影响值）
+  // - year/attrs ← turn.year / turn.attrs（优先用于世界态势图）
   turn: {
     id: null,
     gameId: null,
     index: 0, // 0 表示 intro，对应后端第 0 轮
     status: 0, // 0 表示 intro，1 表示 voting，2 表示 result
-    year: 2075, // 目前常量，如后端提供可替换
+    year: null,
     phase: 'intro', // intro | voting | result
     statusRaw: null, // 保留后端原始 status，目前只有0
     questionText: null,
     options: [],
+    attrs: [],
     total_players: 0,
     total_choices: 0,
     timeLeft: null, // 倒计时剩余秒数（前端计算）
@@ -135,6 +140,8 @@ export const useGameStore = create((set, get) => ({
           joinToken: game?.join_token ?? state.gameMeta.joinToken,
           startedAt: game?.started_at ?? state.gameMeta.startedAt,
           endedAt: game?.ended_at ?? state.gameMeta.endedAt,
+          startYear: game?.start_year ?? state.gameMeta.startYear,
+          endYear: game?.end_year ?? state.gameMeta.endYear,
           // totalRounds 以 max_turns 为主，退化到 turns_count
           totalRounds: (game?.max_turns ?? game?.turns_count ?? state.gameMeta.totalRounds),
         },
@@ -177,6 +184,8 @@ export const useGameStore = create((set, get) => ({
           joinToken: game?.join_token ?? state.gameMeta.joinToken,
           startedAt: game?.started_at ?? state.gameMeta.startedAt,
           endedAt: game?.ended_at ?? state.gameMeta.endedAt,
+          startYear: game?.start_year ?? state.gameMeta.startYear,
+          endYear: game?.end_year ?? state.gameMeta.endYear,
           totalRounds: (game?.max_turns ?? game?.turns_count ?? state.gameMeta.totalRounds),
         },
       }));
@@ -222,25 +231,51 @@ export const useGameStore = create((set, get) => ({
         }
       };
       set((state) => {
-        // 从所有选项聚合 $Attributes 平均值，用于可视化
+        // 优先使用 turn.attrs（若后端提供），否则从所有选项聚合 $Attributes 平均值用于可视化
         const attrOrder = state.world.categories || ['Memory Equality', 'Technical Control', 'Society Cohesion', 'Autonomy Control'];
-        const totals = Object.create(null);
-        const counts = Object.create(null);
-        if (Array.isArray(turn?.options)) {
-          for (const opt of turn.options) {
-            const attrs = Array.isArray(opt?.attrs) ? opt.attrs : [];
-            for (const a of attrs) {
-              if (!a || typeof a.value !== 'number' || !a.name) continue;
-              totals[a.name] = (totals[a.name] || 0) + a.value;
-              counts[a.name] = (counts[a.name] || 0) + 1;
+
+        // 规范化后端字段名到前端展示名
+        const normalizeAttrName = (raw) => {
+          switch (raw) {
+            case 'TechnologicalControl': return 'Technical Control';
+            case 'SocialCohesion': return 'Society Cohesion';
+            case 'MemoryEquity': return 'Memory Equality';
+            case 'PersonalAgency': return 'Autonomy Control';
+            default: return raw; // 兼容旧字段名（已与展示名一致）
+          }
+        };
+
+        const turnLevelAttrs = Array.isArray(turn?.attrs) ? turn.attrs : null;
+
+        const computeFromOptions = () => {
+          const totals = Object.create(null);
+          const counts = Object.create(null);
+          if (Array.isArray(turn?.options)) {
+            for (const opt of turn.options) {
+              const attrs = Array.isArray(opt?.attrs) ? opt.attrs : [];
+              for (const a of attrs) {
+                if (!a || typeof a.value !== 'number' || !a.name) continue;
+                const name = normalizeAttrName(a.name);
+                totals[name] = (totals[name] || 0) + a.value;
+                counts[name] = (counts[name] || 0) + 1;
+              }
             }
           }
-        }
-        const averaged = attrOrder.map((name) => {
-          if (counts[name]) return totals[name] / counts[name];
-          // 若后端数据缺失该维度，使用 0 填充
-          return 0;
-        });
+          return attrOrder.map((name) => (counts[name] ? totals[name] / counts[name] : 0));
+        };
+
+        const computeFromTurnAttrs = () => {
+          const nameToValue = Object.create(null);
+          for (const a of turnLevelAttrs) {
+            if (!a || typeof a.value !== 'number' || !a.name) continue;
+            const name = normalizeAttrName(a.name);
+            nameToValue[name] = a.value;
+          }
+          return attrOrder.map((name) => (typeof nameToValue[name] === 'number' ? nameToValue[name] : 0));
+        };
+
+        const radarValues = turnLevelAttrs ? computeFromTurnAttrs() : computeFromOptions();
+
         return ({
         turn: {
           ...state.turn,
@@ -248,11 +283,12 @@ export const useGameStore = create((set, get) => ({
           gameId: (turn?.game?.id ?? gameId ?? state.turn.gameId),
           index: typeof turn?.index === 'number' ? turn.index : state.turn.index,
           status: typeof turn?.status === 'number' ? turn.status : state.turn.status,
-          year: state.turn.year, // 如后端未来提供年份可替换
+          year: (typeof turn?.year === 'number' ? turn.year : state.turn.year),
           phase: toPhaseText(turn?.status),
           statusRaw: (turn?.status !== undefined ? turn.status : state.turn.statusRaw),
           questionText: turn?.question_text ?? state.turn.questionText,
           options: Array.isArray(turn?.options) ? turn.options : state.turn.options,
+          attrs: Array.isArray(turnLevelAttrs) ? turnLevelAttrs : state.turn.attrs,
           total_players: typeof turn?.total_players === 'number' ? turn.total_players : state.turn.total_players,
           total_choices: typeof turn?.total_choices === 'number' ? turn.total_choices : state.turn.total_choices,
           // 新回合时将结束时间设为 5 秒后，或者如果当前时间已过期也重新设置
@@ -293,7 +329,7 @@ export const useGameStore = create((set, get) => ({
           world: {
             ...state.world,
             categories: attrOrder,
-            radarData: averaged,
+            radarData: radarValues,
           },
         });
       });

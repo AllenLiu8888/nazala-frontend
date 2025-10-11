@@ -16,10 +16,15 @@ const Round = () => {
         return round + 1; // Turn 1-9 显示为 2-10
     };
 
+    // 优先使用后端提供的 turn.year；缺省时用 startYear + round 回退
+    const displayYear = (typeof year === 'number')
+        ? year
+        : '-'
+
     return (
         <div className="flex-1 flex gap-4 p-8">
             <h1 className="pixel-text">{getDisplayRound()} / {displayTotalRounds}</h1>
-            <h1 className="pixel-text">{year}</h1>
+            <h1 className="pixel-text">{displayYear}</h1>
         </div>
     );
 };

@@ -60,6 +60,8 @@ X-Auth-Token: <your_auth_token>
 GET /api/game/current/
 ```
 
+**说明：** 若最新的游戏为已归档（ARCHIVED）状态，将自动创建一个新的等待中（WAITING）游戏并返回。
+
 **响应示例：**
 ```json
 {
@@ -114,6 +116,16 @@ POST /api/game/{game_id}/start/
 }
 ```
 
+#### 完成游戏
+```http
+POST /api/game/{game_id}/finish/
+```
+
+**前置条件：**
+- 游戏状态为 ONGOING
+
+**说明：** 将游戏状态由进行中（ONGOING）切换为已完成（FINISHED）。通常在最后一个回合结束时触发。
+
 #### 归档游戏
 ```http
 POST /api/game/{game_id}/archive/
@@ -128,6 +140,8 @@ POST /api/game/{game_id}/archive/
 ```http
 GET /api/game/{game_id}/turn/current
 ```
+
+**说明：** 如果第一回合尚未创建，接口将返回 `status: false`。
 
 **前置条件：**
 - 游戏状态为 ONGOING
@@ -187,7 +201,17 @@ POST /api/game/{game_id}/turn/submit
 - 游戏状态为 ONGOING
 - 所有玩家都已做出选择
 
-**功能：** 生成下一回合的内容
+**功能：** 提交当前回合的玩家选择并生成下一回合内容；若当前回合未创建或仍有玩家未完成选择，则返回 `status: false`。
+
+**响应示例：**
+```json
+{
+  "status": true,
+  "data": {
+    "next_turn": { /* $Turn */ }
+  }
+}
+```
 
 ### 3. 玩家管理
 
@@ -225,6 +249,8 @@ POST /api/game/{game_id}/player/init/
 }
 ```
 
+**说明：** 如果请求携带了有效的 `auth_token`，且该玩家属于此 `game_id`，则不会新建玩家，会直接返回该已存在玩家。
+
 **响应示例：**
 ```json
 {
@@ -253,6 +279,7 @@ POST /api/game/{game_id}/player/submit/
   "option_id": 1
 }
 ```
+（也可使用表单字段提交：`option_id=<Integer>`）
 
 **前置条件：**
 - 游戏状态为 ONGOING
@@ -267,6 +294,28 @@ POST /api/game/{game_id}/player/submit/
     "option": {...},
     "turn": {...},
     "game": {...}
+  }
+}
+```
+
+#### 获取我的历史选择
+```http
+GET /api/game/{game_id}/player/history
+```
+
+**认证：** 必需
+
+**功能：** 获取玩家在该游戏中的所有历史选择记录。
+
+**响应示例：**
+```json
+{
+  "status": true,
+  "data": {
+    "history": [
+      { "turn": { /* $Turn */ }, "user_option": { /* $Option */ } },
+      { "turn": { /* $Turn */ }, "user_option": { /* $Option */ } }
+    ]
   }
 }
 ```
@@ -386,7 +435,30 @@ if (turn.total_choices === turn.total_players) {
       'Authorization': `Bearer ${authToken}`
     }
   });
+  const submitData = await submitResponse.json();
+  const nextTurn = submitData?.data?.next_turn;
+  // 使用 nextTurn 更新UI或状态
 }
+```
+
+### 8. 结束游戏（可选）
+```javascript
+const finishResponse = await fetch(`/api/game/${game.id}/finish/`, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${authToken}`
+  }
+});
+```
+
+### 9. 归档游戏（可选）
+```javascript
+const archiveResponse = await fetch(`/api/game/${game.id}/archive/`, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${authToken}`
+  }
+});
 ```
 
 ## 实时更新建议
@@ -416,7 +488,9 @@ setInterval(async () => {
   "started_at": "2024-01-01T10:00:00Z",
   "ended_at": null,
   "players_count": 2,
-  "turns_count": 1
+  "turns_count": 1,
+  "start_year": 2075,
+  "end_year": 2125
 }
 ```
 
@@ -432,7 +506,14 @@ setInterval(async () => {
   "created_at": "2024-01-01T10:00:00Z",
   "updated_at": "2024-01-01T10:00:00Z",
   "total_players": 2,
-  "total_choices": 1
+  "total_choices": 1,
+  "year": 2075,
+  "attrs": [
+    {"name": "Memory Equality", "value": 5},
+    {"name": "Technical Control", "value": 10},
+    {"name": "Society Cohesion", "value": -5},
+    {"name": "Autonomy Control", "value": 0}
+  ]
 }
 ```
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import useGameStore from '../../../store';
 
+
 /**
  * 雷达图组件
  * @param {Object} props - 组件属性
@@ -39,13 +40,23 @@ const RadarChart = ({
     const categories = useGameStore(s => s.world.categories);
     const radarData = useGameStore(s => s.world.radarData);
 
+    // 将世界属性值归一化为 0-100（后端可能提供 -100~100 或已是 0~100）
+    const normalizeToPercent = (value) => {
+        if (typeof value !== 'number' || Number.isNaN(value)) return 50;
+        if (value >= 0 && value <= 100) return value; // 已是百分比
+        // 将 [-100, 100] 映射到 [0, 100]
+        const clamped = Math.max(-100, Math.min(100, value));
+        return Math.round(clamped / 2 + 50);
+    };
+    const normalizedData = Array.isArray(radarData) ? radarData.map(normalizeToPercent) : [50, 50, 50, 50];
+
     // 计算中心点
     const center = size / 2;
 
     // 将 store 数据映射为雷达图数据点（角度、值、标签、颜色）
     const dataPoints = categories.map((label, index) => ({
         angle: index * 90, // 四个维度：0°, 90°, 180°, 270°
-        value: radarData[index] ?? 50, // 如果数据缺失，默认 50
+        value: normalizedData[index] ?? 50, // 如果数据缺失，默认 50
         label,
         color: colors[index] || 'cyan', // 使用传入的颜色或默认值
     }));

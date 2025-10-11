@@ -14,8 +14,8 @@ import React from 'react';
  * @param {string} className - 额外的容器样式类名
  */
 const Timeline = ({
-    startYear = 2025,
-    endYear = 2075,
+    startYear = 2075,
+    endYear = 2125,
     points = 11,
     currentPoint = null,
     lineClass = 'bg-gray-300',

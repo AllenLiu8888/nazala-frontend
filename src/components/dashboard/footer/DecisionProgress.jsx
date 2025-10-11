@@ -4,6 +4,8 @@ import useGameStore from '../../../store';
 const DecisionProgress = () => {
     const currentPoint = useGameStore(s => s.turn.index);
     const maxRounds = useGameStore(s => s.gameMeta.maxRounds);
+    const startYear = useGameStore(s => s.gameMeta.startYear);
+    const endYear = useGameStore(s => s.gameMeta.endYear);
 
     // 显示点数 = max_turns - 2（排除 intro 和最后测试轮）
     const displayTotalPoints = maxRounds > 2 ? maxRounds - 2 : maxRounds;
@@ -13,8 +15,8 @@ const DecisionProgress = () => {
             <h3 className="pixel-text">Decision Progress</h3>
             <div className="flex-1 px-20">
                 <Timeline 
-                startYear={2025}
-                endYear={2030}
+                startYear={startYear}
+                endYear={endYear}
                 points={displayTotalPoints}
                 currentPoint={currentPoint}
                 lineClass="bg-cyan-400"
