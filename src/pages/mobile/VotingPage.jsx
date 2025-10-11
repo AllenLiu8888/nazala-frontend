@@ -1,22 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Question from '../../components/mobile/Queston'; 
+import Question from '../../components/mobile/Queston';
 import VotingOption from '../../components/mobile/VotingOption';
-import useGameStore from '../../store';
+import useGameStoreMobile from '../../store/index_mobile';
 
 const VotingPage = () => {
   const { gameId: gameIdParam } = useParams();
   const navigate = useNavigate();
   // 所有 hooks 必须在任何条件返回之前调用
-  const gameState = useGameStore(s => s.gameMeta.state);
-  const gameMetaId = useGameStore(s => s.gameMeta.id);
-  const turn = useGameStore(s => s.turn);
-  const timeLeft = useGameStore(s => s.turn.timeLeft);
-  const updateCountdown = useGameStore(s => s.updateCountdown);
-  const isGameArchived = useGameStore(s => s.gameMeta.state === 'archived');
-  const isGameFinished = useGameStore(s => s.gameMeta.state === 'finished');
-  const startPolling = useGameStore(s => s.startPolling);
-  const stopPolling = useGameStore(s => s.stopPolling);
+  const gameState = useGameStoreMobile(s => s.gameMeta.state);
+  const gameMetaId = useGameStoreMobile(s => s.gameMeta.id);
+  const turn = useGameStoreMobile(s => s.turn);
+  const timeLeft = useGameStoreMobile(s => s.turn.timeLeft);
+  const updateCountdown = useGameStoreMobile(s => s.updateCountdown);
+  const isGameArchived = useGameStoreMobile(s => s.gameMeta.state === 'archived');
+  const isGameFinished = useGameStoreMobile(s => s.gameMeta.state === 'finished');
+  const startPolling = useGameStoreMobile(s => s.startPolling);
+  const stopPolling = useGameStoreMobile(s => s.stopPolling);
   // 本地提交反馈与选中状态
   const [selectedId, setSelectedId] = useState(null);
   const [submitOk, setSubmitOk] = useState(false);
@@ -36,20 +36,19 @@ const VotingPage = () => {
           fetchGameDetail,
           fetchCurrentTurn,
           // startGame,
-          // initCurrentTurn,
           joinGame,
           gameMeta: { id },
-        } = useGameStore.getState();
+        } = useGameStoreMobile.getState();
 
         // 优先使用路由参数中的 gameId，其次使用 store 中的 id
         const paramId = Number(gameIdParam);
         const gameId = Number.isFinite(paramId) ? paramId : id;
         if (Number.isFinite(paramId) && id !== paramId) {
-          useGameStore.getState().setGameMeta({ id: paramId });
+          useGameStoreMobile.getState().setGameMeta({ id: paramId });
         }
         console.info('[VotingPage] 📋 使用的游戏ID:', gameId, '（route param:', gameIdParam, ' store id:', id, '）');
 
-  //       // 1) 确保玩家已加入
+        // 1) 确保玩家已加入
         let token = localStorage.getItem('authToken');
         if (!token) {
           console.info('[VotingPage] 🎮 玩家未加入，开始加入游戏...');
@@ -72,16 +71,6 @@ const VotingPage = () => {
         
         const state = game?.state ?? (game?.status === 0 ? 'waiting' : game?.status === 1 ? 'ongoing' : 'archived');
         console.info('[VotingPage] 📊 当前后端状态:', state);
-
-  //       // 3) 根据游戏状态处理
-  //       if (state === 'waiting') {
-  //         console.info('[VotingPage] 🚀 游戏状态为 waiting，启动游戏...');
-  //         const okStart = await startGame();
-  //         if (!okStart) {
-  //           throw new Error('启动游戏失败');
-  //         }
-  //         console.info('[VotingPage] ✅ 游戏启动成功');
-  //       }
 
   //       // 4) 确保有当前回合
   //       console.info('[VotingPage] 🔍 检查当前回合...');
@@ -106,23 +95,6 @@ const VotingPage = () => {
           console.info('[VotingPage] 🎮 游戏状态:', game?.state);
           console.info('[VotingPage] 🎮 游戏状态码:', game?.status);
         }
-          // const okInit = await initCurrentTurn(token);
-          // console.info('[VotingPage] 📋 initCurrentTurn 返回结果:', okInit);
-          
-  //         if (!okInit) {
-  //           // 获取 store 中的错误信息
-  //           const storeError = useGameStore.getState().ui.error;
-  //           throw new Error(`创建回合失败: ${storeError || '未知错误'}`);
-  //         }
-          
-  //         // 重新获取回合
-  //         console.info('[VotingPage] 🔄 重新获取回合数据...');
-  //         turn = await fetchCurrentTurn(gameId, token);
-  //         if (!turn || typeof turn.index !== 'number') {
-  //           throw new Error('创建回合后获取失败或数据无效');
-  //         }
-  //         console.info('[VotingPage] ✅ 回合创建成功');
-  //       }
 
         // 5) 验证回合数据
         console.info('[VotingPage] 🔍 验证回合数据:', {
@@ -178,7 +150,7 @@ const VotingPage = () => {
   const submitChoice = async (chosen) => {
     console.info('[VotingPage] 🗳️ 用户点击选择选项:', chosen);
     const authToken = localStorage.getItem('authToken');
-    const { submitPlayerChoice } = useGameStore.getState();
+    const { submitPlayerChoice } = useGameStoreMobile.getState();
     const success = await submitPlayerChoice(chosen, authToken);
     if (success) {
       console.info('[VotingPage] ✅ 选项提交成功');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import useGameStore from '../../store';
+import useGameStoreMobile from '../../store/index_mobile';
 
 const Timeline = () => {
   const { gameId } = useParams();
@@ -8,9 +8,9 @@ const Timeline = () => {
   const [token, setToken] = useState('');
   
   // 从 store 获取状态
-  const timeline = useGameStore(s => s.timeline) || { events: [], loading: false, error: null };
-  const fetchGameTimeline = useGameStore(s => s.fetchGameTimeline);
-  const fetchCurrentGame = useGameStore(s => s.fetchCurrentGame);
+  const timeline = useGameStoreMobile(s => s.timeline) || { events: [], loading: false, error: null };
+  const fetchGameTimeline = useGameStoreMobile(s => s.fetchGameTimeline);
+  const fetchCurrentGame = useGameStoreMobile(s => s.fetchCurrentGame);
 
   // 初始化 token
   useEffect(() => {

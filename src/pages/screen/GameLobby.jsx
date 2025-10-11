@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import QRCode from '../../components/shared/QRCode';
-import useGameStore from '../../store';
+import useGameStoreScreen from '../../store/index_screen';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const GameLobby = () => {
@@ -8,14 +8,14 @@ const GameLobby = () => {
     const subtitle = "2075 | The boundary between memory and privacy";
     const navigate = useNavigate();
     const { gameId } = useParams();
-    const gameState = useGameStore(s => s.gameMeta.state);
-    const turnsCount = useGameStore(s => s.gameMeta.turnsCount);
+    const gameState = useGameStoreScreen(s => s.gameMeta.state);
+    const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
 
     // 开始游戏：只在 waiting 状态下调用后端 API，并跳转到 intro
     const onStartGame = async () => {
         if (gameState !== 'waiting') return;
         
-        const { startGame } = useGameStore.getState();
+        const { startGame } = useGameStoreScreen.getState();
         const success = await startGame(gameId);
         if (success && gameId) {
             navigate(`/game/${gameId}/intro`);
@@ -24,7 +24,7 @@ const GameLobby = () => {
 
     // 启动轮询 + 自动跳转逻辑
     useEffect(() => {
-        const { startPolling, stopPolling, fetchGameDetail } = useGameStore.getState();
+        const { startPolling, stopPolling, fetchGameDetail } = useGameStoreScreen.getState();
         
         // 立即获取一次游戏数据
         if (gameId) {

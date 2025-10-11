@@ -25,6 +25,14 @@ export const GAME_STATES = {
   GAME_OVER: 'game_over',
 };
 
+// Game status (numeric codes from API)
+export const GAME_STATUS = {
+  WAITING: 0,
+  IN_PROGRESS: 1,
+  COMPLETED: 10,
+  ARCHIVED: 20,
+};
+
 // Player states
 export const PLAYER_STATES = {
   JOINING: 'joining',

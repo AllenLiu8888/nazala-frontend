@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import RadarChart from '../../components/dashboard/main/RadarCBefore';
-import useGameStore from '../../store';
+import useGameStoreScreen from '../../store/index_screen';
 
 const GameOver = () => {
     const navigate = useNavigate();
@@ -63,7 +63,7 @@ const GameOver = () => {
     const handleBackToHome = async () => {
         try {
             // 调用 archiveGame API
-            await useGameStore.getState().archiveGame(gameId);
+            await useGameStoreScreen.getState().archiveGame(gameId);
         } catch (error) {
             console.error('归档游戏失败:', error);
         } finally {

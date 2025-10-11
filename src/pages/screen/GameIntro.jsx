@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import useGameStore from '../../store';
+import useGameStoreScreen from '../../store/index_screen';
 import RingScore from '../../components/dashboard/footer/RingScore';
 
 const GameIntro = () => {
@@ -10,9 +10,9 @@ const GameIntro = () => {
     const { gameId } = useParams();
     
     // 从 store 读取数据
-    const playersTotal = useGameStore(s => s.players.total);
-    const playersVoted = useGameStore(s => s.players.voted);
-    const turnIndex = useGameStore(s => s.turn.index);
+    const playersTotal = useGameStoreScreen(s => s.players.total);
+    const playersVoted = useGameStoreScreen(s => s.players.voted);
+    const turnIndex = useGameStoreScreen(s => s.turn.index);
     
     // 使用 ref 防止 StrictMode 导致的重复调用
     const hasInitialized = useRef(false);
@@ -33,10 +33,10 @@ const GameIntro = () => {
             console.log('🎬 GameIntro 打开，准备创建 turn...');
             
             // 尝试创建/进入回合
-            await useGameStore.getState().advanceTurn(gameId);
+            await useGameStoreScreen.getState().advanceTurn(gameId);
             
             // 启动轮询以获取玩家选择数据
-            useGameStore.getState().startPolling(gameId);
+            useGameStoreScreen.getState().startPolling(gameId);
         };
         
         initializeTurn();
@@ -44,7 +44,7 @@ const GameIntro = () => {
         // 清理函数：停止轮询并重置标志
         return () => {
             console.log('🧹 GameIntro 卸载，停止轮询');
-            useGameStore.getState().stopPolling();
+            useGameStoreScreen.getState().stopPolling();
             hasInitialized.current = false;
         };
     }, [gameId]);
