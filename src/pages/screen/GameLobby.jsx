@@ -24,7 +24,7 @@ const GameLobby = () => {
 
     // 启动轮询 + 自动跳转逻辑
     useEffect(() => {
-        const { startPolling, stopPolling, fetchGameDetail } = useGameStoreScreen.getState();
+        const { startPollingForLobby, stopPolling, fetchGameDetail } = useGameStoreScreen.getState();
         
         // 立即获取一次游戏数据
         if (gameId) {
@@ -32,7 +32,7 @@ const GameLobby = () => {
         }
         
         // 启动轮询
-        startPolling(gameId);
+        startPollingForLobby(gameId);
         return () => stopPolling();
     }, [gameId]);
 

@@ -1,10 +1,9 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import RadarChart from '../../components/dashboard/main/RadarCBefore';
 import useGameStoreScreen from '../../store/index_screen';
 
 const GameOver = () => {
-    const navigate = useNavigate();
     const { gameId } = useParams();
     const [currentSlide, setCurrentSlide] = useState(0);
     
@@ -67,8 +66,8 @@ const GameOver = () => {
         } catch (error) {
             console.error('归档游戏失败:', error);
         } finally {
-            // 无论成功或失败，都导航到首页
-            navigate('/');
+            // 无论成功或失败，使用浏览器级跳转回首页以刷新并清空 store
+            window.location.replace('/');
         }
     };
 

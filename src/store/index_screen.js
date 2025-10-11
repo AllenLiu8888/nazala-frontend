@@ -350,6 +350,120 @@ export const useGameStoreScreen = create((set, get) => ({
     set(() => ({ _pollerId: id }));
   },
 
+  // Lobby 专用轮询：仅拉取 gameDetail（不请求 turn）
+  startPollingForLobby: async (providedGameId = null) => {
+    // 已存在轮询则跳过
+    const existing = get()._pollerId;
+    if (existing) return;
+
+    let gameId;
+    try {
+      gameId = await getGameId(get, providedGameId, true);
+    } catch {
+      return;
+    }
+
+    // 立即拉一次，失败也不阻塞
+    await Promise.allSettled([
+      get().fetchGameDetail(gameId),
+    ]);
+
+    const id = setInterval(async () => {
+      const gid = get().gameMeta.id;
+      if (!gid) return;
+      await Promise.allSettled([
+        get().fetchGameDetail(gid),
+      ]);
+    }, CONFIG.POLLING_INTERVAL_MS);
+
+    set(() => ({ _pollerId: id }));
+  },
+
+  // Intro 专用轮询：始终并行拉取 detail + currentTurn，并处理倒计时结束
+  startPollingForIntro: async (providedGameId = null) => {
+    // 已存在轮询则跳过
+    const existing = get()._pollerId;
+    if (existing) return;
+
+    let gameId;
+    try {
+      gameId = await getGameId(get, providedGameId, true);
+    } catch {
+      return;
+    }
+
+    // 立即拉一次，失败也不阻塞
+    await Promise.allSettled([
+      get().fetchGameDetail(gameId),
+      get().fetchCurrentTurn(gameId),
+    ]);
+
+    const id = setInterval(async () => {
+      const gid = get().gameMeta.id;
+      if (!gid) return;
+
+      // 倒计时检测
+      const { turn } = get();
+      const timeLeft = get().calculateTimeLeft();
+      if (timeLeft === 0 && turn?.turnEndsAt) {
+        await get().handleCountdownEnd();
+      }
+
+      await Promise.allSettled([
+        get().fetchGameDetail(gid),
+        get().fetchCurrentTurn(gid),
+      ]);
+    }, CONFIG.POLLING_INTERVAL_MS);
+
+    set(() => ({ _pollerId: id }));
+  },
+
+  // Dashboard 专用轮询：与通用一致，等待态仅取 detail；其余 detail+turn，并处理倒计时结束
+  startPollingForDashboard: async (providedGameId = null) => {
+    // 已存在轮询则跳过
+    const existing = get()._pollerId;
+    if (existing) return;
+
+    let gameId;
+    try {
+      gameId = await getGameId(get, providedGameId, true);
+    } catch {
+      return;
+    }
+
+    // 立即拉一次，失败也不阻塞
+    await Promise.allSettled([
+      get().fetchGameDetail(gameId),
+      get().gameMeta.state !== 'waiting' ? get().fetchCurrentTurn(gameId) : Promise.resolve(),
+    ]);
+
+    const id = setInterval(async () => {
+      const gid = get().gameMeta.id;
+      if (!gid) return;
+
+      const gameState = get().gameMeta.state;
+      if (gameState === 'waiting') {
+        await Promise.allSettled([
+          get().fetchGameDetail(gid),
+        ]);
+        return;
+      }
+
+      const { turn } = get();
+      const timeLeft = get().calculateTimeLeft();
+      if (timeLeft === 0 && turn?.turnEndsAt) {
+        await get().handleCountdownEnd();
+      }
+
+      await Promise.allSettled([
+        get().fetchGameDetail(gid),
+        get().fetchCurrentTurn(gid),
+      ]);
+    }, CONFIG.POLLING_INTERVAL_MS);
+
+    set(() => ({ _pollerId: id }));
+  },
+
   // 停止轮询
   // 清理 setInterval，避免内存泄漏与重复请求
   stopPolling: () => {

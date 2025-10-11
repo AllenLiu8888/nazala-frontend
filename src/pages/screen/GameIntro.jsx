@@ -36,7 +36,7 @@ const GameIntro = () => {
             await useGameStoreScreen.getState().advanceTurn(gameId);
             
             // 启动轮询以获取玩家选择数据
-            useGameStoreScreen.getState().startPolling(gameId);
+            useGameStoreScreen.getState().startPollingForIntro(gameId);
         };
         
         initializeTurn();

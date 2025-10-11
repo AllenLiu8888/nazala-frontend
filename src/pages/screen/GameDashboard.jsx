@@ -16,7 +16,7 @@ export default function Game() {
     // 组件挂载时启动轮询，卸载时停止
     useEffect(() => {
         if (gameId) {
-            useGameStoreScreen.getState().startPolling(gameId);
+            useGameStoreScreen.getState().startPollingForDashboard(gameId);
         }
         return () => {
             useGameStoreScreen.getState().stopPolling();
