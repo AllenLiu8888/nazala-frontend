@@ -41,7 +41,6 @@ const VotingPage = () => {
         const {
           fetchGameDetail,
           fetchCurrentTurn,
-          joinGame,
           gameMeta: { id },
         } = useGameStoreMobile.getState();
 
@@ -97,7 +96,7 @@ const VotingPage = () => {
     }
   }, [isInitializing, initError, hasSubmitted, startPolling, stopPolling]);
 
-  // 3. 检测turn_index变化，如果已提交且turn_index变化则重新加载页面
+  // 3. 检测turn_index变化，重置组件状态以进入新回合
   useEffect(() => {
     const currentTurnIndex = turn?.index;
     
@@ -109,18 +108,23 @@ const VotingPage = () => {
       console.info('[VotingPage] 🔄 检测到turn_index变化:', 
         currentTurnIndexRef.current, '→', currentTurnIndex);
       
-      // 如果用户已经提交过选择，则重新加载页面
+      // 如果用户已经提交过选择，则重置组件状态进入新回合
       if (hasSubmitted) {
-        console.info('[VotingPage] 🔄 用户已提交，重新加载页面...');
-        // 重新加载页面
-        window.location.reload();
-        return;
+        console.info('[VotingPage] 🔄 用户已提交，重置组件状态进入新回合...');
+        
+        // 重置本地状态
+        setHasSubmitted(false);
+        setSelectedId(null);
+        setSubmitOk(false);
+        
+        // 停止轮询（将在用户下次提交后重新启动）
+        stopPolling();
       }
       
       // 更新记录的turn_index
       currentTurnIndexRef.current = currentTurnIndex;
     }
-  }, [turn?.index, hasSubmitted]);
+  }, [turn?.index, hasSubmitted, stopPolling]);
 
   // 5. 用户选择和提交逻辑
   const submitChoice = async (chosen) => {
