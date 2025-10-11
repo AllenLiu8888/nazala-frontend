@@ -62,4 +62,14 @@ export const gameApi = {
   async getGameTimeline(gameId, token) {
     return await http.get(`/api/game/${gameId}/player/history/`, token);
   },
+
+  // 获取游戏个人总结
+  async getGamePersonalSummary(gameId, token) {
+    return await http.get(`/api/game/${gameId}/player/summary/`, token);
+  },
+
+  // 获取玩家最终结果和角色档案
+  async getPlayerResult(gameId, token) {
+    return await http.get(`/api/game/${gameId}/player/result/`, token);
+  },
 };
