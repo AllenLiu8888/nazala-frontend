@@ -13,43 +13,40 @@ const GameIntro = () => {
     const playersTotal = useGameStoreScreen(s => s.players.total);
     const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
+    const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
     
     // 使用 ref 防止 StrictMode 导致的重复调用
     const hasInitialized = useRef(false);
     
-    // 页面打开时立即创建 turn 并启动轮询
+    // 页面渲染后启动轮询, 目的是持续更新「当前turn的已投票玩家数 playersVoted」
     useEffect(() => {
         if (!gameId) return;
-        
-        // 防止 React StrictMode 导致的重复初始化
-        if (hasInitialized.current) {
-            console.log('⏭️ GameIntro 已初始化，跳过重复调用');
-            return;
-        }
-        
-        hasInitialized.current = true;
-        
-        const initializeTurn = async () => {
-            console.log('🎬 GameIntro 打开，准备创建 turn...');
-            
-            // 尝试创建/进入回合
-            await useGameStoreScreen.getState().advanceTurn(gameId);
-            
-            // 启动轮询以获取玩家选择数据
-            useGameStoreScreen.getState().startPollingForIntro(gameId);
-        };
-        
-        initializeTurn();
-        
-        // 清理函数：停止轮询并重置标志
-        return () => {
-            console.log('🧹 GameIntro 卸载，停止轮询');
-            useGameStoreScreen.getState().stopPolling();
-            hasInitialized.current = false;
-        };
-    }, [gameId]);
 
-    // 监听 turn index 变化，自动跳转到对应页面
+        const { stopIntroPolling } = useGameStoreScreen.getState();
+
+        // 防止 React StrictMode 导致的重复初始化
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            if (turnsCount == 0) {
+                useGameStoreScreen.getState().initCurrentTurn();
+            }
+            useGameStoreScreen.getState().startPollingForIntro(gameId);
+        }
+
+        // 总是返回 cleanup，确保组件卸载时能清理轮询
+        return () => {
+            stopIntroPolling();
+        };
+    }, []);
+
+    // 监听 playersVoted, 以获取「当前turn的已投票玩家数 playersVoted」, 以实现「当全部玩家已投票完毕时, 执行submit turn」
+    useEffect(() => {
+        if (playersVoted == playersTotal && playersTotal > 0) {
+            useGameStoreScreen.getState().submitCurrentTurn();
+        }
+    }, [playersVoted]);
+
+    // 监听 turn index 变化，这样当「submit turn」成功后，就能成功获知并自动跳转到 dashboard
     useEffect(() => {
         if (turnIndex >= 1 && turnIndex <= 10) {
             console.log(`🎯 Turn index = ${turnIndex}，跳转到 Dashboard`);
