@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { gameApi } from '../../services/gameApi';
+import { GAME_STATUS } from '../../constants/constants';
 
 const WaitingPage = () => {
   // 从 URL 参数获取真实的 gameId
@@ -42,14 +43,14 @@ const WaitingPage = () => {
 
       // 将API获取的游戏状态保存到state中
       setGameStatus(game.status);
-      if (game && game.status === 1) {
+      if (game && game.status === GAME_STATUS.IN_PROGRESS) {
         console.log('✅ 条件满足，准备跳转');
         navigate(`/game/${gameId}/voting`);
         // console.log('🎮 游戏已经开始，跳转到投票页');
-      } else if (game && game.status === 10) {
+      } else if (game && game.status === GAME_STATUS.COMPLETED) {
         console.log('⚠️ 游戏已完成，跳转到 summary 页面');
         navigate(`/game/${gameId}/summary`);
-      } else if (game && game.status === 20) {
+      } else if (game && game.status === GAME_STATUS.ARCHIVED) {
         console.log('⚠️ 游戏已归档');
       }
     } catch (error) {
@@ -110,10 +111,10 @@ const WaitingPage = () => {
 
            {/* 等待文字 */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold mb-2 text-cyan-300" 
+            <h1 className="text-3xl font-bold mb-2 text-cyan-300"
               onClick={goVotingPage}
             >
-              {gameStatus === 20 ? '游戏未开始' : 'Waiting for players to join...'}
+              {gameStatus === GAME_STATUS.ARCHIVED ? '游戏未开始' : 'Waiting for players to join...'}
             </h1>
             {/* todo：显示加载人数：从api获取 */}
 

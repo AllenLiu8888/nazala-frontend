@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useGameStore from '../../store';
+import useGameStoreScreen from '../../store/index_screen';
 
 const HomePage = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const fetchCurrentGame = useGameStore(s => s.fetchCurrentGame);
+    const fetchCurrentGame = useGameStoreScreen(s => s.fetchCurrentGame);
 
     const createGame = async () => {
         try {

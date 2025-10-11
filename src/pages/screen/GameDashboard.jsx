@@ -6,20 +6,20 @@ import UserStates from '../../components/dashboard/footer/UserStates';
 import DecisionProgress from '../../components/dashboard/footer/DecisionProgress';
 import StorySection from '../../components/dashboard/main/StorySection';
 import Visualisation from '../../components/dashboard/main/Visualisation';
-import useGameStore from '../../store';
+import useGameStoreScreen from '../../store/index_screen';
 
 export default function Game() {
     const { gameId } = useParams();
     const navigate = useNavigate();
-    const gameState = useGameStore(s => s.gameMeta.state);
+    const gameState = useGameStoreScreen(s => s.gameMeta.state);
 
     // 组件挂载时启动轮询，卸载时停止
     useEffect(() => {
         if (gameId) {
-            useGameStore.getState().startPolling(gameId);
+            useGameStoreScreen.getState().startPolling(gameId);
         }
         return () => {
-            useGameStore.getState().stopPolling();
+            useGameStoreScreen.getState().stopPolling();
         };
     }, [gameId]);
 
