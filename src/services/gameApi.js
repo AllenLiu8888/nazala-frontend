@@ -70,6 +70,6 @@ export const gameApi = {
 
   // 获取玩家最终结果和角色档案
   async getPlayerResult(gameId, token) {
-    return await http.get(`/api/game/${gameId}/player/player/result/`, token);
+    return await http.get(`/api/game/${gameId}/player/result/`, token);
   },
 };
