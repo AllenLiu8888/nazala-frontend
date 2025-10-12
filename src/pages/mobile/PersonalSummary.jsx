@@ -18,6 +18,8 @@ const PersonalSummary = () => {
   
   // 获取玩家结果数据
   useEffect(() => {
+    if (!gameId) return; // 如果没有gameId，不执行请求
+    
     const loadPlayerResult = async () => {
       try {
         const result = await fetchPlayerResult(gameId);
@@ -36,7 +38,7 @@ const PersonalSummary = () => {
     };
 
     loadPlayerResult();
-  }, [gameId]);
+  }, [gameId, fetchPlayerResult]);
 
   if (!personalData) {
     return (

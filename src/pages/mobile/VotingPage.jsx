@@ -205,7 +205,7 @@ const VotingPage = () => {
   if (isGameArchived) {
     const goToPersonalSummary = () => {
       const currentGameId = gameMetaId || gameIdParam || 'demo-game';
-      navigate(`/game/${currentGameId}/summary`);
+      navigate(`/game/${currentGameId}/timeline`);
     };
 
     return (

@@ -14,7 +14,7 @@ const TimelineComponent = ({
     if (!Array.isArray(apiEvents)) return [];
     
     return apiEvents.map((event, index) => ({
-      id: event.turn?.id || index + 1,
+      id: `timeline-${index}-${event.turn?.id || 'no-turn'}`,
       year: event.turn?.year || `第${index + 1}轮`,
       option_test: event.user_option?.text || '历史事件',
       status: event.turn?.status === 'completed' ? 'completed' : 
@@ -126,15 +126,7 @@ const TimelineComponent = ({
 
   return (
     <div className="border-2 border-cyan-400 rounded-xl bg-black/80 backdrop-blur-sm p-4">
-      {/* 调试信息
-      {showDebugInfo && process.env.NODE_ENV === 'development' && (
-        <div className="mb-4 p-2 bg-gray-800 rounded text-xs text-gray-400">
-          <p>游戏ID: {gameId || '未设置'}</p>
-          <p>Token: {token ? '已设置' : '未设置'}</p>
-          <p>事件数量: {events.length}</p>
-          <p>数据源: {events.length > 0 ? 'API' : '模拟数据'}</p>
-        </div>
-      )} */}
+
 
       {/* 移动端优化的时间轴 */}
       <div className="space-y-4">

@@ -80,9 +80,9 @@ const Timeline = () => {
           <div className="mt-6 flex justify-center">
             <button
               onClick={() => navigate(`/game/${gameId}/summary`)}
-              className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+              className="w-full bg-cyan-400 text-black py-2 rounded text-sm font-semibold hover:bg-cyan-300 transition-colors duration-200"
             >
-              ← 返回个人总结
+              go to personal summary
             </button>
           </div>
         </div>
