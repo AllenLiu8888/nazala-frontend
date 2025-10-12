@@ -7,7 +7,7 @@ import DecisionProgress from '../../components/dashboard/footer/DecisionProgress
 import StorySection from '../../components/dashboard/main/StorySection';
 import Visualisation from '../../components/dashboard/main/Visualisation';
 import useGameStoreScreen from '../../store/index_screen';
-import { CONFIG } from '../../store/common_tools';
+ 
 
 
 export default function Game() {
@@ -39,16 +39,12 @@ export default function Game() {
         };
     }, []);
 
-    // 监听 playersVoted, 以获取「当前turn的已投票玩家数 playersVoted」, 以实现「当全部玩家已投票完毕时, 执行submit turn」
+    // 监听 playersVoted：当全部玩家已在当前回合投票完成时，提交当前回合
     useEffect(() => {
         if (playersVoted == playersTotal && playersTotal > 0) {
             useGameStoreScreen.getState().submitCurrentTurn();
-            if (turnIndex == CONFIG.LAST_TURN_INDEX) {
-                // 最后一轮提交完毕后, 执行 finish game
-                useGameStoreScreen.getState().finishGame();
-            }
         }
-    }, [playersVoted]);
+    }, [playersVoted, playersTotal, turnIndex]);
 
     // 监听 turn index 和游戏状态变化，自动跳转
     useEffect(() => {
@@ -58,12 +54,7 @@ export default function Game() {
             navigate(`/game/${gameId}/reflection`);
             return;
         }
-        
-        // 游戏结束时跳转到 GameOver
-        if (gameState === 'finished' || gameState === 'archived') {
-            navigate(`/game/${gameId}/gameover`);
-        }
-    }, [gameState]);
+    }, [gameState, turnIndex, gameId, navigate]);
 
     return (
         <div className="h-full w-full flex flex-col">

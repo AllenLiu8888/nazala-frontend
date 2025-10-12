@@ -229,7 +229,7 @@ const VotingPage = () => {
       {(gameMetaId != null) && (
         <div className="text-center mb-4">
           <div className="text-cyan-400 text-sm">
-            游戏 #{gameMetaId} | 状态: {gameState === 'ongoing' ? '进行中' : '等待中'} | 回合: {(turn?.index ?? -1) + 1}
+            游戏 #{gameMetaId} | 状态: {gameState === 'ongoing' ? '进行中' : '等待中'} | 回合: {(turn.index)}
           </div>
         </div>
       )}

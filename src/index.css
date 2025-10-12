@@ -35,7 +35,7 @@ html {
 /* 可复用的组件类 - 使用标准 CSS */
 .pixel-text {
   font-family: var(--font-pixel);
-  font-size: 2.25rem;
+  font-size: 2.75rem;
   font-weight: 500;
   color: rgb(103 232 249);
 }
