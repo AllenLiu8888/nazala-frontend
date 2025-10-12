@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGameStoreScreen from '../../store/index_screen';
+// Top-level App controls BGM; no per-page BGM here
+
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -38,7 +40,6 @@ const HomePage = () => {
     
     const HomePageTitle = "Memory Trading & Editing";
     const HomePageSubtitle = "An Interactive Art Installation";
-
     return (
         <div className="flex items-center justify-center ">
             <div

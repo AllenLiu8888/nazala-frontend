@@ -2,6 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import useGameStoreScreen from '../../store/index_screen';
 import RingScore from '../../components/dashboard/footer/RingScore';
+import { useBgm, BGM_URLS } from '../../hooks/useBgm';
 
 const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
@@ -17,6 +18,10 @@ const GameIntro = () => {
     
     // 使用 ref 防止 StrictMode 导致的重复调用
     const hasInitialized = useRef(false);
+    
+    // BGM：进入 GameIntro 时停止 HomePage/Lobby 的音乐
+    const bgmUrl = BGM_URLS.menu;
+    useBgm(bgmUrl, false, true); // 不启动播放，但要停止
     
     // 页面渲染后启动轮询, 目的是持续更新「当前turn的已投票玩家数 playersVoted」
     useEffect(() => {

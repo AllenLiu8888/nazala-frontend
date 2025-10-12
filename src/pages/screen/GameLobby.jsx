@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import QRCode from '../../components/shared/QRCode';
 import useGameStoreScreen from '../../store/index_screen';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useBgm, BGM_URLS } from '../../hooks/useBgm';
 
 const GameLobby = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
@@ -13,6 +14,10 @@ const GameLobby = () => {
 
     // 使用 ref 防止 StrictMode 导致的重复调用
     const hasInitialized = useRef(false);
+    
+    // BGM：继续播放 HomePage 的音乐，不停止
+    const bgmUrl = BGM_URLS.menu;
+    useBgm(bgmUrl, false, false); // 不启动新播放，也不停止
 
     // 开始游戏：只在 waiting 状态下调用后端 API，并跳转到 intro
     const onStartGame = async () => {
