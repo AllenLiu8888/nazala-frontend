@@ -5,26 +5,26 @@ import { GAME_STATUS } from '../../constants/constants';
 import useGameStoreMobile from '../../store/index_mobile';
 
 const WaitingPage = () => {
-  // 从 URL 参数获取真实的 gameId
+  // Get real gameId from URL parameters
   const { gameId } = useParams();
   const navigate = useNavigate();
   const hasInitialized = useRef(false);
 
   const gameStatusCode = useGameStoreMobile(s => s.gameMeta.statusCode);
 
-  // 自动创建/获取用户
+  // Automatically create/get user
   const createPlayer = async (gameId) => {
     try {
-      // 获取现有的 authToken（如果有的话）
+      // Get existing authToken (if any)
       const existingToken = localStorage.getItem('authToken');
       
-      // 直接调用API，让后端决定是返回现有用户还是创建新用户
+      // Call API directly, let backend decide whether to return existing user or create new user
       const result = await gameApi.joinGame(gameId, existingToken);
       localStorage.setItem('authToken', result.player.auth_token);
       localStorage.setItem('playerId', result.player.id);
       
     } catch (error) {
-      console.error('❌ 处理用户失败:', error, gameId);
+      console.error(' Failed to handle user:', error, gameId);
     }
   };
 
@@ -32,10 +32,10 @@ const WaitingPage = () => {
     navigate(`/game/${gameId}/voting`);
   };
 
-  // 页面加载时自动创建用户
+  // Automatically create user when page loads
   useEffect(() => {
     if (!gameId) {
-      console.error('❌ 未找到 gameId，无法初始化');
+      console.error('GameId not found, cannot initialize');
       return;
     }
     
@@ -45,44 +45,44 @@ const WaitingPage = () => {
     }
   }, [gameId]);
 
-  // 定期检查游戏状态
+  // Regularly check game status
   useEffect(() => {
     if (!gameId) {
-      console.error('❌ 未找到 gameId，无法检查游戏状态');
+      console.error('GameId not found, cannot check game status');
       return;
     }
-    // 立即检查一次
+    // Check immediately once
     // checkGameStarted();
     useGameStoreMobile.getState().fetchGameDetail(gameId);
 
-    // 设置定时器，每3秒检查一次
+    // Set timer to check every 3 seconds
     const interval = setInterval(() => {
       useGameStoreMobile.getState().fetchGameDetail(gameId);
       // checkGameStarted();
     }, 3000);
 
-    // 清理定时器
+    // Clean up timer
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
       if (gameStatusCode == GAME_STATUS.IN_PROGRESS) {
-        console.log('✅ 条件满足，准备跳转');
+        console.log('Conditions met, preparing to redirect');
         navigate(`/game/${gameId}/voting`);
       } else if (gameStatusCode == GAME_STATUS.COMPLETED) {
-        console.log('⚠️ 游戏已完成，跳转到 summary 页面');
+        console.log('Game completed, redirecting to summary page');
         navigate(`/game/${gameId}/summary`);
       } else if (gameStatusCode == GAME_STATUS.ARCHIVED) {
-        console.log('⚠️ 游戏已归档');
+        console.log('Game archived');
       }
   }, [gameStatusCode]);
 
   return (
     <>
       <div className="flex items-center justify-center min-h-screen">
-          {/* 主要内容区域 */}
+          {/* Main content area */}
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-          {/* 双层旋转 */}
+          {/* Double layer rotation */}
         <div className="relative w-16 h-16 mb-12"> 
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-t-transparent border-cyan-300" ></div> 
 
@@ -90,14 +90,14 @@ const WaitingPage = () => {
 
         </div>
 
-           {/* 等待文字 */}
+           {/* Waiting text */}
           <div className="text-center">
             <h1 className="text-3xl font-bold mb-2 text-cyan-300"
               onClick={goVotingPage}
             >
-              {gameStatusCode === GAME_STATUS.ARCHIVED ? '游戏未开始' : 'Waiting for players to join...'}
+              {gameStatusCode === GAME_STATUS.ARCHIVED ? 'Game not started' : 'Waiting for players to join...'}
             </h1>
-            {/* todo：显示加载人数：从api获取 */}
+            {/* todo: Show loading count: get from API */}
 
           </div>
          </div>
@@ -106,7 +106,7 @@ const WaitingPage = () => {
                   onClick={testFullFlow}
                   className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors duration-200"
                 >
-                  🔄 重置用户 (重新显示输入框)
+                  Reset user (show input box again)
                 </button>
       </div> */}
 
