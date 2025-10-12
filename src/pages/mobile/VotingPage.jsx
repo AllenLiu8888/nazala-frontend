@@ -162,14 +162,15 @@ const VotingPage = () => {
     { id: 4, text: 'a trade', display_number: 4 }
   ];
 
-  // 7. 监听游戏状态变化：finished 时跳转到 summary
+  // 7. 监听游戏状态变化：finished 或 archived 时停止轮询并跳转
   useEffect(() => {
-    if (isGameFinished) {
-      console.info('[VotingPage] 🏁 游戏结束，跳转到总结页面');
+    if (isGameFinished || isGameArchived) {
+      console.info('[VotingPage] 🏁 游戏结束，停止轮询并跳转到总结页面');
+      stopPolling(); // 停止轮询
       const currentGameId = gameMetaId || gameIdParam || 'demo-game';
       navigate(`/game/${currentGameId}/summary`);
     }
-  }, [isGameFinished, gameMetaId, gameIdParam, navigate]);
+  }, [isGameFinished, isGameArchived, gameMetaId, gameIdParam, navigate, stopPolling]);
 
 
   // 8. 渲染逻辑
@@ -224,12 +225,12 @@ const VotingPage = () => {
 
   // 8. 主渲染 - 投票界面
   return (
-    <div className="min-h-screen bg-black flex flex-col justify-center px-6 py-8">
+    <div className="min-h-screen flex flex-col justify-center px-6 py-8">
       {/* 游戏状态显示 */}
       {(gameMetaId != null) && (
         <div className="text-center mb-4">
           <div className="text-cyan-400 text-sm">
-            游戏 #{gameMetaId} | 状态: {gameState === 'ongoing' ? '进行中' : '等待中'} | 回合: {(turn.index)}
+            游戏{gameMetaId} 状态: {gameState} 回合: {(turn.index)}
           </div>
         </div>
       )}

@@ -50,7 +50,7 @@ const Timeline = () => {
 
 
   return (
-    <div className="h-screen overflow-y-auto bg-black relative">
+    <div className="h-screen overflow-y-auto relative">
       {/* 主要内容区域（与 PersonalSummary 相同布局与卡片风格） */}
       <div className="relative z-10 min-h-screen p-4">
         <div className="w-full max-w-sm mx-auto">
@@ -59,17 +59,6 @@ const Timeline = () => {
             <h1 className="text-3xl font-extrabold tracking-wider text-cyan-300">
               History Overview
             </h1>
-            <button
-              onClick={() => {
-                if (gameId && token) {
-                  fetchGameTimeline(gameId, token);
-                }
-              }}
-              className="px-3 py-1 bg-cyan-600 hover:bg-cyan-700 rounded text-sm text-white"
-              disabled={timeline.loading || !token}
-            >
-              {timeline.loading ? '加载中...' : '刷新'}
-            </button>
           </div>
           
           {/* 时间轴组件 */}

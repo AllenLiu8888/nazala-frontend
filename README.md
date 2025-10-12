@@ -42,7 +42,8 @@ The app runs at `http://localhost:5173`. Useful routes during development:
 - `http://localhost:5173/screen/game` – live dashboard view
 - `http://localhost:5173/game/demo-game/waiting` – mobile waiting room
 - `http://localhost:5173/game/demo-game/voting` – mobile voting screen
-- `http://localhost:5173/game/demo-game/history` – player history summary
+- `http://localhost:5173/game/demo-game/summary` – personal summary
+- `http://localhost:5173/game/demo-game/timeline` – personal summary
 
 ## Build & Quality Checks
 ```bash

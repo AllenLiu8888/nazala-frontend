@@ -255,6 +255,12 @@ export const useGameStoreMobile = create((set, get) => ({
     } catch (err) {
       console.warn('[Store] ⚠️ 获取当前回合失败:', err.message);
       
+      // 如果是"游戏未进行中"错误，说明游戏状态不是ongoing
+      if (err.message.includes('Game is not ongoing')) {
+        console.info('[Store] ℹ️ 游戏未进行中，无法获取当前回合');
+        return null;
+      }
+      
       // 如果是"回合已存在"错误，说明后端有回合但可能数据有问题
       if (err.message.includes('Current turn already exists')) {
         console.info('[Store] ℹ️ 后端提示回合已存在，但获取失败，可能是数据问题');
@@ -315,47 +321,6 @@ export const useGameStoreMobile = create((set, get) => ({
     }
   },
 
-
-  // // 加入游戏：创建玩家并更新玩家总数
-  // joinGame: async (gameId, token = null) => {
-  //   console.info('[Store] 🎮 开始加入游戏...', { gameId, hasToken: !!token });
-  //   try {
-  //     const data = await gameApi.joinGame(gameId, token);
-  //     console.info('[Store] 📡 API 调用成功，获取到玩家数据:', data?.player);
-      
-  //     // 保存玩家信息到 localStorage
-  //     if (data?.player) {
-  //       storage.setAuthToken(data.player.auth_token);
-  //       storage.setPlayerId(data.player.id);
-  //       console.info('[Store] 💾 已保存玩家信息到 localStorage:', {
-  //         playerId: data.player.id,
-  //         hasAuthToken: !!data.player.auth_token
-  //       });
-  //     }
-
-  //     // 更新玩家总数
-  //     const oldTotal = get().players.total;
-  //     set((state) => ({
-  //       players: {
-  //         ...state.players,
-  //         total: state.players.total + 1,
-  //         joined: state.players.joined + 1,
-  //       },
-  //     }));
-
-  //     console.info('[Store] ✅ 玩家加入成功！', {
-  //       旧玩家数: oldTotal,
-  //       新玩家数: get().players.total,
-  //       已加入数: get().players.joined
-  //     });
-  //     return data;
-  //   } catch (err) {
-  //     console.error('[Store] ❌ 加入游戏失败:', err);
-  //     set((state) => ({ ui: { ...state.ui, error: err?.message || '加入游戏失败' } }));
-  //     throw err;
-  //   }
-  // },
-
   submitPlayerChoice: async (optionId, token = null) => {//player的token
     try {
       const gameId = await getGameId(get);
@@ -380,34 +345,6 @@ export const useGameStoreMobile = create((set, get) => ({
     }
   },
 
-  // 计算剩余时间（基于 turnEndsAt）
-  // calculateTimeLeft: () => {
-  //   const { turn } = get();
-    
-  //   if (turn.turnEndsAt) {
-  //     const now = Date.now();
-  //     const endsAt = new Date(turn.turnEndsAt).getTime();
-  //     const remaining = Math.max(0, Math.floor((endsAt - now) / 1000));
-  //     return remaining;
-  //   }
-    
-  //   return 0;
-  // },
-
-  // 更新倒计时：计算剩余时间并更新 store
-  // updateCountdown: () => {
-  //   const remaining = get().calculateTimeLeft();
-    
-  //   set((state) => ({
-  //     turn: { ...state.turn, timeLeft: remaining }
-  //   }));
-    
-  //   return remaining;
-  // },
-
-  // 获取游戏时间轴历史
-  // API: GET /api/game/{game_id}/player/history/
-  // 用途：获取游戏的历史事件，用于Timeline页面展示
   fetchGameTimeline: async (gameId, token = null) => {
     console.info('[Store] 📜 开始获取游戏时间轴...', { gameId, hasToken: !!token });
     
@@ -465,28 +402,17 @@ export const useGameStoreMobile = create((set, get) => ({
       const response = await gameApi.getPlayerResult(gameId, auth);
       console.info('[Store] 📡 玩家结果API调用成功:', response);
       
-      if (response.status && response.data) {
-        const { attribute_totals, profile, top_attributes } = response.data;
+      // 处理API返回的数据格式
+      // 根据http.js的实现，API返回的是data部分，所以response直接就是数据
+      if (response && (response.attribute_totals || response.profile || response.top_attributes)) {
+        const { attribute_totals, profile, top_attributes } = response;
         
         // 转换API数据格式以匹配前端需求
         const transformedData = {
-          choices: top_attributes.map(attr => attr.name),
+          choices: (top_attributes || []).map(attr => attr.name),
           personality: profile.title,
           description: profile.description,
-          traits: [
-            'Values personal autonomy',
-            'Considers long-term consequences', 
-            'Balances individual and collective needs',
-            'Seeks sustainable solutions'
-          ],
-          score: {
-            idealism: attribute_totals.MemoryEquity || 0,
-            pragmatism: attribute_totals.PersonalAgency || 0,
-            collectivism: attribute_totals.SocialCohesion || 0,
-            individualism: attribute_totals.TechnologicalControl || 0
-          },
-          // 保存原始API数据以供其他用途
-          rawData: response.data,
+          rawData: response,
           portraitUrl: profile.portrait_url
         };
         
@@ -497,7 +423,8 @@ export const useGameStoreMobile = create((set, get) => ({
         console.info('[Store] ✅ 玩家结果数据已处理:', transformedData);
         return transformedData;
       } else {
-        throw new Error('API响应格式错误');
+        console.error('[Store] ❌ API响应格式错误，响应数据:', response);
+        throw new Error('API响应格式错误：缺少必要的数据字段');
       }
     } catch (err) {
       console.error('[Store] ❌ 获取玩家结果失败:', err);

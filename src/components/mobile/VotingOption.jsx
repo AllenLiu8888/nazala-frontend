@@ -19,6 +19,12 @@ const VotingOption = ({ option, isSelected, onClick }) => {
     return acc;
   }, {});
 
+  // 检查是否所有 attrs 的 value 都是 0
+  const allValuesZero = desiredOrder.every(key => {
+    const val = Number(attrMap[key] ?? 0);
+    return val === 0;
+  });
+
   const letter = (() => {
     const dn = Number(option?.display_number);
     if (!Number.isFinite(dn)) return '';
@@ -37,26 +43,28 @@ const VotingOption = ({ option, isSelected, onClick }) => {
       <div className="text-responsive-option font-semibold mb-2 break-words whitespace-pre-wrap">
         {letter ? `${letter}. ` : ''}{option?.text ?? ''}
       </div>
-      <div className="flex flex-wrap gap-2 text-responsive-badge">
-        {desiredOrder.map((key) => {
-          const abbr = nameToAbbr[key];
-          const val = Number(attrMap[key] ?? 0);
-          const sign = val > 0 ? `+${val}` : `${val}`; // 保留负号
-          const positive = val >= 0;
-          return (
-            <span
-              key={key}
-              className="badge-padding-responsive rounded border"
-              style={{
-                borderColor: positive ? '#22c55e' : '#ef4444',
-                color: positive ? '#22c55e' : '#ef4444',
-              }}
-            >
-              {abbr} {sign}
-            </span>
-          );
-        })}
-      </div>
+      {!allValuesZero && (
+        <div className="flex flex-wrap gap-2 text-responsive-badge">
+          {desiredOrder.map((key) => {
+            const abbr = nameToAbbr[key];
+            const val = Number(attrMap[key] ?? 0);
+            const sign = val > 0 ? `+${val}` : `${val}`; // 保留负号
+            const positive = val >= 0;
+            return (
+              <span
+                key={key}
+                className="badge-padding-responsive rounded border"
+                style={{
+                  borderColor: positive ? '#22c55e' : '#ef4444',
+                  color: positive ? '#22c55e' : '#ef4444',
+                }}
+              >
+                {abbr} {sign}
+              </span>
+            );
+          })}
+        </div>
+      )}
     </button>
   );
 };
