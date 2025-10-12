@@ -8,12 +8,12 @@ const Timeline = () => {
   const navigate = useNavigate();
   const [token, setToken] = useState('');
   
-  // 从 store 获取状态
+  // Get state from store
   const timeline = useGameStoreMobile(s => s.timeline) || { events: [], loading: false, error: null };
   const fetchGameTimeline = useGameStoreMobile(s => s.fetchGameTimeline);
   const fetchCurrentGame = useGameStoreMobile(s => s.fetchCurrentGame);
 
-  // 初始化 token
+  // Initialize token
   useEffect(() => {
     const savedToken = localStorage.getItem('authToken');
     if (savedToken) {
@@ -21,13 +21,13 @@ const Timeline = () => {
     }
   }, []);
 
-  // 获取时间轴数据
+  // Get timeline data
   useEffect(() => {
     const loadTimeline = async () => {
       try {
         let currentGameId = gameId;
         
-        // 如果没有 gameId，尝试获取当前游戏
+        // If no gameId, try to get current game
         if (!currentGameId) {
           const currentGame = await fetchCurrentGame();
           currentGameId = currentGame?.id;
@@ -37,31 +37,31 @@ const Timeline = () => {
           await fetchGameTimeline(currentGameId, token);
         }
       } catch (error) {
-        console.error('加载时间轴失败:', error);
+        console.error('Failed to load timeline:', error);
       }
     };
 
-    // 只有当token存在时才执行请求
+    // Only execute request when token exists
     if (token) {
       loadTimeline();
     }
-  }, [gameId, token]); // 移除函数依赖，避免重复触发
+  }, [gameId, token]); // Remove function dependencies to avoid repeated triggers
 
 
 
   return (
     <div className="h-screen overflow-y-auto relative">
-      {/* 主要内容区域（与 PersonalSummary 相同布局与卡片风格） */}
+      {/* Main content area (same layout and card style as PersonalSummary) */}
       <div className="relative z-10 min-h-screen p-4">
         <div className="w-full max-w-sm mx-auto">
-          {/* 顶部标题和刷新按钮 */}
+          {/* Top title and refresh button */}
           <div className="flex items-center justify-between mb-3">
             <h1 className="text-3xl font-extrabold tracking-wider text-cyan-300">
               History Overview
             </h1>
           </div>
           
-          {/* 时间轴组件 */}
+          {/* Timeline component */}
           <TimelineComponent
             events={timeline.events}
             loading={timeline.loading}
@@ -76,7 +76,7 @@ const Timeline = () => {
             token={token}
           />
 
-          {/* 底部返回按钮 */}
+          {/* Bottom return button */}
           <div className="mt-6 flex justify-center">
             <button
               onClick={() => navigate(`/game/${gameId}/summary`)}

@@ -1,9 +1,9 @@
-// 投票选项组件
-// 接收完整的 option 对象：{ id, text, display_number, attrs: [{ name, value|vaLue }] }
+// Voting option component
+// Receives complete option object: { id, text, display_number, attrs: [{ name, value|vaLue }] }
 const VotingOption = ({ option, isSelected, onClick }) => {
   const attrs = Array.isArray(option?.attrs) ? option.attrs : [];
 
-  // 将后端名称映射为缩写，并确保固定顺序显示
+  // Map backend names to abbreviations and ensure fixed order display
   const nameToAbbr = {
     MemoryEquity: 'ME',
     TechnologicalControl: 'TC',
@@ -19,7 +19,7 @@ const VotingOption = ({ option, isSelected, onClick }) => {
     return acc;
   }, {});
 
-  // 检查是否所有 attrs 的 value 都是 0
+  // Check if all attrs values are 0
   const allValuesZero = desiredOrder.every(key => {
     const val = Number(attrMap[key] ?? 0);
     return val === 0;
@@ -48,7 +48,7 @@ const VotingOption = ({ option, isSelected, onClick }) => {
           {desiredOrder.map((key) => {
             const abbr = nameToAbbr[key];
             const val = Number(attrMap[key] ?? 0);
-            const sign = val > 0 ? `+${val}` : `${val}`; // 保留负号
+            const sign = val > 0 ? `+${val}` : `${val}`; // Preserve negative sign
             const positive = val >= 0;
             return (
               <span

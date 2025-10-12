@@ -1,4 +1,4 @@
-// 投票标题组件（自适应字体大小）
+// Voting title component (responsive font size)
 const Question = ({ question = "Memories is:", onClick }) => {
     return (
         <div className="text-center mb-8">

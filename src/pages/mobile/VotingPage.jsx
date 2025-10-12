@@ -8,7 +8,7 @@ const VotingPage = () => {
   const { gameId: gameIdParam } = useParams();
   const navigate = useNavigate();
   
-  // Store状态
+  // Store state
   const gameState = useGameStoreMobile(s => s.gameMeta.state);
   const gameMetaId = useGameStoreMobile(s => s.gameMeta.id);
   const turn = useGameStoreMobile(s => s.turn);
@@ -17,13 +17,13 @@ const VotingPage = () => {
   const startPollingForVote = useGameStoreMobile(s => s.startPollingForVote);
   const stopPolling = useGameStoreMobile(s => s.stopPolling);
   
-  // 本地状态
+  // Local state
   const [selectedId, setSelectedId] = useState(null);
   const [submitOk, setSubmitOk] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState(null);
   
-  // 用于跟踪当前turn_index，检测变化
+  // Used to track current turn_index and detect changes
   const currentTurnIndexRef = useRef(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
@@ -44,40 +44,40 @@ const VotingPage = () => {
           gameMeta: { id },
         } = useGameStoreMobile.getState();
 
-        // 获取游戏ID
+        // Get game ID
         const paramId = Number(gameIdParam);
         const gameId = Number.isFinite(paramId) ? paramId : id;
         if (Number.isFinite(paramId) && id !== paramId) {
           useGameStoreMobile.getState().setGameMeta({ id: paramId });
         }
-        // 获取token
+        // Get token
         const token = localStorage.getItem('authToken');
 
 
-        // 获取游戏详情和当前回合
-        console.info('[VotingPage] 🔄 获取游戏数据...');
+        // Get game details and current turn
+        console.info('[VotingPage] Getting game data...');
         const [game, currentTurn] = await Promise.all([
           fetchGameDetail(gameId),
           fetchCurrentTurn(gameId, token)
         ]);
 
         if (!game) {
-          throw new Error('获取游戏详情失败');
+          throw new Error('Failed to get game details');
         }
 
-        // 记录当前turn_index
+        // Record current turn_index
         if (currentTurn && typeof currentTurn.index === 'number') {
           currentTurnIndexRef.current = currentTurn.index;
-          console.info('[VotingPage] ✅ 当前回合:', currentTurn.index);
+          console.info('[VotingPage] Current turn:', currentTurn.index);
         } else {
-          console.warn('[VotingPage] ⚠️ 回合数据无效');
+          console.warn('[VotingPage] Turn data invalid');
         }
 
 
-        console.info('[VotingPage] ✅ 页面加载完成');
+        console.info('[VotingPage] Page loading complete');
         setIsInitializing(false);
       } catch (error) {
-        console.error('[VotingPage] ❌ 页面加载失败:', error);
+        console.error('[VotingPage] Page loading failed:', error);
         setInitError(error.message);
         setIsInitializing(false);
       }
@@ -90,49 +90,49 @@ const VotingPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameIdParam]);
   
-  // 2. 启动轮询（只在用户提交选择后）
+  // 2. Start polling (only after user submits choice)
   useEffect(() => {
     if (!isInitializing && !initError && hasSubmitted) {
-      console.info('[VotingPage] 🔄 启动轮询机制...');
+      console.info('[VotingPage] Starting polling mechanism...');
       startPollingForVote();
       return () => {
-        console.info('[VotingPage] ⏹️ 停止轮询机制...');
+        console.info('[VotingPage] Stopping polling mechanism...');
         stopPolling();
       };
     }
   }, [isInitializing, initError, hasSubmitted, startPollingForVote, stopPolling]);
 
-  // 3. 检测turn_index变化，重置组件状态以进入新回合
+  // 3. Detect turn_index changes, reset component state to enter new turn
   useEffect(() => {
     const currentTurnIndex = turn?.index;
     
-    // 如果turn_index有效且与之前记录的不同
+    // If turn_index is valid and different from previously recorded
     if (typeof currentTurnIndex === 'number' && 
         currentTurnIndexRef.current !== null && 
         currentTurnIndex !== currentTurnIndexRef.current) {
       
-      console.info('[VotingPage] 🔄 检测到turn_index变化:', 
+      console.info('[VotingPage] Detected turn_index change:', 
         currentTurnIndexRef.current, '→', currentTurnIndex);
       
-      // 如果用户已经提交过选择，则重置组件状态进入新回合
+      // If user has already submitted choice, reset component state to enter new turn
       if (hasSubmitted) {
-        console.info('[VotingPage] 🔄 用户已提交，重置组件状态进入新回合...');
+        console.info('[VotingPage] User has submitted, resetting component state to enter new turn...');
         
-        // 重置本地状态
+        // Reset local state
         setHasSubmitted(false);
         setSelectedId(null);
         setSubmitOk(false);
         
-        // 停止轮询（将在用户下次提交后重新启动）
+        // Stop polling (will restart after user next submission)
         stopPolling();
       }
       
-      // 更新记录的turn_index
+      // Update recorded turn_index
       currentTurnIndexRef.current = currentTurnIndex;
     }
   }, [turn?.index, hasSubmitted, stopPolling]);
 
-  // 5. 用户选择和提交逻辑
+  // 5. User selection and submission logic
   const submitChoice = async (chosen) => {
     setSelectedId(chosen);
     try {
@@ -144,16 +144,16 @@ const VotingPage = () => {
         setSubmitOk(true);
         setTimeout(() => setSubmitOk(false), 1500);
       } else {
-        console.error('[VotingPage] ❌ 选项提交失败');
-        setSelectedId(null); // 重置选择
+        console.error('[VotingPage]Option submission failed');
+        setSelectedId(null); // Reset selection
       }
     } catch (error) {
-      console.error('[VotingPage] ❌ 提交过程出错:', error);
-      setSelectedId(null); // 重置选择
+      console.error('[VotingPage]Submission process error:', error);
+      setSelectedId(null); // Reset selection
     }
   };
 
-  // 6. 获取显示数据
+  // 6. Get display data
   const question = turn?.questionText || 'Memories is:';
   const votingOptions = turn?.options || [
     { id: 1, text: 'a right', display_number: 1 },
@@ -162,46 +162,46 @@ const VotingPage = () => {
     { id: 4, text: 'a trade', display_number: 4 }
   ];
 
-  // 7. 监听游戏状态变化：finished 或 archived 时停止轮询并跳转
+  // 7. Listen for game state changes: stop polling and redirect when finished or archived
   useEffect(() => {
     if (isGameFinished || isGameArchived) {
-      console.info('[VotingPage] 🏁 游戏结束，停止轮询并跳转到总结页面');
-      stopPolling(); // 停止轮询
+      console.info('[VotingPage] 🏁 Game ended, stopping polling and redirecting to summary page');
+      stopPolling(); // Stop polling
       const currentGameId = gameMetaId || gameIdParam || 'demo-game';
       navigate(`/game/${currentGameId}/summary`);
     }
   }, [isGameFinished, isGameArchived, gameMetaId, gameIdParam, navigate, stopPolling]);
 
 
-  // 8. 渲染逻辑
-  // 加载中状态
+  // 8. Render logic
+  // Loading state
   if (isInitializing) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-cyan-400 text-xl">正在加载游戏...</div>
+        <div className="text-cyan-400 text-xl">Loading game...</div>
       </div>
     );
   }
 
-  // 错误状态
+  // Error state
   if (initError) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-400 text-xl mb-4">加载失败</div>
+          <div className="text-red-400 text-xl mb-4">Loading failed</div>
           <div className="text-red-200 text-sm mb-4">{initError}</div>
           <button 
             onClick={() => window.location.reload()} 
             className="px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700"
           >
-            重新加载
+            Reload
           </button>
         </div>
       </div>
     );
   }
 
-  // 游戏已归档状态
+  // Game archived state
   if (isGameArchived) {
     const goToPersonalSummary = () => {
       const currentGameId = gameMetaId || gameIdParam || 'demo-game';
@@ -211,44 +211,44 @@ const VotingPage = () => {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="text-cyan-400 text-2xl mb-6">游戏结束</div>
+          <div className="text-cyan-400 text-2xl mb-6">Game Over</div>
           <button
             onClick={goToPersonalSummary}
             className="px-6 py-3 bg-cyan-400 text-black rounded-lg text-lg font-semibold hover:bg-cyan-300 transition-colors duration-200"
           >
-            查看个人总结
+            View Personal Summary
           </button>
         </div>
       </div>
     );
   }
 
-  // 8. 主渲染 - 投票界面
+  // 8. Main render - voting interface
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 py-8">
-      {/* 游戏状态显示 */}
+      {/* Game status display */}
       {(gameMetaId != null) && (
         <div className="text-center mb-4">
           <div className="text-cyan-400 text-sm">
-            游戏{gameMetaId} 状态: {gameState} 回合: {(turn.index)}
+            Game {gameMetaId} Status: {gameState} Turn: {(turn.index)}
           </div>
         </div>
       )}
       
-      {/* 投票标题 */}
+      {/* Voting title */}
       <Question question={question} />
       
-      {/* 提交状态显示 */}
+      {/* Submission status display */}
       <div className="text-center mb-8">
         {submitOk && (
-          <div className="text-green-400 text-lg mb-4">提交成功</div>
+          <div className="text-green-400 text-lg mb-4">Submission successful</div>
         )}
         {hasSubmitted && !submitOk && (
-          <div className="text-yellow-400 text-lg mb-4">等待下一回合...</div>
+          <div className="text-yellow-400 text-lg mb-4">Waiting for next turn...</div>
         )}
       </div>
 
-      {/* 投票选项 */}
+      {/* Voting options */}
       <div className="max-w-sm mx-auto w-full space-y-4">
         {votingOptions.map((option, index) => (
           <VotingOption
@@ -258,7 +258,7 @@ const VotingPage = () => {
             onClick={() => {
               if (!hasSubmitted) {
                 const chosen = option.id;
-                console.info('[VotingPage] 点击选择 optionId=', chosen);
+                console.info('[VotingPage] Clicked to select optionId=', chosen);
                 submitChoice(chosen);
               }
             }}

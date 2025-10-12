@@ -8,7 +8,7 @@ const PersonalSummary = () => {
   const navigate = useNavigate();
   const [personalData, setPersonalData] = useState(null);
   
-  // 从store获取方法
+  // Method to get from store
   const { fetchPlayerResult } = useGameStoreMobile();
 
   const goTimelinePage = () => {
@@ -16,21 +16,21 @@ const PersonalSummary = () => {
     navigate(`/game/${currentGameId}/timeline`);
   };
   
-  // 获取玩家结果数据
+  // Get player result data
   useEffect(() => {
-    if (!gameId) return; // 如果没有gameId，不执行请求
+    if (!gameId) return; // If no gameId, don't execute request
     
     const loadPlayerResult = async () => {
       try {
         const result = await fetchPlayerResult(gameId);
         setPersonalData(result);
-        console.log('🔍 PersonalSummary: 获取玩家结果数据', result);
+        console.log('PersonalSummary: Get player result data', result);
       } catch (error) {
-        console.error('❌ 获取玩家结果失败:', error);
-        // 如果API调用失败，使用模拟数据作为fallback
+        console.error('Failed to get player result:', error);
+        // If API call fails, use mock data as fallback
         const mockData = {
-          personality: '人格假数据',
-          description: '人格假数据描述',
+          personality: 'Mock Personality',
+          description: 'Mock personality description',
           portraitUrl: 'https://placehold.co/160x200/png'
         };
         setPersonalData(mockData);
@@ -53,21 +53,21 @@ const PersonalSummary = () => {
 
   return (
     <div className="h-screen overflow-y-auto relative">
-      {/* 主要内容区域（整页自然滚动） */}
+      {/* Main content area (full page natural scrolling) */}
       <div className="relative z-10 min-h-screen p-4 flex items-center justify-center">
         <div className="w-full max-w-sm mx-auto">
-          {/* 顶部标题 */}
+          {/* Top title */}
           <h1 className="text-center text-3xl font-extrabold tracking-wider text-cyan-300 mb-3">
             Game Over
           </h1>
 
-          {/* 主要卡片 */}
+          {/* Main card */}
           <div className="border-2 border-cyan-400 rounded-xl bg-black/80 backdrop-blur-sm p-4">
-            {/* 雷达图（小尺寸组件） */}
+            {/* Radar chart (small size component) */}
             <div className="flex justify-center">
               <SmallRadarChart />
             </div>
-            {/* Personality 区块 */}
+            {/* Personality section */}
             <div className="mb-4">
               <h2 className="text-white text-lg font-bold text-center">Personality</h2>
               <p className="text-[11px] text-gray-300 text-center mt-2 leading-5">
@@ -75,23 +75,23 @@ const PersonalSummary = () => {
               </p>
             </div>
 
-            {/* 角色形象 */}
+            {/* Character image */}
             <div className="flex justify-center mb-1">
               <div className="w-36 h-44 rounded-xl border border-cyan-500/70 bg-black/40 flex items-center justify-center overflow-hidden">
-                {/* 使用API返回的角色头像 */}
+                {/* Use character avatar returned by API */}
                 <img
                   src={personalData.portraitUrl || "https://placehold.co/160x200/png"}
                   alt="character"
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    // 如果API图片加载失败，使用占位图片
+                    // If API image fails to load, use placeholder image
                     e.target.src = "https://placehold.co/160x200/png";
                   }}
                 />
               </div>
             </div>
 
-            {/* 角色称号与说明 */}
+            {/* Character title and description */}
             <div className="text-center text-white">
               <p className="text-[11px] text-gray-300">Base on your choices, you are</p>
               <h3 className="text-xl font-extrabold text-cyan-300 mt-1">
@@ -105,7 +105,7 @@ const PersonalSummary = () => {
               </p>
             </div>
 
-            {/* 底部按钮区域 */}
+            {/* Bottom button area */}
             <div className="mt-4">
               <button
                 className="w-full bg-cyan-400 text-black py-2 rounded text-sm font-semibold hover:bg-cyan-300 transition-colors duration-200"

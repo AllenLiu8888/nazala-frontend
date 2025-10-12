@@ -1,4 +1,4 @@
-// 第1步：最基础的雷达图
+// Step 1: Basic radar chart
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 
@@ -20,7 +20,7 @@ const SmallRadarChart = () => {
             },
             plotOptions: {
                 radar: {
-                size: 120  // 移动端较小半径
+                size: 120  // Smaller radius for mobile
                 }
             },
             grid: {

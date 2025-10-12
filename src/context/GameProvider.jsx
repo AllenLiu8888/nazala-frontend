@@ -14,16 +14,16 @@ export const GameProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      console.log('🎮 Context: 获取当前游戏...');
+      console.log(' Context: Getting the current game...');
       
       const gameData = await gameApi.getCurrentGame();
       setGame(gameData.game);
       
-      console.log('✅ Context: 游戏数据已更新', gameData.game);
+      console.log(' Context: Game data has been updated', gameData.game);
       return gameData.game;
     } catch (err) {
       setError(err.message);
-      console.error('❌ Context: 获取游戏失败', err.message);
+      console.error(' Context: Failed to obtain the game', err.message);
       throw err;
     } finally {
       setLoading(false);
