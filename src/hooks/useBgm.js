@@ -6,8 +6,8 @@ export const BGM_URLS = {
   menu: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760245768/Cyberpunk_2077_E3_2018_Trailer_Music_Hyper_-_SPOILER_4K_hcaqg8.mp3',
   // game: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760243513/intense-cyberpunk-techno-music-348920_w4ixcx.mp3',
   game: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760244988/Neon_Circuit_City_2025-10-11T104419_uzyizp.mp3',
-  intro: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760244978/ElevenLabs_2025-10-11T10_24_09_Female_Robot___AI_Assistant_Voice_with_robot_effect__pvc_sp97_s42_sb68_se55_b_m2_jaqr1j.mp3',
-  gameover: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760245768/Cyberpunk_2077_E3_2018_Trailer_Music_Hyper_-_SPOILER_4K_hcaqg8.mp3',
+  intro: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760258905/intro_3_xglst0.mp3',
+  gameover: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760259256/GameOver_01_h7m1tb.mp3',
 };
 
 

@@ -95,9 +95,9 @@ function App() {
       stopNonGame();
 
       if (typeof turnIndex === 'number' && turnIndex === 0) {
-        // 仅在 Intro 播放 intro，不播放 game
+        // 仅在 Intro 播放 intro，不播放 game；音量固定为 1.0（基础 0.5 的两倍）
         try { stopGame(); } catch (err) { void err; }
-        try { setIntroVol(Math.min(1, BASE_INTRO_VOL * 3)); } catch (err) { void err; }
+        try { setIntroVol(1); } catch (err) { void err; }
         try { playIntro(); } catch (err) { void err; }
       } else if (typeof turnIndex === 'number' && turnIndex > 0) {
         // 非 Intro：只保留 game，恢复默认体积并确保 intro 停止

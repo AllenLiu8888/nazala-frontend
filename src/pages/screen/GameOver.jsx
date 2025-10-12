@@ -37,7 +37,7 @@ const GameOver = () => {
             content: (
                 <section className="h-full flex items-center justify-center overflow-hidden">
                     <div className="w-full max-w-2xl">
-                        <RadarChart size={500} />
+                        <RadarChart size={600} />
                     </div>
                 </section>
             )
