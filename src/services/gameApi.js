@@ -72,4 +72,8 @@ export const gameApi = {
   async getPlayerResult(gameId, token) {
     return await http.get(`/api/game/${gameId}/player/result/`, token);
   },
+
+  async getGameEnding(gameId, token) {
+    return await http.get(`/api/game/${gameId}/ending/`, token);
+  },
 };

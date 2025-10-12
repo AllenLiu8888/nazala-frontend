@@ -7,6 +7,7 @@ import DecisionProgress from '../../components/dashboard/footer/DecisionProgress
 import StorySection from '../../components/dashboard/main/StorySection';
 import Visualisation from '../../components/dashboard/main/Visualisation';
 import useGameStoreScreen from '../../store/index_screen';
+import LoadingOverlay from '../../components/shared/LoadingOverlay';
  
 
 
@@ -19,6 +20,7 @@ export default function Game() {
     const playersTotal = useGameStoreScreen(s => s.players.total);
     const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
+    const generating = useGameStoreScreen(s => s.ui.generating);
 
     // 使用 ref 防止 StrictMode 导致的重复调用
     const hasInitialized = useRef(false);
@@ -57,7 +59,7 @@ export default function Game() {
     }, [gameState, turnIndex, gameId, navigate]);
 
     return (
-        <div className="h-full w-full flex flex-col">
+        <div className="h-full w-full flex flex-col relative">
             {/* Header: 固定高度 */}
             <header className="flex justify-between flex-shrink-0">
                 <Round />
@@ -78,6 +80,7 @@ export default function Game() {
                 <div className="w-px h-10rem border-3 border-cyan-300 mx-4"/>
                 <DecisionProgress />
             </footer>
+            {generating && <LoadingOverlay text="Generating next turn..." small />}
         </div>
         );
     }

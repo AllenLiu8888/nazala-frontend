@@ -41,6 +41,7 @@ export const useGameStoreScreen = create((set, get) => ({
     phase: 'intro', // intro | voting | result
     statusRaw: null, // 保留后端原始 status，目前只有0
     questionText: null,
+    storyText: null,
     options: [],
     attrs: [],
     total_players: 0,
@@ -70,11 +71,19 @@ export const useGameStoreScreen = create((set, get) => ({
     error: null,
   },
 
+  // 结局内容
+  ending: {
+    text: '',
+    loading: false,
+    error: null,
+  },
+
   // UI 辅助状态
   // loading：请求中；error：最近一次错误信息（不断线策略）
   ui: {
     loading: false,
     error: null,
+    generating: false,
   },
 
   // 轮询句柄（内部使用）
@@ -211,6 +220,7 @@ export const useGameStoreScreen = create((set, get) => ({
             phase: toPhaseText(turn?.status),
             statusRaw: (turn?.status !== undefined ? turn.status : state.turn.statusRaw),
             questionText: turn?.question_text ?? state.turn.questionText,
+            storyText: turn?.story ?? state.turn.storyText,
             options: Array.isArray(turn?.options) ? turn.options : state.turn.options,
             attrs: Array.isArray(turnLevelAttrs) ? turnLevelAttrs : state.turn.attrs,
             total_players: typeof turn?.total_players === 'number' ? turn.total_players : state.turn.total_players,
@@ -443,14 +453,16 @@ export const useGameStoreScreen = create((set, get) => ({
   submitCurrentTurn: async (token = null) => {
     console.info('[Store] 📤 开始提交当前回合...', { hasToken: !!token });
     try {
+      set((state) => ({ ui: { ...state.ui, generating: true } }));
       const gameId = await getGameId(get);
       await gameApi.submitTurn(gameId, token);
       // 成功后刷新当前回合
       await get().fetchCurrentTurn(gameId, token);
+      set((state) => ({ ui: { ...state.ui, generating: false } }));
       return true;
     } catch (err) {
       console.error('[Store] ❌ 提交回合失败:', err);
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '提交回合失败' } }));
+      set((state) => ({ ui: { ...state.ui, error: err?.message || '提交回合失败', generating: false } }));
       return false;
     }
   },
@@ -479,6 +491,21 @@ export const useGameStoreScreen = create((set, get) => ({
         endedAt: new Date().toISOString(),
       }
     }));
+  },
+
+  // 获取结局文案
+  fetchGameEnding: async (maybeGameId = null, token = null) => {
+    set((state) => ({ ending: { ...state.ending, loading: true, error: null } }));
+    try {
+      const gameId = await getGameId(get, maybeGameId, true);
+      const res = await gameApi.getGameEnding(gameId, token);
+      const text = res?.ending || res?.text || res?.data || '';
+      set((state) => ({ ending: { ...state.ending, loading: false, text } }));
+      return text;
+    } catch (err) {
+      set((state) => ({ ending: { ...state.ending, loading: false, error: err?.message || '获取结局失败' } }));
+      return '';
+    }
   },
 
   // 归档游戏：调用后端并将前端状态置为 archived

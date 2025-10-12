@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Question from '../../components/mobile/Queston';
 import VotingOption from '../../components/mobile/VotingOption';
 import useGameStoreMobile from '../../store/index_mobile';
+import LoadingOverlay from '../../components/shared/LoadingOverlay';
 
 const VotingPage = () => {
   const { gameId: gameIdParam } = useParams();
@@ -87,7 +88,6 @@ const VotingPage = () => {
       hasInitialized.current = true;
       loadPage();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameIdParam]);
   
   // 2. Start polling (only after user submits choice)
@@ -225,7 +225,7 @@ const VotingPage = () => {
 
   // 8. Main render - voting interface
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-8">
+    <div className="min-h-screen flex flex-col justify-center px-6 py-8 relative">
       {/* Game status display */}
       {(gameMetaId != null) && (
         <div className="text-center mb-4">
@@ -265,6 +265,11 @@ const VotingPage = () => {
           />
         ))}
       </div>
+
+      {/* 提交后等待下一回合：覆盖式加载动画（移动端） */}
+      {hasSubmitted && !isGameFinished && (
+        <LoadingOverlay text="Generating next turn..." small />
+      )}
     </div>
   );
 };

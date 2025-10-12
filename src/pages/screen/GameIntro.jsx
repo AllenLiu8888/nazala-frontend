@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import useGameStoreScreen from '../../store/index_screen';
 import RingScore from '../../components/dashboard/footer/RingScore';
 import { useBgm, BGM_URLS } from '../../hooks/useBgm';
+import LoadingOverlay from '../../components/shared/LoadingOverlay';
 
 const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
@@ -15,6 +16,7 @@ const GameIntro = () => {
     const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
     const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
+    const generating = useGameStoreScreen(s => s.ui.generating);
     
     // 使用 ref 防止 StrictMode 导致的重复调用
     const hasInitialized = useRef(false);
@@ -65,7 +67,7 @@ const GameIntro = () => {
     return (
         <>
             <div 
-                className="h-full overflow-hidden flex flex-col items-center justify-center gap-10 py-10"
+                className="h-full overflow-hidden flex flex-col items-center justify-center gap-10 py-10 relative"
             >
                 {/* Title 部分 */}
                 <header className="flex flex-col items-center justify-center text-center gap-4">
@@ -98,6 +100,7 @@ const GameIntro = () => {
                         </section>
                     </div>
                 </main>
+                {generating && <LoadingOverlay text="Generating next turn..." small />}
             </div>
         </>
     );
