@@ -50,13 +50,13 @@ const Timeline = () => {
 
 
   return (
-    <div className="h-screen overflow-y-auto relative">
+    <div className="h-screen overflow-y-auto relative pt-4 pb-28">
       {/* Main content area (same layout and card style as PersonalSummary) */}
       <div className="relative z-10 min-h-screen p-4">
         <div className="w-full max-w-sm mx-auto">
           {/* Top title and refresh button */}
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-3xl font-extrabold tracking-wider text-cyan-300">
+            <h1 className="font-pixel text-4xl font-extrabold tracking-wider text-cyan-300">
               History Overview
             </h1>
           </div>

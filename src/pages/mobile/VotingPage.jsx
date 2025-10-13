@@ -239,7 +239,7 @@ const VotingPage = () => {
       <Question question={question} />
       
       {/* Submission status display */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-2">
         {submitOk && (
           <div className="text-green-400 text-lg mb-4">Submission successful</div>
         )}

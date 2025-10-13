@@ -52,13 +52,13 @@ const PersonalSummary = () => {
   }
 
   return (
-    <div className="h-screen overflow-y-auto relative pt-8 pb-28">
+    <div className="h-screen overflow-y-auto relative pt-4 pb-28">
       {/* Main content area (full page natural scrolling) */}
       <div className="relative z-10 min-h-screen p-4 pt-6 flex items-center justify-center">
         <div className="w-full max-w-sm mx-auto space-y-6">
           {/* Top title */}
           <h1 className="font-pixel text-center text-5xl font-extrabold tracking-wider text-cyan-300 mb-3">
-            GAME OVER
+            ENDING
           </h1>
 
           {/* Radar chart */}
@@ -77,7 +77,7 @@ const PersonalSummary = () => {
           <div className="border-2 border-cyan-400 rounded-xl bg-black/80 backdrop-blur-sm p-4 space-y-4 px-8 pb-10">
             {/* Personality section */}
             <div className="mt-2">
-              <p className="text-sm text-gray-300 text-start mt-3 leading-5">
+              <p className="text-sm text-cyan-200 text-start mt-3 leading-5">
                 This is the final world we have created. Based on your outstanding contributions in {personalData.choices.join(' and ')}, you embody more of the characteristics of a visionary innovator.
               </p>
             </div>
@@ -100,18 +100,20 @@ const PersonalSummary = () => {
 
             {/* Character title and description */}
             <div className="text-center text-white pt-6">
-              <p className="text- text-gray-300">Base on your choices, you are</p>
+              <p className="text- text-cyan-200">Base on your choices, you are</p>
               <h3 className="text-2xl font-extrabold text-cyan-300 mt-2">
                 {personalData.personality || 'Memory Sentinel'}
               </h3>
             </div>
 
-            <div className="mt-2 text-sm leading-5 text-gray-200 space-y-2">
+            <div className="mt-2 text-sm leading-5 text-cyan-200 space-y-2">
               <p>
                 {personalData.description || "You live in a world where memories are traded like coins, yet you refuse to let truth be corrupted. Fairness is your compass; you believe that every memory must remain unaltered to keep society honest."}
               </p>
             </div>
 
+
+          </div>
             {/* Bottom button area */}
             <div className="mt-6">
               <button
@@ -121,7 +123,6 @@ const PersonalSummary = () => {
                 View timeline
               </button>
             </div>
-          </div>
         </div>
       </div>
     </div>

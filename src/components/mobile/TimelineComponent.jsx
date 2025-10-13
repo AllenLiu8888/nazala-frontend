@@ -3,11 +3,7 @@ import React from 'react';
 const TimelineComponent = ({ 
   events = [], 
   loading = false, 
-  error = null, 
-  onRefresh = null,
-  showDebugInfo = false,
-  gameId = null,
-  token = null 
+  error = null
 }) => {
   // Process API data and convert to frontend display format
   const processTimelineEvents = (apiEvents) => {
@@ -130,7 +126,7 @@ const TimelineComponent = ({
 
       {/* Mobile-optimized timeline */}
       <div className="space-y-4">
-        {timelineEvents.map((event, index) => (
+        {timelineEvents.map((event) => (
           <div key={event.id} className="relative">
             {/* Mobile: vertical stacked layout */}
             <div className="md:hidden">
@@ -151,13 +147,13 @@ const TimelineComponent = ({
                   </div>
                   
                   {/* Event description */}
-                  <div className="bg-neutral-200 text-black/80 rounded px-3 py-2 text-sm font-semibold shadow-sm">
+                  <div className="text-cyan-200 bg-slate-900 py-2 px-4 text-sm rounded-base font-medium">
                     {event.option_test}
                   </div>
                   
                   {/* Result (if any) */}
                   {event.result && (
-                    <div className="text-[10px] text-cyan-300 bg-slate-800/70 border border-cyan-500/30 px-2 py-1 rounded inline-block mt-2">
+                    <div className="text-[10px] text-cyan-300 px-0 py-1 inline-block mt-2">
                       {event.result}
                     </div>
                   )}
