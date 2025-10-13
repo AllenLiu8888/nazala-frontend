@@ -4,7 +4,7 @@ import { Howl } from 'howler';
 // ============ BGM URL 配置 ============
 export const BGM_URLS = {
   // menu: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760245768/Cyberpunk_2077_E3_2018_Trailer_Music_Hyper_-_SPOILER_4K_hcaqg8.mp3',
-  menu: 'https://jetta.vgmtreasurechest.com/soundtracks/cyberpunk-2077-original-game-score/omraadoj/1-01%20V.mp3',
+  menu: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760332238/1-01_V_im1khy.mp3',
   // game: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760243513/intense-cyberpunk-techno-music-348920_w4ixcx.mp3',
   game: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760244988/Neon_Circuit_City_2025-10-11T104419_uzyizp.mp3',
   intro: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760258905/intro_3_xglst0.mp3',

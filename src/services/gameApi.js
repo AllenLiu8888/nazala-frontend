@@ -9,7 +9,7 @@ export const gameApi = {
 
   // 获取游戏详情
   async getGameDetail(gameId) {
-    return await http.get(`/api/game/${gameId}/detail`);
+    return await http.get(`/api/game/${gameId}/detail/`);
   },
 
   // 开始游戏
