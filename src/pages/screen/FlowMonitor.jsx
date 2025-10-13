@@ -63,53 +63,53 @@ export default function FlowMonitor() {
 
     const baseNodes = [
       mkNode('home', 'Home', {
-        screen: { route: '/', desc: '首页 / 创建游戏' },
-        mobile: { route: null, desc: '无操作' },
+        screen: { route: '/', desc: 'Home / Create game' },
+        mobile: { route: null, desc: 'No action' },
         backend: { api: [], desc: '—' },
-        llm: { desc: '空闲' },
+        llm: { desc: 'Idle' },
       }),
       mkNode('lobby', 'Lobby / Waiting', {
-        screen: { route: route('/lobby'), desc: '展示二维码，轮询玩家人数，主持人可开始' },
-        mobile: { route: route('/waiting'), desc: '等待主持人开始' },
-        backend: { api: ['GET /api/game/{id}/detail/'], desc: '获取玩家计数与游戏详情（轮询）' },
-        llm: { desc: '空闲' },
+        screen: { route: route('/lobby'), desc: 'Show QR, poll player count, host can start' },
+        mobile: { route: route('/waiting'), desc: 'Waiting for host to start' },
+        backend: { api: ['GET /api/game/{id}/detail/'], desc: 'Fetch player counts and game detail (polling)' },
+        llm: { desc: 'Idle' },
       }),
       mkNode('intro', 'Intro (Round 0)', {
-        screen: { route: route('/intro'), desc: '故事背景与引导（Intro BGM）' },
-        mobile: { route: route('/voting'), desc: '价值观判断题（回合索引 0）' },
-        backend: { api: ['GET /api/game/{id}/turn/current'], desc: '获取当前回合（index=0）' },
-        llm: { desc: '待命' },
+        screen: { route: route('/intro'), desc: 'Story background and guidance (Intro BGM)' },
+        mobile: { route: route('/voting'), desc: 'Values question (turn index 0)' },
+        backend: { api: ['GET /api/game/{id}/turn/current'], desc: 'Fetch current turn (index 0)' },
+        llm: { desc: 'Standby' },
       }),
     ];
 
     const roundNodes = Array.from({ length: 10 }).map((_, i) => {
       const n = i + 1;
       return mkNode(`round-${n}`, `Round ${n}`, {
-        screen: { route: route('/game'), desc: `实时投票进度与可视化（${playersVoted}/${playersTotal}）` },
-        mobile: { route: route('/voting'), desc: '本回合题目；提交后等待下一回合' },
-        backend: { api: ['GET /api/game/{id}/turn/current', 'POST /api/game/{id}/turn/submit'], desc: '获取回合数据；全员完成后提交回合' },
-        llm: { desc: '生成故事和问题' },
+        screen: { route: route('/game'), desc: `Live voting progress and visuals (${playersVoted}/${playersTotal})` },
+        mobile: { route: route('/voting'), desc: 'This round question; after submit, wait for next round' },
+        backend: { api: ['GET /api/game/{id}/turn/current', 'POST /api/game/{id}/turn/submit'], desc: 'Fetch turn data; when all submitted, submit turn' },
+        llm: { desc: 'Generate story and questions' },
       });
     });
 
     const tailNodes = [
       mkNode('reflection', 'Reflection (Round 11)', {
-        screen: { route: route('/reflection'), desc: '反思页 / 回顾与总结提示' },
-        mobile: { route: route('/summary'), desc: '个人总结（可前往时间线 /timeline）' },
-        backend: { api: ['GET /api/game/{id}/player/summary/', 'GET /api/game/{id}/player/history/'], desc: '获取个人总结与时间线' },
-        llm: { desc: '空闲' },
+        screen: { route: route('/reflection'), desc: 'Reflection page / recap & guidance' },
+        mobile: { route: route('/summary'), desc: 'Personal summary (link to /timeline)' },
+        backend: { api: ['GET /api/game/{id}/player/summary/', 'GET /api/game/{id}/player/history/'], desc: 'Fetch personal summary and timeline' },
+        llm: { desc: 'Idle' },
       }),
       mkNode('gameover', 'Game Over', {
-        screen: { route: route('/gameover'), desc: '结束画面 / 展示总结性信息' },
-        mobile: { route: route('/summary'), desc: '个人总结 / 时间线查看' },
-        backend: { api: ['POST /api/game/{id}/finish/'], desc: '将游戏状态设为 finished；可后续归档' },
-        llm: { desc: '生成ending' },
+        screen: { route: route('/gameover'), desc: 'End screen / show summary info' },
+        mobile: { route: route('/summary'), desc: 'Personal summary / timeline' },
+        backend: { api: ['POST /api/game/{id}/finish/'], desc: 'Set game status to finished; can archive afterward' },
+        llm: { desc: 'Generate ending' },
       }),
       mkNode('archived', 'Archived', {
-        screen: { route: null, desc: '归档完成' },
-        mobile: { route: null, desc: '可回看' },
-        backend: { api: ['POST /api/game/{id}/archive/'], desc: '归档本局' },
-        llm: { desc: '空闲' },
+        screen: { route: null, desc: 'Archived' },
+        mobile: { route: null, desc: 'Reviewable' },
+        backend: { api: ['POST /api/game/{id}/archive/'], desc: 'Archive this game' },
+        llm: { desc: 'Idle' },
       }),
     ];
 
@@ -162,7 +162,7 @@ export default function FlowMonitor() {
   const Lane = ({ title, item }) => {
     const RouteText = () => (
       <div className="mb-1">
-        {item?.route ? `路由：${item.route}` : '路由：—'}
+        {item?.route ? `Route: ${item.route}` : 'Route: —'}
       </div>
     );
 
@@ -171,7 +171,7 @@ export default function FlowMonitor() {
       const hasApis = apis.length > 0;
       return (
         <div className="mt-1">
-          <div>API：</div>
+          <div>API:</div>
           {hasApis ? (
             <ul className="list-disc ml-4 mt-0.5">
               {apis.map((a, idx) => (
@@ -194,7 +194,7 @@ export default function FlowMonitor() {
           <RouteText />
         )}
         <div className="mt-auto pt-2 text-base text-cyan-100">
-          用途：{item?.desc || '—'}
+          Purpose: {item?.desc || '—'}
         </div>
       </div>
     );
@@ -218,7 +218,7 @@ export default function FlowMonitor() {
         </div>
 
         <div className="text-cyan-400/80 text-xs mb-4">
-          说明：这是一个动态流程图视图，自动对齐当前阶段并高亮。可点击卡片跳转对应路由。
+          Note: This is a dynamic flow view that auto-aligns and highlights the current stage. Click a card to navigate to its route.
         </div>
 
         <div className="relative">
