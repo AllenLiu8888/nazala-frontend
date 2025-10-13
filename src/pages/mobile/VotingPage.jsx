@@ -225,7 +225,7 @@ const VotingPage = () => {
 
   // 8. Main render - voting interface
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-8 relative">
+    <div className="min-h-screen flex flex-col justify-center px-6 py-8 pb-28 relative">
       {/* Game status display */}
       {(gameMetaId != null) && (
         <div className="text-center mb-4">

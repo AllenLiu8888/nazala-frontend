@@ -9,7 +9,7 @@ const GameOver = () => {
     
     // 页面文本内容（可配置）
     const title = "GAME OVER";
-    const subtitle = "After 10 years of decisions, here's the world you created...";
+    const subtitle = "Here's the world you created...";
     const endingText = useGameStoreScreen(s => s.ending.text) || "The chamber releases a final surge of light. Your chosen memory vanishes, leaving a hollow echo in your mind. On the giant screen, the crowd reacts—some cheer your sacrifice, others whisper doubts. Outside, society tilts: new rules form, trust shifts, and the balance of power bends to your decision. You step back into the world changed, carrying both the loss and the weight of its consequence. Game Over—your choice has written history.";
     const buttonText = "Back to Home";
 
@@ -24,7 +24,7 @@ const GameOver = () => {
                         <h2 className="pb-12 text-4xl font-medium text-cyan-300 tracking-wider opacity-90 text-center">
                             {subtitle}
                         </h2>
-                        <p className="text-3xl leading-relaxed text-cyan-200 text-center">
+                        <p className="text-2xl leading-relaxed text-cyan-200 text-start">
                             {endingText}
                         </p>
                     </div>
