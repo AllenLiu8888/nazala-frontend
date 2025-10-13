@@ -8,6 +8,7 @@ import GameLobby from './pages/screen/GameLobby'; // 游戏大厅
 import GameDashboard from './pages/screen/GameDashboard'; // 游戏主界面 (Dashboard)
 import GameReflection from './pages/screen/GameReflection'; // 反思页面
 import GameOver from './pages/screen/GameOver'; // 游戏结束页
+import FlowMonitor from './pages/screen/FlowMonitor'; // 流程可视化监控
 
 // 手机端页面组件 - 玩家扫码后使用
 import VotingPage from './pages/mobile/VotingPage'; // 投票页面
@@ -39,6 +40,8 @@ export const router = createBrowserRouter([
           { path: "game", element: <GameDashboard /> },
           { path: "reflection", element: <GameReflection /> },
           { path: "gameover", element: <GameOver /> },
+          // 可视化流程监控
+          { path: "flow", element: <FlowMonitor /> },
           // 手机端页面
           { path: "waiting", element: <WaitingPage /> },
           { path: "voting", element: <VotingPage /> },

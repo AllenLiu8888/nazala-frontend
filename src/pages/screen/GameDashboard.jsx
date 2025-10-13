@@ -15,6 +15,7 @@ export default function Game() {
     const { gameId } = useParams();
     const navigate = useNavigate();
     const gameState = useGameStoreScreen(s => s.gameMeta.state);
+    const maxRounds = useGameStoreScreen(s => s.gameMeta.maxRounds);
 
     // 从 store 读取数据
     const playersTotal = useGameStoreScreen(s => s.players.total);
@@ -50,13 +51,14 @@ export default function Game() {
 
     // 监听 turn index 和游戏状态变化，自动跳转
     useEffect(() => {
-        // Turn 11 时跳转到 Reflection 页面
-        if (turnIndex === 11) {
-            console.log('🎯 Turn index = 11，跳转到 Reflection');
+        // 最后一轮（倒数第一轮）跳转到 Reflection 页面
+        const maxIndex = typeof maxRounds === 'number' && maxRounds > 0 ? maxRounds - 1 : null;
+        if (maxIndex !== null && turnIndex === maxIndex) {
+            console.log('🎯 最后一轮，跳转到 Reflection');
             navigate(`/game/${gameId}/reflection`);
             return;
         }
-    }, [gameState, turnIndex, gameId, navigate]);
+    }, [gameState, maxRounds, turnIndex, gameId, navigate]);
 
     return (
         <div className="h-full w-full flex flex-col relative">
