@@ -7,7 +7,7 @@ export const BGM_URLS = {
   menu: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760332238/1-01_V_im1khy.mp3',
   // game: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760243513/intense-cyberpunk-techno-music-348920_w4ixcx.mp3',
   game: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760244988/Neon_Circuit_City_2025-10-11T104419_uzyizp.mp3',
-  intro: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760258905/intro_3_xglst0.mp3',
+  intro: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760440502/intro_5_rh0yl8.mp3',
   gameover: 'https://res.cloudinary.com/dd9dbngmy/video/upload/v1760259256/GameOver_01_h7m1tb.mp3',
 };
 

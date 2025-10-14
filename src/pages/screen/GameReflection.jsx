@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useGameStoreScreen from '../../store/index_screen';
 import { CONFIG } from '../../store/common_tools';
+import { useTypewriter, Cursor } from 'react-simple-typewriter';
 
 const GameReflection = () => {
     const { gameId } = useParams();
@@ -42,12 +43,67 @@ const GameReflection = () => {
 
     const reflectionContent1 = "After going through the entire journey, "
     const reflectionContent2 = "do you still hold the same views as you did at the beginning?"
+
+    const [firstLineDone, setFirstLineDone] = useState(false);
+    const [secondLineDone, setSecondLineDone] = useState(false);
+
+    const TypewriterLine = ({ content, typeSpeed = 10, onDone }) => {
+        const words = useMemo(() => [content || ''], [content]);
+        const [text, helper] = useTypewriter({
+            words,
+            typeSpeed,
+            deleteSpeed: 0,
+            delaySpeed: 0,
+            loop: 1
+        });
+        const { isDone } = helper;
+        const doneCalledRef = useRef(false);
+
+        useEffect(() => {
+            if (isDone && !doneCalledRef.current) {
+                doneCalledRef.current = true;
+                onDone && onDone();
+            }
+        }, [isDone, onDone]);
+        return (
+            <>
+                <span>{text}</span>
+                {!isDone && (
+                    <Cursor cursorStyle="▍" cursorColor="rgba(255, 255, 255, 1)" />
+                )}
+            </>
+        );
+    };
     return (
         <div className="h-full w-full flex items-center justify-center flex-col px-40 py-10">
             <h1 className="text-9xl font-pixel text-cyan-300">Reflection</h1>
             <div className="flex flex-col items-center justify-center py-20 pb-30">
-                <p className="font-pixel text-cyan-300 text-6xl mt-10">{reflectionContent1}</p>
-                <p className="font-pixel text-cyan-300 text-6xl mt-10">{reflectionContent2}</p>
+                <p className="font-pixel text-cyan-300 text-6xl mt-10">
+                    {!firstLineDone ? (
+                        <TypewriterLine
+                            key={`r1-${reflectionContent1.length}`}
+                            content={reflectionContent1}
+                            typeSpeed={60}
+                            onDone={() => setFirstLineDone(true)}
+                        />
+                    ) : (
+                        <span>{reflectionContent1}</span>
+                    )}
+                </p>
+                {firstLineDone && (
+                    <p className="font-pixel text-cyan-300 text-6xl mt-10">
+                        {!secondLineDone ? (
+                            <TypewriterLine
+                                key={`r2-${reflectionContent2.length}`}
+                                content={reflectionContent2}
+                                typeSpeed={70}
+                                onDone={() => setSecondLineDone(true)}
+                            />
+                        ) : (
+                            <span>{reflectionContent2}</span>
+                        )}
+                    </p>
+                )}
             </div>
         </div>
     );

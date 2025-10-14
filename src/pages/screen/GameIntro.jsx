@@ -4,10 +4,15 @@ import useGameStoreScreen from '../../store/index_screen';
 import RingScore from '../../components/dashboard/footer/RingScore';
 import { useBgm, BGM_URLS } from '../../hooks/useBgm';
 import LoadingOverlay from '../../components/shared/LoadingOverlay';
+import { motion } from 'framer-motion';
 
 const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
     const subtitle = "2075 | The boundary between memory and privacy";
+    // 段落（按你的文本拆分为三段）
+    const para1 = "The age of memory arrived without warning. What once hid in silence—private, fragile, fleeting—was dragged into light, stored in vaults, and traded like coin. Governments soon discovered its power: a recollection erased could silence dissent; a recollection forged could invent loyalty. Corporations followed, selling childhoods like luxury goods, auctioning grief, curating love.";
+    const para2 = "Citizens learned to guard their minds as if they were bank accounts, clutching each fragment of the past against intrusion. Yet the market thrived. Identity itself became negotiable, a shifting ledger of purchases and exchanges.";
+    const para3 = "The world tilted. Truth blurred, freedom bent, and the order of society pulsed to the flow of memory. Each decision—whether to keep, to trade, or to resist—reshaped not only the self, but the collective future. And beneath it all, one question lingered, unspoken but absolute: when memory is no longer yours, what remains of you?";
     const navigate = useNavigate();
     const { gameId } = useParams();
     
@@ -53,6 +58,13 @@ const GameIntro = () => {
         }
     }, [playersVoted]);
 
+    // Framer Motion 渐显配置
+    const fadeUp = (delay = 0) => ({
+        initial: { opacity: 0, y: 6 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 1.2, ease: 'easeOut', delay }
+    });
+
     // 监听 turn index 变化，这样当「submit turn」成功后，就能成功获知并自动跳转到 dashboard
     useEffect(() => {
         if (turnIndex >= 1 && turnIndex <= 10) {
@@ -80,10 +92,10 @@ const GameIntro = () => {
                 </header>
 
                 {/* 游戏框部分 */}
-                <main className="flex-1 flex flex-col justify-center items-center gap-15 px-4 py-2 w-8/10">
+                <main className="flex-1 flex flex-col justify-center items-center gap-15 px-4 py-2 pb-8 w-8/10">
                     <div className="h-full w-full flex flex-col justify-center px-20 py-15 items-center border-5 border-cyan-400 rounded-4xl">
-                        <section className="flex-1 overflow-hidden">
-                            <div className="pb-18 flex items-center justify-between gap-4">
+                        <section className="w-full flex-1 overflow-hidden flex flex-col justify-center items-center">
+                            <div className="w-full pb-8 flex items-center justify-between gap-4">
                                 <h2 className="font-pixel text-6xl text-cyan-400 font-semibold">Background</h2>
                                 <div className="flex items-center gap-4 font-pixel text-3xl text-cyan-300 justify-center">
                                     <RingScore size={32} value={playersVoted} max={playersTotal}/>
@@ -91,12 +103,17 @@ const GameIntro = () => {
                                 </div>
                             </div>
                             
-                            <p className="pb-8 text-4xl leading-relaxed text-cyan-200">
-                            In the future, memory is no longer private—it is stored, traded, and controlled like currency. Governments and corporations manipulate recollections to shape loyalty, erase dissent, or invent false lives. Markets thrive on selling curated pasts, while citizens guard their memories as tightly as bank accounts. 
-                            </p>
-                            <p className="text-4xl leading-relaxed text-cyan-200">
-                            Society itself is rebuilt on the flow of memory, fragile and unstable. Every decision—whether to keep, trade, or resist—reshapes both personal identity and the collective order. In this world, truth blurs, freedom bends, and the politics of memory decides the fate of all.
-                            </p>
+                            <div className="flex-1 flex flex-col justify-start items-start gap-4 w-full">
+                                <motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp(2)}>
+                                    {para1}
+                                </motion.p>
+                                <motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp(27)}>
+                                    {para2}
+                                </motion.p>
+                                <motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp(45)}>
+                                    {para3}
+                                </motion.p>
+                            </div>
                         </section>
                     </div>
                 </main>
