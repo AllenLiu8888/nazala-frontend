@@ -20,13 +20,20 @@ const Timeline = ({
     currentPoint = null,
     lineClass = 'bg-gray-300',
     pointClass = 'bg-gray-400',
-    currentPointClass = 'bg-yellow-200',
+    currentPointClass = 'bg-white',
     textClass = 'text-gray-600',
     className = ""
 }) => {
   // 计算时间轴点
     const timelinePoints = [];
     const totalYears = endYear - startYear;
+    const clampedCurrentIndex =
+      typeof currentPoint === 'number'
+        ? Math.max(0, Math.min(points - 1, currentPoint))
+        : null;
+    const currentPosition = clampedCurrentIndex !== null
+      ? (100 / (points - 1)) * clampedCurrentIndex
+      : null;
     
     for (let i = 0; i < points; i++) {
         const year = startYear + Math.floor((totalYears / (points - 1)) * i);
@@ -34,7 +41,7 @@ const Timeline = ({
         position: (100 / (points - 1)) * i,
         year: year,
         isMain: i === 0 || i === points - 1,
-        isCurrent: i === currentPoint
+        isCurrent: i === clampedCurrentIndex
         });
     }
 
@@ -52,23 +59,13 @@ const Timeline = ({
                 className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500 ease-in-out"
                 style={{ left: `${point.position}%` }}
             >
-                {/* 标记点 - 添加丝滑的尺寸和颜色过渡 */}
-                <div className={`
-                ${point.isCurrent ? currentPointClass : pointClass}
-                ${point.isCurrent ? 'w-10 h-10' : ''}
-                ${!point.isCurrent && point.isMain ? 'w-6 h-6' : ''}
-                ${!point.isCurrent && !point.isMain ? 'w-2 h-8' : ''}
-                rounded-full
-                transition-all duration-500 ease-in-out
-                ${point.isCurrent ? 'shadow-lg shadow-cyan-400/50' : 'shadow-sm'}
-                hover:scale-110
-                transform-gpu
-                `}></div>
+                {/* 固定刻度点（起止更大，中间更细） */}
+                <div className={`${point.isMain ? 'w-4 h-4' : 'w-1.5 h-6'} ${pointClass} rounded-full`} />
                 
                 {/* 年份标签 - 添加淡入淡出效果 */}
                 {point.isMain && (
                 <div className={`
-                    absolute top-8 -translate-x-1/2 text-xl ${textClass}
+                    absolute top-12 -translate-x-1/2 text-xl ${textClass}
                     transition-all duration-500 ease-in-out
                     ${point.isCurrent ? 'opacity-100 scale-110' : 'opacity-80 scale-100'}
                 `}>
@@ -77,6 +74,19 @@ const Timeline = ({
                 )}
             </div>
             ))}
+
+            {/* 丝滑移动的当前指示器（白色光晕 + 实心点） */}
+            {currentPosition !== null && (
+              <div
+                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-in-out"
+                style={{ left: `${currentPosition}%` }}
+              >
+                {/* 光晕层：白色高斯模糊（弱化） */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/40 blur-xl pointer-events-none" />
+                {/* 实心当前点 */}
+                <div className={`${currentPointClass} w-6 h-6 rounded-full border-6 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)]`} />
+              </div>
+            )}
         </div>
         </div>
     );

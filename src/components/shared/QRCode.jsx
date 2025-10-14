@@ -43,7 +43,7 @@ const QRCode = () => {
                         </div>
                     )}
                 </div>
-                <p className="text-4xl text-cyan-300 text-center">
+                <p className="font-pixel text-5xl text-cyan-300 text-center">
                     Existing Players: {playersCount}
                 </p>
             </div>

@@ -22,7 +22,7 @@ const DecisionProgress = () => {
                 currentPoint={displayCurrentPoint}
                 lineClass="bg-cyan-400"
                 pointClass="bg-cyan-400"
-                currentPointClass="bg-cyan-400 border-10 border-yellow-200"
+                currentPointClass="bg-cyan-400"
                 textClass="text-cyan-400"
                 />
             </div>

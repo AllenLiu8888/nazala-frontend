@@ -47,17 +47,17 @@ const HomePage = () => {
                 onClick={loading ? undefined : createGame}
             >
                 <div className="flex flex-col items-center justify-center text-center gap-6">
-                    <h1 className="font-pixel leading-normal text-8xl font-bold text-cyan-300">
+                    <h1 className="font-pixel leading-normal text-9xl font-bold text-cyan-300">
                         {HomePageTitle}
                     </h1>
                     
-                    <p className="font-pixel text-6xl text-cyan-300 font-light">
+                    <p className="font-pixel text-8xl text-cyan-300 font-light">
                         {HomePageSubtitle}
                     </p>
                     
                 </div>
                 <div className="font-pixel animate-pulse">
-                    <p className="text-4xl text-gray-400">
+                    <p className="text-6xl text-gray-400">
                         {loading ? 'Loading game...' : 'Press any key or click to start'}
                     </p>
                 </div>

@@ -71,10 +71,10 @@ const GameIntro = () => {
             >
                 {/* Title 部分 */}
                 <header className="flex flex-col items-center justify-center text-center gap-4">
-                    <h1 className="font-pixel leading-tight text-5xl font-bold text-cyan-300 tracking-wide">
+                    <h1 className="font-pixel leading-tight text-7xl font-bold text-cyan-300 tracking-wide">
                         {title}
                     </h1>
-                    <p className="font-pixel text-2xl font-medium text-cyan-300 tracking-wider opacity-90">
+                    <p className="font-pixel text-3xl font-medium text-cyan-300 tracking-wider opacity-90">
                         {subtitle}
                     </p>
                 </header>
@@ -83,18 +83,18 @@ const GameIntro = () => {
                 <main className="flex-1 flex flex-col justify-center items-center gap-15 px-4 py-2 w-8/10">
                     <div className="h-full w-full flex flex-col justify-center px-20 py-15 items-center border-5 border-cyan-400 rounded-4xl">
                         <section className="flex-1 overflow-hidden">
-                            <div className="pb-12 flex items-center justify-between gap-4">
-                                <h2 className="font-pixel text-5xl text-cyan-400 font-semibold">Background</h2>
-                                <div className="flex items-center gap-4 font-pixel text-2xl text-cyan-300">
+                            <div className="pb-18 flex items-center justify-between gap-4">
+                                <h2 className="font-pixel text-6xl text-cyan-400 font-semibold">Background</h2>
+                                <div className="flex items-center gap-4 font-pixel text-3xl text-cyan-300 justify-center">
                                     <RingScore size={32} value={playersVoted} max={playersTotal}/>
                                     {playersVoted} / {playersTotal} players completed
                                 </div>
                             </div>
                             
-                            <p className="pb-8 text-3xl leading-relaxed text-cyan-200">
+                            <p className="pb-8 text-4xl leading-relaxed text-cyan-200">
                             In the future, memory is no longer private—it is stored, traded, and controlled like currency. Governments and corporations manipulate recollections to shape loyalty, erase dissent, or invent false lives. Markets thrive on selling curated pasts, while citizens guard their memories as tightly as bank accounts. 
                             </p>
-                            <p className="text-3xl leading-relaxed text-cyan-200">
+                            <p className="text-4xl leading-relaxed text-cyan-200">
                             Society itself is rebuilt on the flow of memory, fragile and unstable. Every decision—whether to keep, trade, or resist—reshapes both personal identity and the collective order. In this world, truth blurs, freedom bends, and the politics of memory decides the fate of all.
                             </p>
                         </section>

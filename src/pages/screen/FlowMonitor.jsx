@@ -138,7 +138,7 @@ export default function FlowMonitor() {
       <div
         id={node.id}
         ref={isActive ? activeRef : null}
-        className={`relative rounded-lg border border-cyan-400/60 bg-black/40 px-4 py-3 mb-6 transition-colors ${isActive ? 'ring-2 ring-cyan-400 bg-black/20' : ''}`}
+        className={`relative rounded-lg border border-cyan-400/60 bg-black/40 px-4 py-3 mb-6 transition-colors ${isActive ? 'ring-8 ring-cyan-400 bg-black/20' : ''}`}
       >
         <div className="flex items-center gap-3 mb-2">
           <div className={`h-2 w-2 rounded-full ${isActive ? 'bg-cyan-400' : 'bg-cyan-800'}`}/>
@@ -209,7 +209,7 @@ export default function FlowMonitor() {
   };
 
   return (
-    <div className="h-full w-full overflow-hidden">
+    <div className="h-full w-full overflow-hidden bg-black">
       <div className="h-full w-full overflow-y-auto p-4 md:p-6" ref={containerRef}>
         <div className="mb-4 flex items-center gap-3">
           <div className="text-cyan-300 text-lg font-semibold">Flow Monitor</div>

@@ -96,11 +96,11 @@ const GameLobby = () => {
                 </header>*/}
                 <header className="flex flex-col items-center justify-center text-center gap-4">
                     <h1 
-                        className="font-pixel leading-tight text-5xl font-bold text-cyan-300 tracking-wide cursor-pointer hover:text-cyan-200 transition-colors duration-200"
+                        className="font-pixel leading-tight text-7xl font-bold text-cyan-300 tracking-wide cursor-pointer"
                     >
                         {title}
                     </h1>
-                    <p className="font-pixel text-2xl font-medium text-cyan-300 tracking-wider opacity-90">
+                    <p className="font-pixel text-3xl font-medium text-cyan-300 tracking-wider opacity-90">
                         {subtitle}
                     </p>
                 </header>
@@ -111,13 +111,13 @@ const GameLobby = () => {
                         <section className="flex-1 flex flex-col justify-space-between p-15 overflow-hidden">
                             {/* {left} */}
                             {/* 左侧内容 */}
-                            <h2 className="text-4xl text-cyan-400 font-semibold mb-4">Background</h2>
+                            <h2 className="font-pixel text-6xl text-cyan-400 font-semibold mb-4">Background</h2>
                             <p className="flex-1 flex flex-col justify-center text-2xl leading-relaxed text-cyan-200">
                             In the future, memory is no longer private—it is stored, traded, and controlled like currency. Governments and corporations manipulate recollections to shape loyalty, erase dissent, or invent false lives. Markets thrive on selling curated pasts, while citizens guard their memories as tightly as bank accounts. Society itself is rebuilt on the flow of memory, fragile and unstable. Every decision—whether to keep, trade, or resist—reshapes both personal identity and the collective order. In this world, truth blurs, freedom bends, and the politics of memory decides the fate of all.
                             </p>
                         </section>
                         <div className="w-px h-full border-3 border-cyan-400 mx-4" aria-hidden />
-                        <section className="flex-1 p-15 flex flex-col justify-space-between overflow-hidden gap-1">
+                        <section className="flex-1 p-15 flex flex-col justify-center overflow-hidden gap-5">
                             <div className="flex flex-col items-center justify-center m-8">
                             {/* {right} */}
                             {/* 右侧内容 */}
@@ -125,7 +125,7 @@ const GameLobby = () => {
                             </div>
                             <div className="flex flex-col items-center justify-center">
                                 <button 
-                                    className="text-2xl border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                                    className="text-3xl border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                                     onClick={onStartGame}
                                     disabled={gameState !== 'waiting'}
                                 >

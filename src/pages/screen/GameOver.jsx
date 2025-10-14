@@ -21,7 +21,7 @@ const GameOver = () => {
             content: (
                 <section className="h-full flex flex-col items-center justify-center overflow-hidden px-20">
                     <div className="max-w-4xl">
-                        <h2 className="pb-12 text-4xl font-medium text-cyan-300 tracking-wider opacity-90 text-center">
+                        <h2 className="pixel-text pb-12 text-5xl font-medium text-cyan-300 tracking-wider opacity-90 text-center">
                             {subtitle}
                         </h2>
                         <p className="text-2xl leading-relaxed text-cyan-200 text-start">
@@ -80,16 +80,22 @@ const GameOver = () => {
 
     return (
         <>
-            <div className="h-full overflow-hidden flex flex-col items-center justify-between gap-6 py-10">
+            <div className="h-full overflow-hidden flex flex-col items-center justify-between py-10">
                 {/* Title 部分 */} 
                 <header className="flex flex-col items-center justify-center text-center gap-4">
-                    <h1 className="font-pixel leading-tight text-8xl font-bold text-cyan-300 tracking-wide">
+                    <h1 className="font-pixel leading-tight text-8xl font-bold text-cyan-300 tracking-wide pb-10">
                         {title}
                     </h1>
                 </header>
+                <div className="relative w-8/10 mx-4" aria-hidden>
+                    {/* 背景光晕层 */}
+                    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-6 bg-cyan-400/10 blur-xl rounded-full" />
+                    {/* 主体亮线 */}
+                    <div className="relative h-[2px] w-full bg-cyan-400/80 rounded-full shadow-[0_0_16px_rgba(34,211,238,0.7)]" />
+                </div>
 
                 {/* 轮播图主体 */}
-                <main className="flex-1 flex flex-col px-4 py-8 w-9/10 min-h-0 overflow-hidden">
+                <main className="flex-1 flex flex-col px-4  w-6/10 min-h-0 overflow-hidden pb-12 pt-4">
                     {/* 轮播内容区域 */}
                     <div className="relative flex-1 w-full overflow-hidden">
                         {/* 轮播内容 */}
@@ -134,8 +140,14 @@ const GameOver = () => {
                     </div>
                 </main>
 
+                <div className="relative w-8/10 mx-4" aria-hidden>
+                    {/* 背景光晕层 */}
+                    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-6 bg-cyan-400/10 blur-xl rounded-full" />
+                    {/* 主体亮线 */}
+                    <div className="relative h-[2px] w-full bg-cyan-400/80 rounded-full shadow-[0_0_16px_rgba(34,211,238,0.7)]" />
+                </div>
                 {/* 返回首页按钮 */}
-                <footer className="flex justify-center">
+                <footer className="flex justify-center pt-15">
                     <button 
                         className="text-2xl border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200" 
                         onClick={handleBackToHome}
