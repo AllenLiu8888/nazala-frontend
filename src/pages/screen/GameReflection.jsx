@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useGameStoreScreen from '../../store/index_screen';
-import { CONFIG } from '../../store/common_tools';
 import { useTypewriter, Cursor } from 'react-simple-typewriter';
 
 const GameReflection = () => {
     const { gameId } = useParams();
     const navigate = useNavigate();
     const gameState = useGameStoreScreen(s => s.gameMeta.state);
+    const maxRounds = useGameStoreScreen(s => s.gameMeta.maxRounds);
     const playersTotal = useGameStoreScreen(s => s.players.total);
     const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
@@ -24,15 +24,16 @@ const GameReflection = () => {
 
     // 监听投票完成：当所有玩家在当前回合完成投票
     // - 若非最后一轮：仅提交当前回合
-    // - 若为最后一轮：先提交当前回合，再结束游戏
+    // - 若为最后一轮：先提交当前回合，再结束游戏（最后一轮 = maxRounds - 1）
     useEffect(() => {
         if (playersVoted == playersTotal && playersTotal > 0) {
             useGameStoreScreen.getState().submitCurrentTurn();
-            if (turnIndex == CONFIG.LAST_TURN_INDEX) {
+            const lastIndex = (typeof maxRounds === 'number' && maxRounds > 0) ? (maxRounds - 1) : null;
+            if (lastIndex !== null && turnIndex == lastIndex) {
                 useGameStoreScreen.getState().finishGame();
             }
         }
-    }, [playersVoted, playersTotal, turnIndex]);
+    }, [playersVoted, playersTotal, turnIndex, maxRounds]);
 
     // 监听游戏状态，finished/archived 时自动跳转到 gameover
     useEffect(() => {

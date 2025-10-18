@@ -9,15 +9,24 @@ const TimelineComponent = ({
   const processTimelineEvents = (apiEvents) => {
     if (!Array.isArray(apiEvents)) return [];
     
-    return apiEvents.map((event, index) => ({
-      id: `timeline-${index}-${event.turn?.id || 'no-turn'}`,
-      year: event.turn?.year || `Round ${index + 1}`,
-      option_test: event.user_option?.text || 'Historical Event',
-      status: event.turn?.status === 'completed' ? 'completed' : 
-              event.turn?.status === 'active' ? 'active' : 'pending',
-      title: event.turn?.question_text || event.title || 'Historical Event',
-      description: event.description || 'Event Description'
-    }));
+    return apiEvents.map((event, index) => {
+      const turn = event.turn || event;
+      const userOpt = event.user_option || event.option || {};
+      const statusRaw = turn?.status;
+      const status = (statusRaw === 2 || statusRaw === 'completed') ? 'completed'
+        : (statusRaw === 1 || statusRaw === 'active') ? 'active'
+        : 'pending';
+
+      return {
+        originalIndex: index,
+        id: `timeline-${index}-${turn?.id ?? 'no-turn'}`,
+        year: turn?.year ?? `Round ${index + 1}`,
+        option_test: userOpt?.text ?? 'Historical Event',
+        status,
+        title: turn?.question_text ?? event.title ?? 'Historical Event',
+        description: event.description ?? ''
+      };
+    });
   };
 
   // Mock API data
@@ -85,9 +94,15 @@ const TimelineComponent = ({
   };
 
   // Use API data or mock data
-  const timelineEvents = events.length > 0 
-    ? processTimelineEvents(events)
-    : processTimelineEvents(mockApiData.data.history);
+  const sourceEvents = (Array.isArray(events) && events.length > 0)
+    ? events
+    : mockApiData.data.history;
+  const processed = processTimelineEvents(sourceEvents);
+  const total = Array.isArray(sourceEvents) ? sourceEvents.length : 0;
+  // 仅显示“正式轮”：去掉第一轮（Intro）和最后一轮（Reflection）
+  const timelineEvents = (total > 2)
+    ? processed.filter(e => e.originalIndex > 0 && e.originalIndex < total - 1)
+    : processed;
 
   // Loading state
   if (loading) {

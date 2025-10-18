@@ -12,9 +12,9 @@ export const gameApi = {
     return await http.get(`/api/game/${gameId}/detail/`);
   },
 
-  // 开始游戏
-  async startGame(gameId, token) {
-    return await http.post(`/api/game/${gameId}/start`, null, token);
+  // 开始游戏（可携带参数，如 { max_turns, show_values }）
+  async startGame(gameId, token, payload = null) {
+    return await http.post(`/api/game/${gameId}/start`, payload, token);
   },
 
   // 归档游戏

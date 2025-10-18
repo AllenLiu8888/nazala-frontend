@@ -86,6 +86,11 @@ export const useGameStoreScreen = create((set, get) => ({
     generating: false,
   },
 
+  // 界面配置（仅前端展示相关）
+  uiConfig: {
+    showValues: true, // 是否显示选项的属性数值徽章
+  },
+
   // 轮询句柄（内部使用）
   _lobbyPollerId: null,
   _introPollerId: null,
@@ -110,6 +115,9 @@ export const useGameStoreScreen = create((set, get) => ({
   })),
   clearError: () => set((state) => ({
     ui: { ...state.ui, error: null },
+  })),
+  setUiConfig: (partial) => set((state) => ({
+    uiConfig: { ...state.uiConfig, ...partial },
   })),
 
   // 基础行为：获取当前游戏（最小可用）
@@ -278,8 +286,9 @@ export const useGameStoreScreen = create((set, get) => ({
       get().fetchGameDetail(gameId),
     ]);
 
+    const fallbackId = gameId; // 初始传入的 gameId 作为回退
     const id = setInterval(async () => {
-      const gid = get().gameMeta.id;
+      const gid = get().gameMeta.id || fallbackId;
       if (!gid) return;
       await Promise.allSettled([
         get().fetchGameDetail(gid),
@@ -381,10 +390,17 @@ export const useGameStoreScreen = create((set, get) => ({
   // 开始游戏：调用后端并将前端状态置为 ongoing
   // API: POST /api/game/{game_id}/start/
   // 前置条件：Game.status 必须是 WAITING；必要时可传入管理员 token
-  startGame: async (maybeGameId = null, token = null) => {
+  startGame: async (maybeGameId = null, token = null, options = {}) => {
     try {
       const gameId = await getGameId(get, maybeGameId);
-      await gameApi.startGame(gameId, token);
+      const payload = {};
+      if (typeof options.max_turns === 'number' && options.max_turns > 0) {
+        payload.max_turns = options.max_turns;
+      }
+      if (typeof options.show_values === 'boolean') {
+        payload.show_values = options.show_values;
+      }
+      await gameApi.startGame(gameId, token, Object.keys(payload).length ? payload : null);
       set((state) => ({
         gameMeta: {
           ...state.gameMeta,
@@ -393,6 +409,8 @@ export const useGameStoreScreen = create((set, get) => ({
           startedAt: state.gameMeta.startedAt || new Date().toISOString(),
         },
       }));
+      // 关键：启动成功后立刻刷新游戏详情，拿到后端应用后的 max_turns
+      try { await get().fetchGameDetail(gameId); } catch { /* no-op */ }
       return true;
     } catch (err) {
       console.error('[Store] ❌ 开始游戏失败:', err);

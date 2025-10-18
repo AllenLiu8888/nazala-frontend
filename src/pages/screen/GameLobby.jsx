@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import QRCode from '../../components/shared/QRCode';
 import useGameStoreScreen from '../../store/index_screen';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -10,6 +10,11 @@ const GameLobby = () => {
     const navigate = useNavigate();
     const { gameId } = useParams();
     const gameState = useGameStoreScreen(s => s.gameMeta.state);
+    const storeGameId = useGameStoreScreen(s => s.gameMeta.id);
+    const setGameMeta = useGameStoreScreen(s => s.setGameMeta);
+    const showValues = useGameStoreScreen(s => s.uiConfig?.showValues);
+    const setUiConfig = useGameStoreScreen(s => s.setUiConfig);
+    const [maxTurns, setMaxTurns] = useState(5);
     const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
 
     // 使用 ref 防止 StrictMode 导致的重复调用
@@ -24,7 +29,11 @@ const GameLobby = () => {
         if (gameState !== 'waiting') return;
         
         const { startGame } = useGameStoreScreen.getState();
-        const success = await startGame(gameId);
+        const success = await startGame(gameId, null, {
+            // 后端的 max_turns 需要包含开头与结尾（+2）
+            max_turns: Number.isFinite(+maxTurns) && +maxTurns > 0 ? (+maxTurns + 2) : undefined,
+            show_values: !!showValues,
+        });
         if (success && gameId) {
             navigate(`/game/${gameId}/intro`);
         }
@@ -37,15 +46,19 @@ const GameLobby = () => {
         // 防止 React StrictMode 导致的重复初始化
         if (!hasInitialized.current) {
             hasInitialized.current = true;
+            // 若 store 尚未写入 gameId，使用路由参数进行一次回填，保证二维码与轮询可用
+            if (!storeGameId && gameId) {
+                try { setGameMeta({ id: gameId }); } catch { /* no-op */ }
+            }
             const { startPollingForLobby } = useGameStoreScreen.getState();
             startPollingForLobby(gameId);
         }
-
+        
         // 总是返回 cleanup，确保组件卸载时能清理轮询
         return () => {
             stopLobbyPolling();
         }
-    }, [gameId]);
+    }, [gameId, setGameMeta, storeGameId]);
 
     // 根据 game state 和 turns_count 自动跳转
     useEffect(() => {
@@ -117,13 +130,46 @@ const GameLobby = () => {
                             </p>
                         </section>
                         <div className="w-px h-full border-3 border-cyan-400 mx-4" aria-hidden />
-                        <section className="flex-1 p-15 flex flex-col justify-center overflow-hidden gap-5">
+                        <section className="flex-1 px-15 py-5 flex flex-col justify-center overflow-hidden gap-5">
                             <div className="flex flex-col items-center justify-center m-8">
                             {/* {right} */}
                             {/* 右侧内容 */}
                                 <QRCode />
                             </div>
-                            <div className="flex flex-col items-center justify-center">
+                            <div className="flex flex-col items-center justify-center gap-4">
+                                    {/* Toggle: Show option values (checkbox after text) */}
+                                    <div className="flex flex-col items-center justify-center">
+                                    <label className="flex items-center gap-3 mb-3 select-none text-cyan-300">
+                                        <span className="text-lg">Show option values</span>
+                                        <input
+                                            type="checkbox"
+                                            className="w-5 h-5 accent-cyan-400 cursor-pointer"
+                                            checked={!!showValues}
+                                            onChange={(e) => setUiConfig({ showValues: !!e.target.checked })}
+                                        />
+                                    </label>
+                                    {/* Stepper: Playable rounds (excludes intro & reflection) */}
+                                    <div className="flex items-center gap-2 mb-4 text-cyan-300">
+                                        <span className="text-lg">Playable rounds</span>
+                                        <button
+                                            className="px-2 py-0.5 text-sm border border-cyan-400 rounded-lg hover:bg-cyan-400/20"
+                                            onClick={() => setMaxTurns((v) => Math.max(1, (+v || 5) - 1))}
+                                            disabled={gameState !== 'waiting'}
+                                        >-</button>
+                                        <input
+                                            type="text"
+                                            className="w-16 text-center text-sm bg-transparent border border-cyan-400 rounded-lg py-1 select-none"
+                                            value={String(maxTurns)}
+                                            readOnly
+                                            disabled={gameState !== 'waiting'}
+                                        />
+                                        <button
+                                            className="px-2 py-0.5 text-sm border border-cyan-400 rounded-lg hover:bg-cyan-400/20"
+                                            onClick={() => setMaxTurns((v) => Math.max(1, (+v || 5) + 1))}
+                                            disabled={gameState !== 'waiting'}
+                                        >+</button>
+                                    </div>
+                                </div>
                                 <button 
                                     className="text-3xl border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
                                     onClick={onStartGame}

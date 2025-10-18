@@ -9,6 +9,7 @@ const WaitingPage = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const hasInitialized = useRef(false);
+  const setUiConfig = useGameStoreMobile(s => s.setUiConfig);
 
   const gameStatusCode = useGameStoreMobile(s => s.gameMeta.statusCode);
 
@@ -22,6 +23,8 @@ const WaitingPage = () => {
       const result = await gameApi.joinGame(gameId, existingToken);
       localStorage.setItem('authToken', result.player.auth_token);
       localStorage.setItem('playerId', result.player.id);
+      // 加入成功后，立即刷新一次 gameDetail，促使大屏人数尽快更新
+      try { await useGameStoreMobile.getState().fetchGameDetail(gameId); } catch { /* no-op */ }
       
     } catch (error) {
       console.error(' Failed to handle user:', error, gameId);
@@ -41,11 +44,29 @@ const WaitingPage = () => {
     
     if (!hasInitialized.current) {
       hasInitialized.current = true;
+      // 如果切换到不同的 gameId，清理旧的玩家身份，避免复用到其他游戏
+      try {
+        const lastGameId = localStorage.getItem('gameId');
+        if (lastGameId !== String(gameId)) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('playerId');
+          localStorage.setItem('gameId', String(gameId));
+        }
+      } catch { /* no-op */ }
+      // Parse query string for sv flag (show values)
+      try {
+        const url = new URL(window.location.href);
+        const sv = url.searchParams.get('sv');
+        if (sv === '0' || sv === '1') {
+          setUiConfig({ showValues: sv === '1' });
+        }
+      } catch { /* no-op */ }
       createPlayer(gameId);
     }
   }, [gameId]);
 
   // Regularly check game status
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!gameId) {
       console.error('GameId not found, cannot check game status');
@@ -65,6 +86,7 @@ const WaitingPage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
       if (gameStatusCode == GAME_STATUS.IN_PROGRESS) {
         console.log('Conditions met, preparing to redirect');

@@ -11,6 +11,7 @@ const VotingPage = () => {
   
   // Store state
   const gameState = useGameStoreMobile(s => s.gameMeta.state);
+  const maxRounds = useGameStoreMobile(s => s.gameMeta.maxRounds);
   const gameMetaId = useGameStoreMobile(s => s.gameMeta.id);
   const turn = useGameStoreMobile(s => s.turn);
   const isGameArchived = useGameStoreMobile(s => s.gameMeta.state === 'archived');
@@ -162,6 +163,12 @@ const VotingPage = () => {
     { id: 4, text: 'a trade', display_number: 4 }
   ];
 
+  const isLastIndex = (() => {
+    const idx = Number(turn?.index);
+    const mr = Number(maxRounds);
+    return Number.isFinite(idx) && Number.isFinite(mr) && mr > 0 && idx === mr - 1;
+  })();
+
   // 7. Listen for game state changes: stop polling and redirect when finished or archived
   useEffect(() => {
     if (isGameFinished || isGameArchived) {
@@ -267,7 +274,7 @@ const VotingPage = () => {
       </div>
 
       {/* 提交后等待下一回合：覆盖式加载动画（移动端） */}
-      {hasSubmitted && !isGameFinished && (
+      {hasSubmitted && !isGameFinished && !isLastIndex && (
         <LoadingOverlay text="Generating next turn..." small />
       )}
     </div>

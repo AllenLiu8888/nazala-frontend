@@ -1,6 +1,9 @@
 // Voting option component
 // Receives complete option object: { id, text, display_number, attrs: [{ name, value|vaLue }] }
+import useGameStoreMobile from '../../store/index_mobile';
+
 const VotingOption = ({ option, isSelected, onClick }) => {
+  const showValues = useGameStoreMobile(s => s.uiConfig?.showValues);
   const attrs = Array.isArray(option?.attrs) ? option.attrs : [];
 
   // Map backend names to abbreviations and ensure fixed order display
@@ -43,7 +46,7 @@ const VotingOption = ({ option, isSelected, onClick }) => {
       <div className="text-responsive-option font-semibold mb-2 break-words whitespace-pre-wrap">
         {letter ? `${letter}. ` : ''}{option?.text ?? ''}
       </div>
-      {!allValuesZero && (
+      {showValues && !allValuesZero && (
         <div className="flex flex-wrap gap-2 text-responsive-badge">
           {desiredOrder.map((key) => {
             const abbr = nameToAbbr[key];

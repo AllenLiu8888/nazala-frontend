@@ -788,7 +788,7 @@ export const useGameStore = create((set, get) => ({
   },
 
   // 倒计时结束：无论投票状态如何，都提交回合
-  // 当回合索引为 10（第 11 轮，最后一轮）时，将游戏状态设为 finished
+  // 当回合索引达到最后一轮（= maxRounds - 1）时，将游戏状态设为 finished
   handleCountdownEnd: async (token = null) => {
     console.info('[Store] ⏰ 倒计时结束');
     try {
@@ -803,10 +803,11 @@ export const useGameStore = create((set, get) => ({
       }
 
       const currentIndex = turn?.index || 0;
+      const maxRounds = get().gameMeta.maxRounds || 0;
       console.info(`[Store] 当前回合索引: ${currentIndex}`);
 
-      // 如果是第 11 轮（index = 10），倒计时结束后将游戏状态设为 finished
-      if (currentIndex === 10) {
+      // 如果是最后一轮（index = maxRounds - 1），倒计时结束后将游戏状态设为 finished
+      if (Number.isFinite(maxRounds) && maxRounds > 0 && currentIndex === maxRounds - 1) {
         console.info('[Store] 🏁 最后一轮倒计时结束，将游戏状态设为 finished');
         
         // 先提交当前回合
@@ -835,9 +836,9 @@ export const useGameStore = create((set, get) => ({
         return submitSuccess;
       }
 
-      // 限制只处理12个回合 (0-11)
-      if (currentIndex > 11) {
-        console.info('[Store] ⏹️ 游戏结束，已超过12个回合', currentIndex);
+      // 保护：若超过最后一轮索引，则不再处理
+      if (Number.isFinite(maxRounds) && maxRounds > 0 && currentIndex >= maxRounds) {
+        console.info('[Store] ⏹️ 游戏结束，已超过最后索引', currentIndex, '>=', maxRounds);
         return false;
       }
       

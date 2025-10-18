@@ -80,6 +80,11 @@ export const useGameStoreMobile = create((set, get) => ({
     error: null,
   },
 
+  // 界面配置（移动端展示相关）
+  uiConfig: {
+    showValues: true, // 是否显示选项的属性数值徽章
+  },
+
   // 轮询句柄（内部使用）
   // 用于确保全局只存在一个 setInterval，便于 stopPolling 清理
   _votePollerId: null,
@@ -91,6 +96,9 @@ export const useGameStoreMobile = create((set, get) => ({
   })),
   setTurn: (partial) => set((state) => ({
     turn: { ...state.turn, ...partial },
+  })),
+  setUiConfig: (partial) => set((state) => ({
+    uiConfig: { ...state.uiConfig, ...partial },
   })),
   setPlayers: (partial) => set((state) => ({
     players: { ...state.players, ...partial },
@@ -356,8 +364,19 @@ export const useGameStoreMobile = create((set, get) => ({
       const data = await gameApi.getGameTimeline(gameId, token);
       console.info('[Store] 📡 时间轴API调用成功:', data);
       
-      // 处理API返回的数据格式: { status: true, data: { history: [...] } }
-      const events = Array.isArray(data?.history) ? data.history : [];
+      // 兼容多种返回结构
+      // http.js 已解包到 data.data，这里容错以下几种：
+      // 1) { history: [...] }
+      // 2) [...]
+      // 3) { data: { history: [...] } }
+      let events = [];
+      if (Array.isArray(data?.history)) {
+        events = data.history;
+      } else if (Array.isArray(data)) {
+        events = data;
+      } else if (Array.isArray(data?.data?.history)) {
+        events = data.data.history;
+      }
       
       set((state) => ({
         timeline: {

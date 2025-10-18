@@ -1,17 +1,21 @@
 // QRCode.jsx
 import { QRCodeCanvas } from 'qrcode.react';
+import { useParams } from 'react-router-dom';
 import useGameStoreScreen from '../../store/index_screen'; 
 
 const QRCode = () => {
-    // 直接从 store 读取数据（轮询会自动更新）
-    const gameId = useGameStoreScreen(s => s.gameMeta.id);
+    // 优先使用 store 的 gameId；为空时回退到路由参数，保证二维码可用
+    const storeGameId = useGameStoreScreen(s => s.gameMeta.id);
+    const { gameId: routeGameId } = useParams();
+    const gameId = storeGameId || routeGameId;
     const playersCount = useGameStoreScreen(s => s.gameMeta.playersCount);
 
+    const showValues = useGameStoreScreen(s => s.uiConfig?.showValues);
     const getQRCodeURL = () => {
-        // 使用当前窗口的地址前缀（协议 + 域名 + 端口）
-        // return `${import.meta.env.VITE_ROOT_URL || 'http://localhost:5173'}/game/${gameId}/waiting`
-        const baseUrl = window.location.origin;
-        return `${baseUrl}/game/${gameId}/waiting`;
+        // 使用可配置的 Root URL（适配手机扫码场景），无配置时回退到当前来源
+        const baseUrl = (import.meta.env?.VITE_ROOT_URL) || window.location.origin;
+        const sv = showValues ? 1 : 0;
+        return `${baseUrl}/game/${gameId}/waiting?sv=${sv}`;
     }
 
     const handleQRCodeClick = () => {
