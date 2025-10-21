@@ -21,6 +21,7 @@ const VotingPage = () => {
   
   // Local state
   const [selectedId, setSelectedId] = useState(null);
+  const [tempSelectedId, setTempSelectedId] = useState(null); // 临时选择的选项ID
   const [submitOk, setSubmitOk] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState(null);
@@ -38,6 +39,7 @@ const VotingPage = () => {
         setInitError(null);
         setHasSubmitted(false);
         setSelectedId(null);
+        setTempSelectedId(null);
         setSubmitOk(false);
 
         const {
@@ -122,6 +124,7 @@ const VotingPage = () => {
         // Reset local state
         setHasSubmitted(false);
         setSelectedId(null);
+        setTempSelectedId(null);
         setSubmitOk(false);
         
         // Stop polling (will restart after user next submission)
@@ -133,28 +136,42 @@ const VotingPage = () => {
     }
   }, [turn?.index, hasSubmitted, stopPolling]);
 
-  // 5. User selection and submission logic
-  const submitChoice = async (chosen) => {
-    setSelectedId(chosen);
+  // 5. User selection logic (temporary selection)
+  const selectOption = (optionId) => {
+    if (!hasSubmitted) {
+      setTempSelectedId(optionId);
+      console.info('[VotingPage] Selected optionId=', optionId);
+    }
+  };
+
+  // 6. Submit choice logic
+  const submitChoice = async () => {
+    if (!tempSelectedId || hasSubmitted) {
+      return;
+    }
+
+    setSelectedId(tempSelectedId);
     try {
       const authToken = localStorage.getItem('authToken');
       const { submitPlayerChoice } = useGameStoreMobile.getState();
-      const success = await submitPlayerChoice(chosen, authToken);
+      const success = await submitPlayerChoice(tempSelectedId, authToken);
       if (success) {
         setHasSubmitted(true);
         setSubmitOk(true);
         setTimeout(() => setSubmitOk(false), 1500);
       } else {
-        console.error('[VotingPage]Option submission failed');
-        setSelectedId(null); // Reset selection
+        console.error('[VotingPage] Option submission failed');
+        setSelectedId(null);
+        setTempSelectedId(null);
       }
     } catch (error) {
-      console.error('[VotingPage]Submission process error:', error);
-      setSelectedId(null); // Reset selection
+      console.error('[VotingPage] Submission process error:', error);
+      setSelectedId(null);
+      setTempSelectedId(null);
     }
   };
 
-  // 6. Get display data
+  // 7. Get display data
   const question = turn?.questionText || 'Memories is:';
   const votingOptions = turn?.options || [
     { id: 1, text: 'a right', display_number: 1 },
@@ -169,7 +186,7 @@ const VotingPage = () => {
     return Number.isFinite(idx) && Number.isFinite(mr) && mr > 0 && idx === mr - 1;
   })();
 
-  // 7. Listen for game state changes: stop polling and redirect when finished or archived
+  // 8. Listen for game state changes: stop polling and redirect when finished or archived
   useEffect(() => {
     if (isGameFinished || isGameArchived) {
       console.info('[VotingPage] 🏁 Game ended, stopping polling and redirecting to summary page');
@@ -180,7 +197,7 @@ const VotingPage = () => {
   }, [isGameFinished, isGameArchived, gameMetaId, gameIdParam, navigate, stopPolling]);
 
 
-  // 8. Render logic
+  // 9. Render logic
   // Loading state
   if (isInitializing) {
     return (
@@ -230,14 +247,18 @@ const VotingPage = () => {
     );
   }
 
-  // 8. Main render - voting interface
+  // 10. Main render - voting interface
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-8 pb-28 relative">
+    <div className="h-screen overflow-y-auto relative pt-4 pb-28">
+      {/* Main content area */}
+      <div className="relative z-10 min-h-screen p-4">
+        <div className="w-full max-w-sm mx-auto flex flex-col justify-center min-h-full">
       {/* Game status display */}
       {(gameMetaId != null) && (
         <div className="text-center mb-4">
           <div className="text-cyan-400 text-sm">
-            Game {gameMetaId} Status: {gameState} Turn: {(turn.index)}
+            {/* Game {gameMetaId} Status: {gameState} Turn: {(turn.index)} */}
+            Study the main screen before you act.
           </div>
         </div>
       )}
@@ -256,23 +277,40 @@ const VotingPage = () => {
       </div>
 
       {/* Voting options */}
-      <div className="max-w-sm mx-auto w-full space-y-4">
+      <div className="w-full space-y-4">
         {votingOptions.map((option, index) => (
           <VotingOption
             key={option.id || index}
             option={option}
-            isSelected={selectedId === option.id}
-            onClick={() => {
-              if (!hasSubmitted) {
-                const chosen = option.id;
-                console.info('[VotingPage] Clicked to select optionId=', chosen);
-                submitChoice(chosen);
-              }
-            }}
+            isSelected={tempSelectedId === option.id}
+            onClick={() => selectOption(option.id)}
           />
         ))}
       </div>
 
+      {/* Submit button */}
+      <div className="w-full mt-6 flex justify-center">
+        <button
+          onClick={submitChoice}
+          disabled={!tempSelectedId || hasSubmitted}
+          className={`px-8 py-3 rounded-lg text-base font-semibold transition-all duration-200 ${
+            tempSelectedId && !hasSubmitted
+              ? 'bg-cyan-400 text-black hover:bg-cyan-300 active:bg-cyan-500'
+              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          {hasSubmitted 
+            ? 'Selection Submitted' 
+            : tempSelectedId 
+              ? 'Confirm Selection' 
+              : 'Awaiting your selection'
+          }
+        </button>
+      </div>
+
+        </div>
+      </div>
+      
       {/* 提交后等待下一回合：覆盖式加载动画（移动端） */}
       {hasSubmitted && !isGameFinished && !isLastIndex && (
         <LoadingOverlay text="Generating next turn..." small />
