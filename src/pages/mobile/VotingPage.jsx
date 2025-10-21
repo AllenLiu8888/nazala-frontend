@@ -266,15 +266,6 @@ const VotingPage = () => {
       {/* Voting title */}
       <Question question={question} />
       
-      {/* Submission status display */}
-      <div className="text-center mb-2">
-        {submitOk && (
-          <div className="text-green-400 text-lg mb-4">Submission successful</div>
-        )}
-        {hasSubmitted && !submitOk && (
-          <div className="text-yellow-400 text-lg mb-4">Waiting for next turn...</div>
-        )}
-      </div>
 
       {/* Voting options */}
       <div className="w-full space-y-4">
@@ -290,22 +281,31 @@ const VotingPage = () => {
 
       {/* Submit button */}
       <div className="w-full mt-6 flex justify-center">
-        <button
-          onClick={submitChoice}
-          disabled={!tempSelectedId || hasSubmitted}
-          className={`px-8 py-3 rounded-lg text-base font-semibold transition-all duration-200 ${
-            tempSelectedId && !hasSubmitted
-              ? 'bg-cyan-400 text-black hover:bg-cyan-300 active:bg-cyan-500'
-              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {hasSubmitted 
-            ? 'Selection Submitted' 
-            : tempSelectedId 
-              ? 'Confirm Selection' 
-              : 'Awaiting your selection'
-          }
-        </button>
+        <div className="text-center">
+          {/* Submission success message */}
+          {submitOk && (
+            <div className="text-green-400 text-sm mb-3 font-medium">
+              ✓ Submission successful
+            </div>
+          )}
+          
+          <button
+            onClick={submitChoice}
+            disabled={!tempSelectedId || hasSubmitted}
+            className={`px-8 py-3 rounded-lg text-base font-semibold transition-all duration-200 ${
+              tempSelectedId && !hasSubmitted
+                ? 'bg-cyan-400 text-black hover:bg-cyan-300 active:bg-cyan-500'
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {hasSubmitted 
+              ? 'Selection Submitted' 
+              : tempSelectedId 
+                ? 'Confirm Selection' 
+                : 'Awaiting your selection'
+            }
+          </button>
+        </div>
       </div>
 
         </div>
@@ -313,7 +313,7 @@ const VotingPage = () => {
       
       {/* 提交后等待下一回合：覆盖式加载动画（移动端） */}
       {hasSubmitted && !isGameFinished && !isLastIndex && (
-        <LoadingOverlay text="Generating next turn..." small />
+        <LoadingOverlay text="LLM-RAG cognitive cores generating…" small />
       )}
     </div>
   );
