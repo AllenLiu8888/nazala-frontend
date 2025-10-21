@@ -136,48 +136,55 @@ const TimelineComponent = ({
   }
 
   return (
-    <div className="border-2 border-cyan-400 rounded-xl bg-black/80 backdrop-blur-sm p-4">
+    <div className="space-y-6">
+      {/* Timeline header */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center space-x-2 text-cyan-400/60 text-sm font-mono">
+          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+          <span>CHRONOLOGICAL RECORDS</span>
+          <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
+        </div>
+      </div>
 
-
-      {/* Mobile-optimized timeline */}
-      <div className="space-y-4">
-        {timelineEvents.map((event) => (
-          <div key={event.id} className="relative">
-            {/* Mobile: vertical stacked layout */}
-            <div className="md:hidden">
-              <div className="flex items-start space-x-3">
-                {/* Status indicator */}
-                <div className="flex-shrink-0 mt-1">
-                  <div className={`w-3 h-3 rounded-full ${
-                    event.status === 'completed' ? 'bg-green-500' : 
-                    event.status === 'active' ? 'bg-yellow-500' : 'bg-gray-400'
-                  }`}></div>
+      {/* Enhanced timeline */}
+      <div className="relative">
+        {/* Timeline line */}
+        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-400 via-cyan-300 to-cyan-400 opacity-30"></div>
+        
+        <div className="space-y-8">
+          {timelineEvents.map((event, index) => (
+            <div key={event.id} className="relative group">
+              {/* Timeline node */}
+              <div className="absolute left-4 top-2 w-4 h-4 bg-cyan-400 rounded-full border-2 border-black shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <div className="absolute inset-1 bg-cyan-300 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
+              
+              {/* Content card */}
+              <div className="ml-12 bg-black/40 border border-cyan-400/30 rounded-lg p-4 group-hover:border-cyan-400/60 group-hover:bg-black/60 transition-all duration-300">
+                {/* Year badge */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className="inline-flex items-center space-x-2">
+                    <div className="w-1 h-1 bg-cyan-400 rounded-full"></div>
+                    <span className="text-cyan-400/60 font-mono text-xs tracking-wider">
+                      YEAR
+                    </span>
+                    <span className="text-cyan-300 font-mono text-sm font-semibold tracking-wider">
+                      {event.year}
+                    </span>
+                  </div>
+                  <div className="text-cyan-400/40 text-xs font-mono">
+                    #{String(index + 1).padStart(2, '0')}
+                  </div>
                 </div>
                 
-                {/* Content area */}
-                <div className="flex-1 min-w-0">
-                  {/* Year */}
-                  <div className="text-cyan-300 font-mono text-sm mb-1">
-                    {event.year}
-                  </div>
-                  
-                  {/* Event description */}
-                  <div className="text-cyan-200 bg-slate-900 py-2 px-4 text-sm rounded-base font-medium">
-                    {event.option_test}
-                  </div>
-                  
-                  {/* Result (if any) */}
-                  {event.result && (
-                    <div className="text-[10px] text-cyan-300 px-0 py-1 inline-block mt-2">
-                      {event.result}
-                    </div>
-                  )}
+                {/* Event description */}
+                <div className="text-cyan-200 text-sm leading-relaxed">
+                  {event.option_test}
                 </div>
               </div>
             </div>
-
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );

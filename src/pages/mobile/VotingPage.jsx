@@ -258,7 +258,7 @@ const VotingPage = () => {
         <div className="text-center mb-4">
           <div className="text-cyan-400 text-sm">
             {/* Game {gameMetaId} Status: {gameState} Turn: {(turn.index)} */}
-            Study the main screen before you act.
+            (Study the main screen before you act)
           </div>
         </div>
       )}
