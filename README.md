@@ -82,5 +82,8 @@ The frontend assumes the NaZaLa backend is running and exposes REST endpoints su
 2. Make your changes and ensure `npm run lint` passes.
 3. Open a pull request with context on the behaviour you changed.
 
+## AI Declaration
+This project uses AI-assisted tools at times (e.g., code completion, refactor suggestions, documentation) to improve productivity. All AI-generated or AI-suggested changes are reviewed, tested, and amended by human maintainers before adoption. Unless explicitly stated otherwise, AI tools are not provided with sensitive data beyond this repository. 
+
 ---
 For additional API details, see `src/services/API_Documentation.md`.
