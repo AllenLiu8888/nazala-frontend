@@ -7,13 +7,13 @@ const GameOver = () => {
     const { gameId } = useParams();
     const [currentSlide, setCurrentSlide] = useState(0);
     
-    // 页面文本内容（可配置）
+    // Page text content (configurable)
     const title = "ENDING";
     const subtitle = "Here's the world you created...";
     const endingText = useGameStoreScreen(s => s.ending.text) || "The chamber releases a final surge of light. Your chosen memory vanishes, leaving a hollow echo in your mind. On the giant screen, the crowd reacts—some cheer your sacrifice, others whisper doubts. Outside, society tilts: new rules form, trust shifts, and the balance of power bends to your decision. You step back into the world changed, carrying both the loss and the weight of its consequence. Game Over—your choice has written history.";
     const buttonText = "Back to Home";
 
-    // 轮播图配置
+    // Carousel configuration
     const slides = [
         {
             id: 'story',
@@ -44,29 +44,29 @@ const GameOver = () => {
         }
     ];
 
-    // 拉取结局文案
+    // Fetch ending text
     useEffect(() => {
         if (gameId) {
             useGameStoreScreen.getState().fetchGameEnding(gameId);
         }
     }, [gameId]);
 
-    // 取消自动轮播：仅手动点击切换
+    // Disable auto-play: manual switch only
 
-    // 手动切换
+    // Manual switch
     const goToSlide = (index) => {
         setCurrentSlide(index);
     };
 
-    // 归档游戏并返回首页
+    // Archive game and return to home
     const handleBackToHome = async () => {
         try {
-            // 调用 archiveGame API
+            // Call archiveGame API
             await useGameStoreScreen.getState().archiveGame(gameId);
         } catch (error) {
-            console.error('归档游戏失败:', error);
+            console.error('Failed to archive game:', error);
         } finally {
-            // 无论成功或失败，使用浏览器级跳转回首页以刷新并清空 store
+            // Regardless of success or failure, navigate to home to refresh and clear store
             window.location.replace('/');
         }
     };
@@ -74,24 +74,24 @@ const GameOver = () => {
     return (
         <>
             <div className="h-full overflow-hidden flex flex-col items-center justify-between py-10">
-                {/* Title 部分 */} 
+                {/* Title section */} 
                 <header className="flex flex-col items-center justify-center text-center gap-4">
                     <h1 className="font-pixel leading-tight text-8xl font-bold text-cyan-300 tracking-wide pb-10">
                         {title}
                     </h1>
                 </header>
                 <div className="relative w-8/10 mx-4" aria-hidden>
-                    {/* 背景光晕层 */}
+                    {/* Background glow layer */}
                     <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-6 bg-cyan-400/10 blur-xl rounded-full" />
-                    {/* 主体亮线 */}
+                    {/* Main highlight line */}
                     <div className="relative h-[2px] w-full bg-cyan-400/80 rounded-full shadow-[0_0_16px_rgba(34,211,238,0.7)]" />
                 </div>
 
-                {/* 轮播图主体 */}
+                {/* Carousel container */}
                 <main className="flex-1 flex flex-col px-4  w-6/10 min-h-0 overflow-hidden pb-12 pt-4">
-                    {/* 轮播内容区域 */}
+                    {/* Carousel content area */}
                     <div className="relative flex-1 w-full overflow-hidden">
-                        {/* 轮播内容 */}
+                        {/* Slides */}
                         <div className="h-full w-full relative">
                             {slides.map((slide, index) => (
                                 <div
@@ -110,7 +110,7 @@ const GameOver = () => {
                         </div>
                     </div>
 
-                    {/* 轮播指示器 */}
+                    {/* Carousel indicators */}
                     <div className="flex justify-center items-center gap-4 mt-6">
                         {slides.map((slide, index) => (
                             <button
@@ -134,12 +134,12 @@ const GameOver = () => {
                 </main>
 
                 <div className="relative w-8/10 mx-4" aria-hidden>
-                    {/* 背景光晕层 */}
+                    {/* Background glow layer */}
                     <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-6 bg-cyan-400/10 blur-xl rounded-full" />
-                    {/* 主体亮线 */}
+                    {/* Main highlight line */}
                     <div className="relative h-[2px] w-full bg-cyan-400/80 rounded-full shadow-[0_0_16px_rgba(34,211,238,0.7)]" />
                 </div>
-                {/* 返回首页按钮 */}
+                {/* Back to home button */}
                 <footer className="flex justify-center pt-15">
                     <button 
                         className="text-2xl border-2 border-cyan-400 rounded-4xl px-4 py-2 text-cyan-400 font-semibold mb-4 hover:bg-cyan-400 hover:text-white transition-colors duration-200" 

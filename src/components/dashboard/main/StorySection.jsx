@@ -25,13 +25,13 @@ const TypewriterLine = ({ content, typeSpeed = 10 }) => {
 const StorySection = () => {
     const turnIndex = useGameStoreScreen(s => s.turn.index);
     const storyText = useGameStoreScreen(s => s.turn.storyText);
-    // cursor handled inside TypewriterLine
+    // Cursor handled inside TypewriterLine
 
-    // 使用 key 强制重挂载来重新打字，无需额外副作用
+    // Use key to force remount to retype without extra effects
     
     return (
         <section className="flex-1 p-20 overflow-hidden">
-            {/* 左侧内容 */}
+            {/* Left content */}
             <h2 className="pixel-text mb-4">World {turnIndex}</h2>
             <p className="text-2xl leading-relaxed text-cyan-200">
                 <TypewriterLine key={`${turnIndex}-${(storyText || '').length}`} content={storyText} typeSpeed={10} />

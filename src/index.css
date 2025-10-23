@@ -29,10 +29,10 @@ html {
 
 
 
-/* 自定义的全局样式（如果需要） */
+/* Custom global styles (if needed) */
 
 
-/* 可复用的组件类 - 使用标准 CSS */
+/* Reusable component classes - standard CSS */
 .pixel-text {
   font-family: var(--font-pixel);
   font-size: 2.75rem;
@@ -68,10 +68,10 @@ html {
 
 /* -----------------------------
    Responsive typography helpers
-   使用 clamp 让字体在不同屏幕宽度自适应
+   Use clamp for responsive font sizes across viewports
    ----------------------------- */
 .text-responsive-title {
-  /* 18px ~ 28px，随视口宽度变化 */
+  /* 18px ~ 28px, varies with viewport width */
   font-size: clamp(18px, 5.5vw, 28px);
   line-height: 1.25;
 }
@@ -89,11 +89,11 @@ html {
 }
 
 .badge-padding-responsive {
-  /* 使徽章在小屏更紧凑 */
+  /* Make badges more compact on small screens */
   padding: 0.15rem 0.5rem;
 }
 
 .option-padding-responsive {
-  /* 使选项卡片在小屏更紧凑 */
+  /* Make option cards more compact on small screens */
   padding: clamp(12px, 3.5vw, 20px);
 }

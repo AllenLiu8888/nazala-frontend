@@ -1,25 +1,25 @@
 // src/components/ScoreRing.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { CircularProgressbarWithChildren, buildStyles } from "react-circular-progressbar";
-// 一次性在组件里引入样式 -> 使用者只需引入这个组件
+// Import styles within component once -> consumers only import this component
 import "react-circular-progressbar/dist/styles.css";
 
 /**
- * 环形进度（带动画，居中显示 value/max）
+ * Circular progress (animated, centered value/max)
  *
- * Props：
- * - value: number   分子
- * - max: number     分母
- * - size?: number = 72           直径（px）
- * - strokeWidth?: number = 10    线宽
- * - color?: string = "#03ffff"   进度色
- * - track?: string = "#0b1220"   轨道色
- * - ccw?: boolean = true         逆时针（counter-clockwise）
- * - duration?: number = 0.6      动画时长（秒）
- * - easing?: string = "cubic-bezier(.22,1,.36,1)" 动画缓动
- * - showText?: boolean = true    是否显示“value/max”
- * - className?: string           外层自定义类名
- * - animateOnMount?: boolean = true  首次挂载是否从 0 动到目标
+ * Props:
+ * - value: number   numerator
+ * - max: number     denominator
+ * - size?: number = 72           diameter (px)
+ * - strokeWidth?: number = 10    stroke width
+ * - color?: string = "#03ffff"   progress color
+ * - track?: string = "#0b1220"   track color
+ * - ccw?: boolean = true         counter-clockwise
+ * - duration?: number = 0.6      animation duration (seconds)
+ * - easing?: string = "cubic-bezier(.22,1,.36,1)" easing
+ * - showText?: boolean = true    show "value/max"
+ * - className?: string           outer custom className
+ * - animateOnMount?: boolean = true  animate from 0 on mount
  */
 export default function ScoreRing({
     value,
@@ -43,10 +43,10 @@ export default function ScoreRing({
         [safeVal, safeMax]
     );
 
-    // 为了“一个组件即可动画”，内部自己管理显示用的百分比
+    // Manage displayed percentage internally for self-animated component
     const [pct, setPct] = useState(() => (animateOnMount ? 0 : targetPct));
     useEffect(() => {
-        // 进入或更新时，平滑过渡到目标值
+        // Smoothly transition to target value on mount/update
         setPct(targetPct);
     }, [targetPct]);
 
@@ -62,9 +62,9 @@ export default function ScoreRing({
             styles={buildStyles({
             pathColor: color,
             trailColor: track,
-            // 完全自定义 transition：更可控（含缓动）
+            // Fully custom transition: precise control (with easing)
             pathTransition: `stroke-dashoffset ${duration}s ${easing}`,
-            // 也可以用简单模式：pathTransitionDuration: duration,
+            // Or simple mode: pathTransitionDuration: duration,
             textColor: "#67e8f9",
             })}
         >

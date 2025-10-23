@@ -3,22 +3,22 @@ import useGameStoreScreen from '../../../store/index_screen';
 
 
 /**
- * 雷达图组件
- * @param {Object} props - 组件属性
- * @param {number} props.size - SVG viewBox 大小，默认 600
- * @param {number} props.maxRadius - 最大半径（数据区域），默认 150
- * @param {number} props.labelRadius - 标签距离中心的半径，默认 250
- * @param {number} props.labelYOffset - 标签 Y 轴偏移，默认 220
- * @param {number} props.levels - 背景圆圈层数，默认 5
- * @param {number} props.levelRadius - 每层圆圈的半径间隔，默认 30
- * @param {number} props.pointRadius - 数据点半径，默认 6
- * @param {Array} props.colors - 四个维度的颜色数组，默认 ['cyan', 'red', 'yellow', 'blue']
- * @param {string} props.strokeColor - 主要描边颜色，默认 'cyan'
- * @param {string} props.gradientId - 渐变 ID，默认 'radarGradient'
- * @param {boolean} props.showBottomLine - 是否显示底部装饰线，默认 false
- * @param {number} props.labelWidth - 标签宽度，默认 140
- * @param {number} props.labelHeight - 标签高度，默认 36
- * @param {boolean} props.showPercentage - 是否显示百分比，默认 true
+ * Radar chart component
+ * @param {Object} props - component properties
+ * @param {number} props.size - SVG viewBox size, default 600
+ * @param {number} props.maxRadius - maximum radius (data area), default 150
+ * @param {number} props.labelRadius - radius for labels from center, default 250
+ * @param {number} props.labelYOffset - label Y offset, default 220
+ * @param {number} props.levels - number of background rings, default 5
+ * @param {number} props.levelRadius - radius step per ring, default 30
+ * @param {number} props.pointRadius - data point radius, default 6
+ * @param {Array} props.colors - colors for four dimensions, default ['cyan', 'red', 'yellow', 'blue']
+ * @param {string} props.strokeColor - primary stroke color, default 'cyan'
+ * @param {string} props.gradientId - gradient ID, default 'radarGradient'
+ * @param {boolean} props.showBottomLine - show bottom decorative line, default false
+ * @param {number} props.labelWidth - label width, default 140
+ * @param {number} props.labelHeight - label height, default 48
+ * @param {boolean} props.showPercentage - show percentage, default true
  */
 const RadarChart = ({
     size = 450,
@@ -36,38 +36,38 @@ const RadarChart = ({
     labelHeight = 48,
     showPercentage = true,
 }) => {
-    // 从 store 读取四维属性数据
+    // Read four-dimensional attribute data from store
     const categories = useGameStoreScreen(s => s.world.categories);
     const radarData = useGameStoreScreen(s => s.world.radarData);
 
-    // 将世界属性值归一化为 0-100（后端可能提供 -100~100 或已是 0~100）
+    // Normalize world attribute values to 0-100 (backend may provide -100~100 or already 0~100)
     const normalizeToPercent = (value) => {
         if (typeof value !== 'number' || Number.isNaN(value)) return 50;
-        if (value >= 0 && value <= 100) return value; // 已是百分比
-        // 将 [-100, 100] 映射到 [0, 100]
+        if (value >= 0 && value <= 100) return value; // already percentage
+        // Map [-100, 100] to [0, 100]
         const clamped = Math.max(-100, Math.min(100, value));
         return Math.round(clamped / 2 + 50);
     };
     const normalizedData = Array.isArray(radarData) ? radarData.map(normalizeToPercent) : [50, 50, 50, 50];
 
-    // 计算中心点
+    // Compute center
     const center = size / 2;
 
-    // 将 store 数据映射为雷达图数据点（角度、值、标签、颜色）
+    // Map store data to radar points (angle, value, label, color)
     const dataPoints = categories.map((label, index) => ({
-        angle: index * 90, // 四个维度：0°, 90°, 180°, 270°
-        value: normalizedData[index] ?? 50, // 如果数据缺失，默认 50
+        angle: index * 90, // Four dimensions: 0°, 90°, 180°, 270°
+        value: normalizedData[index] ?? 50, // Default 50 if data is missing
         label,
-        color: colors[index] || 'cyan', // 使用传入的颜色或默认值
+        color: colors[index] || 'cyan', // Use provided color or default
     }));
 
     return (
         <>
-            {/* 雷达图容器：自适应父容器高度 */}
+            {/* Radar container: fits parent height */}
             <div className="relative w-full h-full rounded-lg p-4 flex items-center justify-center">
-                {/* SVG 雷达图：自适应容器，扩大 viewBox 以容纳标签，添加平滑过渡 */}
+                {/* SVG radar: responsive, enlarged viewBox for labels, smooth transitions */}
                 <svg className="w-full h-full max-h-full" viewBox={`0 0 ${size} ${size}`} style={{ overflow: 'visible' }}>
-                    {/* 定义渐变 */}
+                    {/* Define gradient */}
                     <defs>
                         <radialGradient id={gradientId}>
                             <stop offset="0%" stopColor={strokeColor} stopOpacity="0.3" />
@@ -75,7 +75,7 @@ const RadarChart = ({
                         </radialGradient>
                     </defs>
 
-                    {/* 背景圆圈 */}
+                    {/* Background rings */}
                     {Array.from({ length: levels }, (_, i) => i + 1).map((level) => (
                         <circle
                             key={level}
@@ -88,7 +88,7 @@ const RadarChart = ({
                         />
                     ))}
 
-                    {/* 轴线：延伸到标签位置，保持固定 */}
+                    {/* Axes: extend to label positions, stay fixed */}
                     {dataPoints.map((point, index) => {
                         const angle = (index * 90 - 90) * Math.PI / 180;
                         const x2 = center + maxRadius * Math.cos(angle);
@@ -106,7 +106,7 @@ const RadarChart = ({
                         );
                     })}
 
-                    {/* 数据多边形：添加平滑过渡 */}
+                    {/* Data polygon: smooth transition */}
                     <polygon
                         points={dataPoints.map((point, index) => {
                             const angle = (index * 90 - 90) * Math.PI / 180;
@@ -121,7 +121,7 @@ const RadarChart = ({
                         style={{ transition: 'all 0.5s ease-in-out' }}
                     />
 
-                    {/* 数据点：添加平滑过渡 */}
+                    {/* Data points: smooth transition */}
                     {dataPoints.map((point, index) => {
                         const angle = (index * 90 - 90) * Math.PI / 180;
                         const radius = (point.value / 100) * maxRadius;
@@ -141,7 +141,7 @@ const RadarChart = ({
                         );
                     })}
 
-                    {/* 标签：固定在圆形外围，不随数据变化 */}
+                    {/* Labels: fixed outside circle, do not change with data */}
                     {dataPoints.map((point, index) => {
                         const angle = (index * 90 - 90) * Math.PI / 180;
                         const x = center + labelRadius * Math.cos(angle);
@@ -186,7 +186,7 @@ const RadarChart = ({
                 </svg>
             </div>
 
-            {/* 底部装饰线（可选） */}
+            {/* Optional bottom decorative line */}
             {showBottomLine && (
                 <div className="mt-8 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
             )}

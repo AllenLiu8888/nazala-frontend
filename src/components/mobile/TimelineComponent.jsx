@@ -121,7 +121,7 @@ const TimelineComponent = ({
     return (
       <div className="border-2 border-red-400 rounded-xl bg-black/80 backdrop-blur-sm p-8">
         <div className="flex flex-col items-center justify-center">
-          <div className="text-red-400 text-6xl mb-4">⚠️</div>
+          <div className="text-red-400 text-6xl mb-4">!</div>
           <p className="text-red-400 text-lg mb-2">Loading failed</p>
           <p className="text-gray-400 text-sm text-center">{error}</p>
           <button 

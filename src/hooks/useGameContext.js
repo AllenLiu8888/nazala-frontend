@@ -4,7 +4,7 @@ import { GameContext } from '../context/CreateGameContext';
 export const useGameContext = () => {
     const context = useContext(GameContext);
     if (!context) {
-        throw new Error('useGameContext 必须在 GameProvider 内部使用');
+        throw new Error('useGameContext must be used within GameProvider');
     }
     return context;
 };

@@ -1,17 +1,17 @@
 import React from 'react';
 
 /**
- * SimpleTimeline Component - 极简时间轴组件（带丝滑动画）
+ * SimpleTimeline Component - minimal timeline with smooth animations
  * 
- * @param {number} startYear - 开始年份
- * @param {number} endYear - 结束年份
- * @param {number} points - 时间轴上的点数（默认11个点）
- * @param {number} currentPoint - 当前高亮点的索引（可选）
- * @param {string} lineClass - 线条的 Tailwind 类名（如 'bg-gray-300'）
- * @param {string} pointClass - 点的 Tailwind 类名（如 'bg-gray-400'）
- * @param {string} currentPointClass - 当前点的 Tailwind 类名（如 'bg-blue-500'）
- * @param {string} textClass - 文字的 Tailwind 类名（如 'text-gray-600'）
- * @param {string} className - 额外的容器样式类名
+ * @param {number} startYear - start year
+ * @param {number} endYear - end year
+ * @param {number} points - number of points on the timeline (default 11)
+ * @param {number} currentPoint - index of the highlighted point (optional)
+ * @param {string} lineClass - Tailwind class for the line (e.g. 'bg-gray-300')
+ * @param {string} pointClass - Tailwind class for points (e.g. 'bg-gray-400')
+ * @param {string} currentPointClass - Tailwind class for current point (e.g. 'bg-blue-500')
+ * @param {string} textClass - Tailwind class for text (e.g. 'text-gray-600')
+ * @param {string} className - extra container className
  */
 const Timeline = ({
     startYear = 2075,
@@ -24,7 +24,7 @@ const Timeline = ({
     textClass = 'text-gray-600',
     className = ""
 }) => {
-  // 计算时间轴点
+  // Compute timeline points
     const timelinePoints = [];
     const totalYears = endYear - startYear;
     const clampedCurrentIndex =
@@ -47,22 +47,22 @@ const Timeline = ({
 
     return (
         <div className={`relative ${className}`}>
-        {/* 时间轴 */}
+        {/* Timeline */}
         <div className="relative">
-            {/* 主线 - 添加渐变和动画 */}
+            {/* Main line - gradient and animation */}
             <div className={`absolute top-1/2 left-0 right-0 h-2 ${lineClass} -translate-y-1/2 transition-all duration-500 ease-in-out`}></div>
 
-            {/* 时间点标记 */}
+            {/* Time point markers */}
             {timelinePoints.map((point, index) => (
             <div
                 key={index}
                 className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500 ease-in-out"
                 style={{ left: `${point.position}%` }}
             >
-                {/* 固定刻度点（起止更大，中间更细） */}
+                {/* Fixed ticks (larger at ends, thinner in middle) */}
                 <div className={`${point.isMain ? 'w-4 h-4' : 'w-1.5 h-6'} ${pointClass} rounded-full`} />
                 
-                {/* 年份标签 - 添加淡入淡出效果 */}
+                {/* Year label - fade effect */}
                 {point.isMain && (
                 <div className={`
                     absolute top-12 -translate-x-1/2 text-xl ${textClass}
@@ -75,15 +75,15 @@ const Timeline = ({
             </div>
             ))}
 
-            {/* 丝滑移动的当前指示器（白色光晕 + 实心点） */}
+            {/* Smooth current indicator (white glow + solid dot) */}
             {currentPosition !== null && (
               <div
                 className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-700 ease-in-out"
                 style={{ left: `${currentPosition}%` }}
               >
-                {/* 光晕层：白色高斯模糊（弱化） */}
+                {/* Glow layer: subtle white blur */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/40 blur-xl pointer-events-none" />
-                {/* 实心当前点 */}
+                {/* Solid current point */}
                 <div className={`${currentPointClass} w-6 h-6 rounded-full border-6 border-white shadow-[0_0_10px_rgba(255,255,255,0.5)]`} />
               </div>
             )}

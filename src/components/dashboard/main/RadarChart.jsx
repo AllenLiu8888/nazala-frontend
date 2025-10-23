@@ -1,4 +1,4 @@
-// 第1步：最基础的雷达图
+// Step 1: Basic radar chart
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 import useGameStoreScreen from '../../../store/index_screen';
@@ -22,13 +22,13 @@ const RadarChart = () => {
             },
             plotOptions: {
                 radar: {
-                size: 200  // 适中大小
+                size: 200  // medium size
                 }
             },
             grid: {
                 padding: {
-                left: 60,    // 关键：增加左边距
-                right: 60    // 关键：增加右边距
+                left: 60,    // increase left padding
+                right: 60    // increase right padding
                 }
             },
             xaxis: {
@@ -55,8 +55,8 @@ const RadarChart = () => {
             options={options} 
             series={series} 
             type="radar" 
-            height={550}  // 更大的高度
-            width={800}   // 更大的宽度
+            height={550}  // larger height
+            width={800}   // larger width
             />
         </>
         );

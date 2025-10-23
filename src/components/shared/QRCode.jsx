@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import useGameStoreScreen from '../../store/index_screen'; 
 
 const QRCode = () => {
-    // 优先使用 store 的 gameId；为空时回退到路由参数，保证二维码可用
     const storeGameId = useGameStoreScreen(s => s.gameMeta.id);
     const { gameId: routeGameId } = useParams();
     const gameId = storeGameId || routeGameId;
@@ -12,7 +11,6 @@ const QRCode = () => {
 
     const showValues = useGameStoreScreen(s => s.uiConfig?.showValues);
     const getQRCodeURL = () => {
-        // 使用可配置的 Root URL（适配手机扫码场景），无配置时回退到当前来源
         const baseUrl = (import.meta.env?.VITE_ROOT_URL) || window.location.origin;
         const sv = showValues ? 1 : 0;
         return `${baseUrl}/game/${gameId}/waiting?sv=${sv}`;
@@ -37,8 +35,8 @@ const QRCode = () => {
                                 value={getQRCodeURL()}
                                 size={300}
                                 level="H"
-                                bgColor="transparent"  // 背景透明
-                                fgColor="#ffffff" // 前景色
+                                bgColor="transparent"  
+                                fgColor="#ffffff" 
                             />
                         </div>
                     ) : (

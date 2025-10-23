@@ -17,44 +17,44 @@ export default function Game() {
     const gameState = useGameStoreScreen(s => s.gameMeta.state);
     const maxRounds = useGameStoreScreen(s => s.gameMeta.maxRounds);
 
-    // 从 store 读取数据
+    // Read data from store
     const playersTotal = useGameStoreScreen(s => s.players.total);
     const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
     const generating = useGameStoreScreen(s => s.ui.generating);
 
-    // 使用 ref 防止 StrictMode 导致的重复调用
+    // Use ref to prevent duplicate calls caused by StrictMode
     const hasInitialized = useRef(false);
 
-    // 页面渲染后启动轮询, 目的是持续更新「当前turn的已投票玩家数 playersVoted」
+    // After render, start polling to keep playersVoted updated for the current turn
     useEffect(() => {
         const { stopDashboardPolling } = useGameStoreScreen.getState();
 
-        // 防止 React StrictMode 导致的重复初始化
+        // Prevent duplicate init due to React StrictMode
         if (!hasInitialized.current) {
             hasInitialized.current = true;
             useGameStoreScreen.getState().startPollingForDashboard();
         }
 
-        // 总是返回 cleanup，确保组件卸载时能清理轮询
+        // Always return cleanup to clear polling on unmount
         return () => {
             stopDashboardPolling();
         };
     }, []);
 
-    // 监听 playersVoted：当全部玩家已在当前回合投票完成时，提交当前回合
+    // Listen to playersVoted: when all have voted in current turn, submit current turn
     useEffect(() => {
         if (playersVoted == playersTotal && playersTotal > 0) {
             useGameStoreScreen.getState().submitCurrentTurn();
         }
     }, [playersVoted, playersTotal, turnIndex]);
 
-    // 监听 turn index 和游戏状态变化，自动跳转
+    // Watch turn index and game state changes, auto navigate
     useEffect(() => {
-        // 最后一轮（倒数第一轮）跳转到 Reflection 页面
+        // Last round (maxRounds - 1): navigate to Reflection
         const maxIndex = typeof maxRounds === 'number' && maxRounds > 0 ? maxRounds - 1 : null;
         if (maxIndex !== null && turnIndex === maxIndex) {
-            console.log('🎯 最后一轮，跳转到 Reflection');
+            console.log('Last round, navigate to Reflection');
             navigate(`/game/${gameId}/reflection`);
             return;
         }
@@ -62,21 +62,21 @@ export default function Game() {
 
     return (
         <div className="h-full w-full flex flex-col relative">
-            {/* Header: 固定高度 */}
+            {/* Header: fixed height */}
             <header className="flex justify-between flex-shrink-0">
                 <Round />
                 <div className="w-px h-full border-3 border-cyan-300 mx-4"/>
                 <WorldStatus />
             </header>
 
-            {/* Main: 占据剩余空间，设置最小高度避免过度压缩 */}
+            {/* Main: fill remaining space, set min height to avoid squeezing */}
             <main className="flex-1 flex border-5 border-cyan-300 min-h-96 overflow-hidden">
                 <StorySection />
                 <div className="w-px h-full border-3 border-cyan-300 mx-4"/>
                 <Visualisation />
             </main>
 
-            {/* Footer: 固定高度 */}
+            {/* Footer: fixed height */}
             <footer className="flex justify-between flex-shrink-0">
                 <UserStates />
                 <div className="w-px h-10rem border-3 border-cyan-300 mx-4"/>

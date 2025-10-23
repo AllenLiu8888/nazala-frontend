@@ -1,45 +1,45 @@
-// Zustand 全局游戏状态（screen/mobile 共用前缀 /game/:gameId）
-// 作用：集中管理"从后端取数 → 写入全局状态 → 组件订阅渲染"的完整链路
-// 消费方式：组件中使用选择器订阅所需字段，如：useGameStore(s => s.turn.index)
+// Zustand global game state (screen/mobile share prefix /game/:gameId)
+// Purpose: Orchestrate the full flow "fetch from backend → write to global state → component subscription and render"
+// Usage: In components, subscribe with selectors, e.g., useGameStore(s => s.turn.index)
 import { create } from 'zustand';
 import { gameApi } from '../services/gameApi';
 import { CONFIG, toPhaseText, updateGameMetaFromApi, getGameId } from './common_tools';
 
-// 创建全局 store；set 用于写入/合并状态，get 用于读取最新状态（避免闭包过期）
+// Create global store; set writes/merges state, get reads latest state (avoid stale closures)
 export const useGameStoreScreen = create((set, get) => ({
-  // 元数据：与整局游戏相关
-  // 映射自 $Game（见 src/services/API_Documentation.md）
+  // Metadata: game-level information
+  // Mapped from $Game (see src/services/API_Documentation.md)
   // - id ← game.id
   // - state ← game.status（0 waiting / 1 ongoing / 10 finished / 20 archived）
-  // - maxRounds ← game.max_turns；turnsCount ← game.turns_count；playersCount ← game.players_count
-  // - joinToken/startedAt/endedAt 同名映射
+  // - maxRounds ← game.max_turns; turnsCount ← game.turns_count; playersCount ← game.players_count
+  // - joinToken/startedAt/endedAt map by name
   gameMeta: {
     id: null,
-    state: 'waiting', // waiting | ongoing | archived （由后端 status 数值映射）//状态
-    statusCode: null, // 后端原始数值状态，便于排查
-    totalRounds: 0,   // 总回合数，来自 max_turns（后备 turns_count）
+    state: 'waiting', // waiting | ongoing | archived (mapped from backend status)
+    statusCode: null, // Raw backend status code, helpful for debugging
+    totalRounds: 0,   // Total rounds, from max_turns (fallback to turns_count)
     maxRounds: 0,     // = max_turns
-    turnsCount: 0,    // 已创建/进行的回合数 = turns_count
+    turnsCount: 0,    // Rounds created/progressed = turns_count
     playersCount: 0,  // = players_count
-    joinToken: null,  // = join_token（如需要）
+    joinToken: null,  // = join_token (if needed)
     startedAt: null,
     endedAt: null,
   },
 
-  // 回合与阶段
-  // 映射自 $Turn
-  // - id ← turn.id；gameId ← turn.game.id
-  // - index ← turn.index（约定 0 为 intro）
-  // - status ← turn.status（0 intro / 1 voting / 2 result）→ phase 文本
-  // - questionText/options ← 对应字段（options 内含 attrs 影响值）
+  // Turn and phase
+  // Mapped from $Turn
+  // - id ← turn.id; gameId ← turn.game.id
+  // - index ← turn.index (convention: 0 is intro)
+  // - status ← turn.status (0 intro / 1 voting / 2 result) → phase text
+  // - questionText/options ← respective fields (options contain attrs values)
   turn: {
     id: null,
     gameId: null,
-    index: 0, // 0 表示 intro，对应后端第 0 轮
-    status: 0, // 0 表示 intro，1 表示 voting，2 表示 result
-    year: 2075, // 目前常量，如后端提供可替换
+    index: 0, // 0 means intro, corresponds to backend round 0
+    status: 0, // 0 intro, 1 voting, 2 result
+    year: 2075, // Currently a constant; replace if provided by backend
     phase: 'intro', // intro | voting | result
-    statusRaw: null, // 保留后端原始 status，目前只有0
+    statusRaw: null, // Keep raw backend status; currently only 0
     questionText: null,
     storyText: null,
     options: [],
@@ -48,56 +48,56 @@ export const useGameStoreScreen = create((set, get) => ({
     total_choices: 0,
   },
 
-  // 玩家状态汇总
-  // 主要从 $Turn.total_players / total_choices 推导
+  // Player state summary
+  // Mostly derived from $Turn.total_players / total_choices
   players: {
     joined: 0,
     total: 0,
     voted: 0,
   },
 
-  // 世界/可视化所需数据
+  // World/visualization data
   world: {
-    // 雷达图数据（按固定顺序聚合 $Attributes 平均值）
+    // Radar chart data (aggregate $Attributes averages in fixed order)
     categories: ['Memory Equality', 'Technical Control', 'Society Cohesion', 'Autonomy Control'],
     radarData: [],
     narrative: '',
   },
 
-  // 时间轴数据
+  // Timeline data
   timeline: {
-    events: [], // 历史事件列表
+    events: [], // Historical events list
     loading: false,
     error: null,
   },
 
-  // 结局内容
+  // Ending content
   ending: {
     text: '',
     loading: false,
     error: null,
   },
 
-  // UI 辅助状态
-  // loading：请求中；error：最近一次错误信息（不断线策略）
+  // UI auxiliary state
+  // loading: in-flight; error: last error message (non-blocking)
   ui: {
     loading: false,
     error: null,
     generating: false,
   },
 
-  // 界面配置（仅前端展示相关）
+  // UI configuration (presentation-only)
   uiConfig: {
-    showValues: true, // 是否显示选项的属性数值徽章
+    showValues: true, // Whether to show attribute value badges for options
   },
 
-  // 轮询句柄（内部使用）
+  // Polling handles (internal use)
   _lobbyPollerId: null,
   _introPollerId: null,
   _dashboardPollerId: null,
 
-  // setters（便于逐步接线时手动注入/测试）
-  // 仅进行“局部合并更新”（partial），避免整对象被覆盖
+  // Setters (handy for incremental wiring/manual injection/testing)
+  // Only perform partial merges to avoid overwriting entire objects
   setGameMeta: (partial) => set((state) => ({
     gameMeta: { ...state.gameMeta, ...partial },
   })),
@@ -120,9 +120,9 @@ export const useGameStoreScreen = create((set, get) => ({
     uiConfig: { ...state.uiConfig, ...partial },
   })),
 
-  // 基础行为：获取当前游戏（最小可用）
+  // Basic action: fetch current game (minimal viable)
   // API: GET /api/game/current/
-  // 步骤：置 loading → 请求 → 映射 $Game → 写入 gameMeta → 关闭 loading；错误记录到 ui.error 并抛出
+  // Steps: set loading → request → map $Game → write to gameMeta → unset loading; record error to ui.error and rethrow
   fetchCurrentGame: async () => {
     set((state) => ({ ui: { ...state.ui, loading: true, error: null } }));
     try {
@@ -136,14 +136,14 @@ export const useGameStoreScreen = create((set, get) => ({
 
       return game;
     } catch (err) {
-      set((state) => ({ ui: { ...state.ui, loading: false, error: err?.message || '请求失败' } }));
+      set((state) => ({ ui: { ...state.ui, loading: false, error: err?.message || 'Request failed' } }));
       throw err;
     }
   },
 
-  // 获取游戏详情（用于玩家统计、世界信息等）
+  // Fetch game detail (for player stats, world info, etc.)
   // API: GET /api/game/{game_id}/detail/
-  // 用途：刷新统计字段（playersCount/turnsCount/maxRounds 等）；可扩展 world 可视化数据
+  // Purpose: refresh statistics (playersCount/turnsCount/maxRounds, etc.); extensible world visualization data
   fetchGameDetail: async (gameId) => {
     try {
       const data = await gameApi.getGameDetail(gameId);
@@ -154,20 +154,20 @@ export const useGameStoreScreen = create((set, get) => ({
       }));
       return game;
     } catch (err) {
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '获取游戏详情失败' } }));
+      set((state) => ({ ui: { ...state.ui, error: err?.message || 'Failed to get game detail' } }));
       return null;
     }
   },
 
-  // 获取当前回合（用于回合、投票进度等）
+  // Fetch current turn (for round/voting progress, etc.)
   // API: GET /api/game/{game_id}/turn/current
-  // 用途：驱动大屏 Round/DecisionProgress/UserStates 等组件随回合与投票进度实时更新
+  // Purpose: drive big screen components (Round/DecisionProgress/UserStates) to update with turn & voting progress in real time
   fetchCurrentTurn: async (gameId, token = null) => {
     try {
       const data = await gameApi.getCurrentTurn(gameId, token);
       const turn = data?.turn ?? data;
     
-      // 检查回合数据是否有效
+      // Validate turn data
       if (!turn || typeof turn.index !== 'number') {
         return null;
       }
@@ -175,7 +175,7 @@ export const useGameStoreScreen = create((set, get) => ({
       set((state) => {
         const attrOrder = state.world.categories || ['Memory Equality', 'Technical Control', 'Society Cohesion', 'Autonomy Control'];
 
-        // 规范化后端字段名到前端展示名
+        // Normalize backend attribute names to frontend display names
         const normalizeAttrName = (raw) => {
           switch (raw) {
             case 'TechnologicalControl': return 'Technical Control';
@@ -249,28 +249,28 @@ export const useGameStoreScreen = create((set, get) => ({
       });
       return turn;
     } catch (err) {
-      console.warn('[Store] ⚠️ 获取当前回合失败:', err.message);
+      console.warn('[Store] Failed to get current turn:', err.message);
       
-      // 如果是"回合已存在"错误，说明后端有回合但可能数据有问题
+      // If "Current turn already exists" error, backend has a turn but data may be problematic
       if (err.message.includes('Current turn already exists')) {
-        console.info('[Store] ℹ️ 后端提示回合已存在，但获取失败，可能是数据问题');
+        console.info('[Store] Backend indicates current turn exists, but fetch failed; likely data issue');
         return null;
       }
       
-      // 如果是"回合不存在"错误，不设置错误状态
+      // If "Current turn does not exist" error, do not set error state
       if (err.message.includes('Current turn does not exist')) {
         return null;
       }
       
-      // 其他错误才设置错误状态
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '获取当前回合失败' } }));
+      // Only set error state for other errors
+      set((state) => ({ ui: { ...state.ui, error: err?.message || 'Failed to get current turn' } }));
       return null;
     }
   },
 
-  // Lobby 专用轮询：仅拉取 gameDetail（不请求 turn）
+  // Lobby-specific polling: only fetch gameDetail (no turn request)
   startPollingForLobby: async (providedGameId = null) => {
-    // 已存在轮询则跳过
+    // Skip if polling already exists
     const existing = get()._lobbyPollerId;
     if (existing) return;
 
@@ -281,12 +281,12 @@ export const useGameStoreScreen = create((set, get) => ({
       return;
     }
 
-    // 立即拉一次，失败也不阻塞
+    // Pull immediately once; failures do not block
     await Promise.allSettled([
       get().fetchGameDetail(gameId),
     ]);
 
-    const fallbackId = gameId; // 初始传入的 gameId 作为回退
+    const fallbackId = gameId; // Use initially provided gameId as fallback
     const id = setInterval(async () => {
       const gid = get().gameMeta.id || fallbackId;
       if (!gid) return;
@@ -299,9 +299,9 @@ export const useGameStoreScreen = create((set, get) => ({
     set(() => ({ _lobbyPollerId: id }));
   },
 
-  // Intro 专用轮询：仅拉取 currentTurn, 供外部调用方获知当前 turn 是否全部玩家已提交,
+  // Intro-specific polling: only fetch currentTurn, for external callers to know whether all players have submitted
   startPollingForIntro: async (providedGameId = null) => {
-    // 已存在轮询则跳过
+    // Skip if polling already exists
     const existing = get()._introPollerId;
     if (existing) return;
 
@@ -312,7 +312,7 @@ export const useGameStoreScreen = create((set, get) => ({
       return;
     }
 
-    // 立即拉一次，失败也不阻塞
+    // Pull immediately once; failures do not block
     await Promise.allSettled([
       get().fetchCurrentTurn(gameId),
     ]);
@@ -330,9 +330,9 @@ export const useGameStoreScreen = create((set, get) => ({
     set(() => ({ _introPollerId: id }));
   },
 
-  // Dashboard 专用轮询：仅拉取 currentTurn, 供外部调用方获知当前 turn 是否全部玩家已提交,
+  // Dashboard-specific polling: only fetch currentTurn, for external callers to know whether all players have submitted
   startPollingForDashboard: async (providedGameId = null) => {
-    // 已存在轮询则跳过
+    // Skip if polling already exists
     const existing = get()._dashboardPollerId;
     if (existing) return;
 
@@ -343,7 +343,7 @@ export const useGameStoreScreen = create((set, get) => ({
       return;
     }
 
-    // 立即拉一次，失败也不阻塞
+    // Pull immediately once; failures do not block
     await Promise.allSettled([
       get().fetchCurrentTurn(gameId),
     ]);
@@ -361,8 +361,8 @@ export const useGameStoreScreen = create((set, get) => ({
     set(() => ({ _dashboardPollerId: id }));
   },
 
-  // 停止轮询
-  // 清理 setInterval，避免内存泄漏与重复请求
+  // Stop polling
+  // Clear setInterval to avoid memory leaks and duplicate requests
   stopLobbyPolling: () => {
     const id = get()._lobbyPollerId;
     if (id) {
@@ -387,9 +387,9 @@ export const useGameStoreScreen = create((set, get) => ({
     }
   },
 
-  // 开始游戏：调用后端并将前端状态置为 ongoing
+  // Start game: call backend and set frontend state to ongoing
   // API: POST /api/game/{game_id}/start/
-  // 前置条件：Game.status 必须是 WAITING；必要时可传入管理员 token
+  // Preconditions: Game.status must be WAITING; admin token optional
   startGame: async (maybeGameId = null, token = null, options = {}) => {
     try {
       const gameId = await getGameId(get, maybeGameId);
@@ -409,78 +409,78 @@ export const useGameStoreScreen = create((set, get) => ({
           startedAt: state.gameMeta.startedAt || new Date().toISOString(),
         },
       }));
-      // 关键：启动成功后立刻刷新游戏详情，拿到后端应用后的 max_turns
+      // Important: refresh game detail immediately after starting to get applied max_turns
       try { await get().fetchGameDetail(gameId); } catch { /* no-op */ }
       return true;
     } catch (err) {
-      console.error('[Store] ❌ 开始游戏失败:', err);
+      console.error('[Store] Failed to start game:', err);
       set((state) => ({ ui: { ...state.ui, error: err?.message || '开始游戏失败' } }));
       return false;
     }
   },
 
-  // 初始化/开启当前回合（主持/管理员动作）
+  // Initialize/start current turn (host/admin action)
   initCurrentTurn: async (token = null) => {
     try {
       const gameId = await getGameId(get);
 
-      // 检查游戏状态
+      // Check game state
       const gameState = get().gameMeta.state;
       const gameStatusCode = get().gameMeta.statusCode;
       
       if (gameState !== 'ongoing' && gameStatusCode !== 1) {
-        throw new Error(`游戏状态不正确，无法创建回合。当前状态: ${gameState} (${gameStatusCode})`);
+        throw new Error(`Invalid game state; cannot create turn. Current state: ${gameState} (${gameStatusCode})`);
       }
       
-      console.info('[Store] 📡 调用 initTurn API...', { gameId, hasToken: !!token });
+      console.info('[Store] Calling initTurn API...', { gameId, hasToken: !!token });
       try {
         const initResult = await gameApi.initTurn(gameId, token);
-        console.info('[Store] ✅ initTurn API 调用成功:', initResult);
+        console.info('[Store] initTurn API success:', initResult);
       } catch (initErr) {
-        // 如果是"回合已存在"错误，说明回合已经存在，直接尝试获取
+        // If "Current turn already exists", the turn already exists; try fetching it
         if (initErr.message.includes('Current turn already exists')) {
-          console.info('[Store] ℹ️ 回合已存在，直接获取回合数据...');
+        console.info('[Store] Turn already exists, fetching data...');
         } else {
-          // 其他错误才抛出
+          // Rethrow other errors
           throw initErr;
         }
       }
 
-      // 刷新当前回合
+      // Refresh current turn
       const turnResult = await get().fetchCurrentTurn(gameId, token);
       
-      // 检查回合数据是否有效
+      // Validate turn data
       if (!turnResult || typeof turnResult.index !== 'number') {
-        throw new Error('获取回合数据失败或数据无效');
+        throw new Error('Failed to get turn data or data invalid');
       }
       
       return true;
     } catch (err) {
-      console.error('[Store] ❌ 初始化回合失败:', err);
-      console.error('[Store] ❌ 错误详情:', {
+      console.error('[Store] Failed to initialize turn:', err);
+      console.error('[Store] Error detail:', {
         message: err.message,
         status: err.status,
         code: err.code
       });
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '初始化回合失败' } }));
+      set((state) => ({ ui: { ...state.ui, error: err?.message || 'Failed to initialize turn' } }));
       return false;
     }
   },
 
-  // 提交/结束当前回合（主持/管理员动作）
+  // Submit/finish current turn (host/admin action)
   submitCurrentTurn: async (token = null) => {
-    console.info('[Store] 📤 开始提交当前回合...', { hasToken: !!token });
+    console.info('[Store] Start submitting current turn...', { hasToken: !!token });
     try {
       set((state) => ({ ui: { ...state.ui, generating: true } }));
       const gameId = await getGameId(get);
       await gameApi.submitTurn(gameId, token);
-      // 成功后刷新当前回合
+      // On success, refresh current turn
       await get().fetchCurrentTurn(gameId, token);
       set((state) => ({ ui: { ...state.ui, generating: false } }));
       return true;
     } catch (err) {
-      console.error('[Store] ❌ 提交回合失败:', err);
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '提交回合失败', generating: false } }));
+      console.error('[Store] Failed to submit turn:', err);
+      set((state) => ({ ui: { ...state.ui, error: err?.message || 'Failed to submit turn', generating: false } }));
       return false;
     }
   },
@@ -493,14 +493,14 @@ export const useGameStoreScreen = create((set, get) => ({
       return;
     }
 
-    // 调用后端 API 将游戏状态设为 finished
+    // Call backend API to mark game as finished
     try {
       await gameApi.finishGame(gameId, null);
     } catch (err) {
-      console.error('[Store] ❌ 调用 finishGame API 失败:', err);
+      console.error('[Store] Failed to call finishGame API:', err);
     }
     
-    // 更新前端状态
+    // Update frontend state
     set((state) => ({
       gameMeta: {
         ...state.gameMeta,
@@ -511,7 +511,7 @@ export const useGameStoreScreen = create((set, get) => ({
     }));
   },
 
-  // 获取结局文案
+  // Fetch ending text
   fetchGameEnding: async (maybeGameId = null, token = null) => {
     set((state) => ({ ending: { ...state.ending, loading: true, error: null } }));
     try {
@@ -521,14 +521,14 @@ export const useGameStoreScreen = create((set, get) => ({
       set((state) => ({ ending: { ...state.ending, loading: false, text } }));
       return text;
     } catch (err) {
-      set((state) => ({ ending: { ...state.ending, loading: false, error: err?.message || '获取结局失败' } }));
+      set((state) => ({ ending: { ...state.ending, loading: false, error: err?.message || 'Failed to get ending' } }));
       return '';
     }
   },
 
-  // 归档游戏：调用后端并将前端状态置为 archived
+  // Archive game: call backend and set frontend state to archived
   // API: POST /api/game/{game_id}/archive/
-  // 前置条件：Game.status 必须是 FINISHED；必要时可传入管理员 token
+  // Preconditions: Game.status must be FINISHED; admin token optional
   archiveGame: async (maybeGameId = null, token = null) => {
     try {
       const gameId = await getGameId(get, maybeGameId, false);
@@ -546,7 +546,7 @@ export const useGameStoreScreen = create((set, get) => ({
 
       return true;
     } catch (err) {
-      set((state) => ({ ui: { ...state.ui, error: err?.message || '归档游戏失败' } }));
+      set((state) => ({ ui: { ...state.ui, error: err?.message || 'Failed to archive game' } }));
       return false;
     }
   },

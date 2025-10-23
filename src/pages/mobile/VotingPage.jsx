@@ -189,7 +189,7 @@ const VotingPage = () => {
   // 8. Listen for game state changes: stop polling and redirect when finished or archived
   useEffect(() => {
     if (isGameFinished || isGameArchived) {
-      console.info('[VotingPage] 🏁 Game ended, stopping polling and redirecting to summary page');
+      console.info('[VotingPage] Game ended, stopping polling and redirecting to summary page');
       stopPolling(); // Stop polling
       const currentGameId = gameMetaId || gameIdParam || 'demo-game';
       navigate(`/game/${currentGameId}/summary`);

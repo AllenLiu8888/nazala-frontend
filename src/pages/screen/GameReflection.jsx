@@ -12,7 +12,7 @@ const GameReflection = () => {
     const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
 
-    // 启动轮询
+    // Start polling
     useEffect(() => {
         if (gameId) {
             useGameStoreScreen.getState().startPollingForDashboard(gameId);
@@ -22,9 +22,9 @@ const GameReflection = () => {
         };
     }, [gameId]);
 
-    // 监听投票完成：当所有玩家在当前回合完成投票
-    // - 若非最后一轮：仅提交当前回合
-    // - 若为最后一轮：先提交当前回合，再结束游戏（最后一轮 = maxRounds - 1）
+    // Listen for vote completion: when all players finish voting in current turn
+    // - If not last round: submit current turn
+    // - If last round: submit current turn, then finish game (last = maxRounds - 1)
     useEffect(() => {
         if (playersVoted == playersTotal && playersTotal > 0) {
             useGameStoreScreen.getState().submitCurrentTurn();
@@ -35,7 +35,7 @@ const GameReflection = () => {
         }
     }, [playersVoted, playersTotal, turnIndex, maxRounds]);
 
-    // 监听游戏状态，finished/archived 时自动跳转到 gameover
+    // Watch game state: auto-navigate to gameover when finished/archived
     useEffect(() => {
         if (gameState === 'finished' || gameState === 'archived') {
             navigate(`/game/${gameId}/gameover`);

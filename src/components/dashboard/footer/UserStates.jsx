@@ -11,7 +11,7 @@ const UserStates = () => {
             <h3 className="pixel-text">User States</h3>
             <div className="flex-1 flex items-center justify-center gap-8 pb-5">
                 <div className="flex-1">
-                    <ScoreRing value={value} max={max}/>  {/* 默认逆时针，带动画与文字 */}
+                    <ScoreRing value={value} max={max}/>  {/* Counter-clockwise by default, with animation and text */}
                 </div>
                 <p className="text-4xl text-cyan-300 font-bold text-center">{value}/{max}</p>
             </div>

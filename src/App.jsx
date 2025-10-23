@@ -22,18 +22,18 @@ import { useBgm, BGM_URLS } from './hooks/useBgm';
 
 
 function App() {
-  // 路由 & 授权（首次手势后才允许播放）
+  // Routing & authorization (permit playback only after first user gesture)
   const location = useLocation();
   const authorizedRef = useRef(false);
-  // 仅在大屏（screen）路由下播放：'/' 或 /game/:id/(lobby|intro|game|reflection|gameover)
+  // Play only on screen routes: '/' or /game/:id/(lobby|intro|game|reflection|gameover)
   const isScreenRoute = /^\/$|^\/game\/[^/]+\/(lobby|intro|game|reflection|gameover)$/.test(location.pathname);
 
-  // 订阅全局游戏状态
+  // Subscribe to global game state
   const gameState = useGameStoreScreen(s => s.gameMeta.state);
   const turnIndex = useGameStoreScreen(s => s.turn.index);
 
-  // 准备多轨实例（不自动播放，按需触发）
-  // 默认音量
+  // Prepare multi-track instances (no auto play, trigger on demand)
+  // Default volume
   const BASE_GAME_VOL = 0.5;
   const BASE_INTRO_VOL = 0.5;
 
@@ -42,22 +42,22 @@ function App() {
   const { play: playGame, stop: stopGame, setVolume: setGameVol } = useBgm(BGM_URLS.game, false, false, BASE_GAME_VOL, true);
   const { play: playOver, stop: stopOver } = useBgm(BGM_URLS.gameover, false, false, 0.6, true);
 
-  // 捕获首次用户手势，解锁播放权限
+  // Capture first user gesture to unlock autoplay permissions
   useEffect(() => {
     const onFirstGesture = () => {
       authorizedRef.current = true;
-      // 移除监听
+      // Remove listener
       window.removeEventListener('pointerdown', onFirstGesture, true);
     };
     window.addEventListener('pointerdown', onFirstGesture, true);
     return () => window.removeEventListener('pointerdown', onFirstGesture, true);
   }, []);
 
-  // 基于游戏状态/路由切换 BGM 策略
+  // BGM strategy based on game state/route changes
   useEffect(() => {
-    if (!authorizedRef.current) return; // 未授权时不触发播放
+    if (!authorizedRef.current) return; // do not play before authorized
     if (!isScreenRoute) {
-      // 非大屏路由（即手机端）一律静音
+      // Non-screen routes (i.e., mobile) should be muted
       try { stopMenu(); } catch (err) { void err; }
       try { stopIntro(); } catch (err) { void err; }
       try { stopGame(); } catch (err) { void err; }
@@ -65,7 +65,7 @@ function App() {
       return;
     }
 
-    // 先停止所有，后按策略播放目标曲目（避免叠音）
+    // Stop all first, then play target track to avoid overlap
     const stopAll = () => {
       try { stopMenu(); } catch (err) { void err; }
       try { stopIntro(); } catch (err) { void err; }
@@ -73,11 +73,11 @@ function App() {
       try { stopOver(); } catch (err) { void err; }
     };
 
-    // 在 ongoing 阶段仅停止非 game 轨，避免 game 每次 state/turn 变更被打断
+    // In ongoing phase, stop non-game tracks only to avoid interruptions on game track
     const stopNonGame = () => {
       try { stopMenu(); } catch (err) { void err; }
       try { stopOver(); } catch (err) { void err; }
-      // intro 是否停止由 turnIndex 决定
+      // Whether to stop intro is determined by turnIndex
     };
 
     if (gameState === 'archived') {
@@ -95,12 +95,12 @@ function App() {
       stopNonGame();
 
       if (typeof turnIndex === 'number' && turnIndex === 0) {
-        // 仅在 Intro 播放 intro，不播放 game；音量固定为 1.0（基础 0.5 的两倍）
+        // In Intro, play intro only, not game; set volume to 1.0 (double base 0.5)
         try { stopGame(); } catch (err) { void err; }
         try { setIntroVol(1); } catch (err) { void err; }
         try { playIntro(); } catch (err) { void err; }
       } else if (typeof turnIndex === 'number' && turnIndex > 0) {
-        // 非 Intro：只保留 game，恢复默认体积并确保 intro 停止
+        // Non-Intro: keep game only, restore default volume and ensure intro stops
         try { stopIntro(); } catch (err) { void err; }
         try { setGameVol(BASE_GAME_VOL); } catch (err) { void err; }
         try { playGame(); } catch (err) { void err; }

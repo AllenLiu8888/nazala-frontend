@@ -1,16 +1,16 @@
 import { GAME_STATUS } from '../constants/constants';
 
-// 配置常量
+// Configuration constants
 export const CONFIG = {
-  TURN_DURATION_MS: 10000,     // 回合倒计时时长：10秒
-  POLLING_INTERVAL_MS: 2000,    // 轮询间隔：2秒
-  LAST_TURN_INDEX: 11,          // 最后一轮的索引（第12轮，即 Reflection）
-  MAX_TURN_INDEX: 11,           // 最大回合索引（0-11共12轮）
+  TURN_DURATION_MS: 10000,     // Turn countdown duration: 10 seconds
+  POLLING_INTERVAL_MS: 2000,    // Polling interval: 2 seconds
+  LAST_TURN_INDEX: 11,          // Index of the last round (12th round, i.e., Reflection)
+  MAX_TURN_INDEX: 11,           // Maximum round index (0–11, total 12 rounds)
 };
 
 
-// 工具函数：状态码映射
-// 将后端 status 数值转换为前端文本状态
+// Utility: status code mapping
+// Convert backend status code to frontend text state
 export const toStateText = (code) => {
   switch (code) {
     case GAME_STATUS.WAITING: return 'waiting';
@@ -21,7 +21,7 @@ export const toStateText = (code) => {
   }
 };
 
-// 将回合 status 数值转换为阶段文本
+// Convert turn status code to phase text
 export const toPhaseText = (code) => {
   switch (code) {
     case 0: return 'intro';
@@ -32,8 +32,8 @@ export const toPhaseText = (code) => {
 };
 
 
-// 工具函数：更新游戏元数据
-// 统一处理从后端 Game 对象到前端 gameMeta 的映射
+// Utility: update game metadata
+// Normalize mapping from backend Game object to frontend gameMeta
 export const updateGameMetaFromApi = (game, currentState) => {
   return {
     id: game?.id ?? currentState.id,
@@ -49,11 +49,11 @@ export const updateGameMetaFromApi = (game, currentState) => {
   };
 };
 
-// 工具函数：获取 gameId
-// 统一处理 gameId 获取逻辑：从参数、store 或通过 fetchCurrentGame 获取
-// @param get - Zustand store 的 get 函数
-// @param providedId - 可选的游戏ID参数
-// @param shouldFetch - 是否在未找到时尝试获取当前游戏（默认 true）
+// Utility: retrieve gameId
+// Unified logic to obtain gameId: from parameter, store, or via fetchCurrentGame
+// @param get - Zustand store get function
+// @param providedId - Optional game ID parameter
+// @param shouldFetch - Whether to fetch current game when missing (default true)
 export const getGameId = async (get, providedId = null, shouldFetch = true) => {
   let gameId = providedId || get().gameMeta.id;
 
@@ -62,18 +62,18 @@ export const getGameId = async (get, providedId = null, shouldFetch = true) => {
       const current = await get().fetchCurrentGame();
       gameId = current?.id || get().gameMeta.id;
     } catch (err) {
-      console.warn('[Store] ⚠️ 获取当前游戏失败:', err.message);
+      console.warn('[Store] Failed to get current game:', err.message);
       gameId = get().gameMeta.id;
     }
   }
   if (!gameId) {
-    throw new Error('未获取到 gameId');
+    throw new Error('Failed to obtain gameId');
   }
   return gameId;
 };
 
 
-// 工具函数：localStorage 访问封装
+// Utility: localStorage access helpers
 export const storage = {
   setAuthToken: (token) => {
     if (typeof localStorage !== 'undefined') {

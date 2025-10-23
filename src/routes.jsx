@@ -1,53 +1,53 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 // import { loader } from './App.jsx';
 
-// 大屏幕页面组件 - 管理员/主持人使用
-import HomePage from './pages/screen/HomePage'; // 游戏首页
-import GameIntro from './pages/screen/GameIntro'; // 游戏介绍
-import GameLobby from './pages/screen/GameLobby'; // 游戏大厅
-import GameDashboard from './pages/screen/GameDashboard'; // 游戏主界面 (Dashboard)
-import GameReflection from './pages/screen/GameReflection'; // 反思页面
-import GameOver from './pages/screen/GameOver'; // 游戏结束页
-import FlowMonitor from './pages/screen/FlowMonitor'; // 流程可视化监控
+// Screen pages - for admin/host
+import HomePage from './pages/screen/HomePage'; // Game home
+import GameIntro from './pages/screen/GameIntro'; // Game introduction
+import GameLobby from './pages/screen/GameLobby'; // Game lobby
+import GameDashboard from './pages/screen/GameDashboard'; // Main screen (Dashboard)
+import GameReflection from './pages/screen/GameReflection'; // Reflection page
+import GameOver from './pages/screen/GameOver'; // Game over page
+import FlowMonitor from './pages/screen/FlowMonitor'; // Visualization flow monitor
 
-// 手机端页面组件 - 玩家扫码后使用
-import VotingPage from './pages/mobile/VotingPage'; // 投票页面
-import WaitingPage from './pages/mobile/WaitingPage'; // 等待页面
-import TimelinePage from './pages/mobile/Timeline'; // 玩家查看时间线的页面
-import PersonalSummary from './pages/mobile/PersonalSummary'; // 个人总结页面
+// Mobile pages - used by players after scanning QR code
+import VotingPage from './pages/mobile/VotingPage'; // Voting page
+import WaitingPage from './pages/mobile/WaitingPage'; // Waiting page
+import TimelinePage from './pages/mobile/Timeline'; // Player timeline page
+import PersonalSummary from './pages/mobile/PersonalSummary'; // Personal summary page
 
-// 创建简化的路由配置
-import App from './App.jsx';  // 导入 App 组件
+// Create simplified router configuration
+import App from './App.jsx';  // Import App component
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,  // App 作为根布局
+    element: <App />,  // App as root layout
     // loader: appLoader, 
-    children: [        // 所有页面都是 App 的子路由
+    children: [        // All pages are children of App
       {
-        index: true,   // 默认路由
+        index: true,   // Index route
         element: <HomePage />,
       },
-      // 将 screen 与 mobile 合并到同一前缀：/game/:gameId
-      // 将 screen 与 mobile 合并到同一前缀：/game/:gameId
+      // Merge screen and mobile under the same prefix: /game/:gameId
+      // Merge screen and mobile under the same prefix: /game/:gameId
       {
         path: "game/:gameId",
         children: [
-          // 大屏入口
+          // Screen entry
           { path: "lobby", element: <GameLobby /> },
           { path: "intro", element: <GameIntro /> },
           { path: "game", element: <GameDashboard /> },
           { path: "reflection", element: <GameReflection /> },
           { path: "gameover", element: <GameOver /> },
-          // 可视化流程监控
+          // Visualization flow monitor
           { path: "flow", element: <FlowMonitor /> },
-          // 手机端页面
+          // Mobile pages
           { path: "waiting", element: <WaitingPage /> },
           { path: "voting", element: <VotingPage /> },
           { path: "timeline", element: <TimelinePage /> },
           { path: "summary", element: <PersonalSummary /> },
-          // 默认进入等待页面
+          // Default to waiting page
           {
             index: true,
             element: <Navigate to="waiting" replace />,
@@ -56,7 +56,7 @@ export const router = createBrowserRouter([
       }
     ]
   },
-  // 404 页面 - 跳转到首页
+  // 404 page - redirect to home
   {
     path: "*",
     element: <Navigate to="/" replace />,

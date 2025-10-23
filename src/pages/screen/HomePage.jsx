@@ -15,15 +15,15 @@ const HomePage = () => {
             setLoading(true);
             console.log('loding current game...');
 
-            // 通过 store 获取当前游戏并写入全局状态
+            // Fetch current game via store and write to global state
             const currentGame = await fetchCurrentGame();
 
             console.log('already get current game:', currentGame);
-            console.log('current game id:', currentGame?.id); //当前游戏id
+            console.log('current game id:', currentGame?.id); // current game id
 
-            // 大屏端无需持久化 gameId，进入后续页面由轮询获取最新状态
+            // On big screen, no need to persist gameId; subsequent pages poll for latest state
 
-            // 跳转到intro页面
+            // Navigate to lobby page
             if (currentGame?.id) {
                 navigate(`/game/${currentGame.id}/lobby`);
             } else {
@@ -32,7 +32,7 @@ const HomePage = () => {
 
         } catch (error) {
             console.error('get game info failed:', error);
-            // 即使API调用失败，也跳转到intro页面
+            // Even if API call fails, still navigate to intro page
             alert('get game info failed: ' + (error?.message || 'unknown error'));
         } finally {
             setLoading(false);
@@ -48,7 +48,7 @@ const HomePage = () => {
         typeSpeed: 60,
         deleteSpeed: 20,
         delaySpeed: 2000,
-        loop: 0 // 一轮结束后我们手动重启
+        loop: 0 // after one loop, we manually restart
     });
     const { isDone } = helper;
     return (

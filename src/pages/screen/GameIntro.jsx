@@ -10,7 +10,7 @@ import { ArrowRight } from 'lucide-react';
 const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
     const subtitle = "2075 | The boundary between memory and privacy";
-    // 段落（按你的文本拆分为三段）
+    // Paragraphs
     const para1 = "The age of memory arrived without warning. What once hid in silence—private, fragile, fleeting—was dragged into light, stored in vaults, and traded like coin. Governments soon discovered its power: a recollection erased could silence dissent; a recollection forged could invent loyalty. Corporations followed, selling childhoods like luxury goods, auctioning grief, curating love.";
     const para2 = "Citizens learned to guard their minds as if they were bank accounts, clutching each fragment of the past against intrusion. Yet the market thrived. Identity itself became negotiable, a shifting ledger of purchases and exchanges.";
     const para3 = "The world tilted. Truth blurred, freedom bent, and the order of society pulsed to the flow of memory. Each decision—whether to keep, to trade, or to resist—reshaped not only the self, but the collective future. And beneath it all, one question lingered, unspoken but absolute: when memory is no longer yours, what remains of you?";
@@ -18,27 +18,27 @@ const GameIntro = () => {
     const navigate = useNavigate();
     const { gameId } = useParams();
     
-    // 从 store 读取数据
+    // Read data from store
     const playersTotal = useGameStoreScreen(s => s.players.total);
     const playersVoted = useGameStoreScreen(s => s.players.voted);
     const turnIndex = useGameStoreScreen(s => s.turn.index);
     const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
     const generating = useGameStoreScreen(s => s.ui.generating);
     
-    // 使用 ref 防止 StrictMode 导致的重复调用
+    // Use ref to prevent duplicate calls caused by StrictMode
     const hasInitialized = useRef(false);
     
-    // BGM：进入 GameIntro 时停止 HomePage/Lobby 的音乐
+    // BGM: stop HomePage/Lobby music when entering GameIntro
     const bgmUrl = BGM_URLS.menu;
-    useBgm(bgmUrl, false, true); // 不启动播放，但要停止
+    useBgm(bgmUrl, false, true); // Do not start playback, but stop
     
-    // 页面渲染后启动轮询, 目的是持续更新「当前turn的已投票玩家数 playersVoted」
+    // After render, start polling to keep playersVoted updated for the current turn
     useEffect(() => {
         if (!gameId) return;
 
         const { stopIntroPolling } = useGameStoreScreen.getState();
 
-        // 防止 React StrictMode 导致的重复初始化
+        // Prevent duplicate init due to React StrictMode
         if (!hasInitialized.current) {
             hasInitialized.current = true;
             if (turnsCount == 0) {
@@ -47,35 +47,35 @@ const GameIntro = () => {
             useGameStoreScreen.getState().startPollingForIntro(gameId);
         }
 
-        // 总是返回 cleanup，确保组件卸载时能清理轮询
+        // Always return cleanup to clear polling on unmount
         return () => {
             stopIntroPolling();
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // 监听 playersVoted, 以获取「当前turn的已投票玩家数 playersVoted」, 以实现「当全部玩家已投票完毕时, 执行submit turn」
+    // Listen to playersVoted: when all have voted in current turn, submit turn
     useEffect(() => {
         if (playersVoted == playersTotal && playersTotal > 0) {
             useGameStoreScreen.getState().submitCurrentTurn();
         }
     }, [playersVoted, playersTotal]);
 
-    // 简单渐显（不基于时间分段显示，仅在切换时淡入）
+    // Simple fade-in (not time-sliced; only fades on switch)
     const fadeUp = () => ({
         initial: { opacity: 0, y: 6 },
         animate: { opacity: 1, y: 0 },
         transition: { duration: 0.6, ease: 'easeOut' }
     });
 
-    // 更慢的淡入（用于第二屏）
+    // Slower fade-in (for second screen)
     const fadeUpSlow = () => ({
         initial: { opacity: 0, y: 8 },
         animate: { opacity: 1, y: 0 },
         transition: { duration: 1.2, ease: 'easeOut' }
     });
 
-    // 容器层淡入淡出（用于两屏切换时确保进入有动画）
+    // Container fade (ensure animation on switching screens)
     const fadeContainer = {
         initial: { opacity: 0, y: 6 },
         animate: { opacity: 1, y: 0 },
@@ -83,7 +83,7 @@ const GameIntro = () => {
         transition: { duration: 0.6, ease: 'easeOut' }
     };
 
-    // 更慢的容器淡入（用于第二屏）
+    // Slower container fade (for second screen)
     const fadeContainerSlow = {
         initial: { opacity: 0, y: 6 },
         animate: { opacity: 1, y: 0 },
@@ -91,16 +91,16 @@ const GameIntro = () => {
         transition: { duration: 0.9, ease: 'easeOut' }
     };
 
-    // 文本分屏：先显示 para1+para2，点击后显示 para3+para4
+    // Split text: first show para1+para2, then on click show para3+para4
     const [showSecondPhase, setShowSecondPhase] = useState(false);
 
-    // 监听 turn index 变化，这样当「submit turn」成功后，就能成功获知并自动跳转到 dashboard
+    // Watch turn index changes to navigate to dashboard or reflection after submit turn
     useEffect(() => {
         if (turnIndex >= 1 && turnIndex <= 10) {
-            console.log(`🎯 Turn index = ${turnIndex}，跳转到 Dashboard`);
+            console.log(`Turn index = ${turnIndex}, navigate to Dashboard`);
             navigate(`/game/${gameId}/game`);
         } else if (turnIndex === 11) {
-            console.log(`🎯 Turn index = 11，跳转到 Reflection`);
+            console.log(`Turn index = 11, navigate to Reflection`);
             navigate(`/game/${gameId}/reflection`);
         }
     }, [turnIndex, gameId, navigate]);

@@ -1,17 +1,17 @@
-# 🎵 useBgm Hook 使用指南
+# useBgm Hook 使用指南
 
-## 📦 功能
+## 功能
 
 基于 `use-sound` 库的全局背景音乐管理 Hook，支持跨页面共享音频实例。
 
-## 🎯 特性
+## 特性
 
-- ✅ 全局单例音频实例
-- ✅ 跨页面无缝播放
-- ✅ 简单的播放/停止控制
-- ✅ 基于 `use-sound` 库
+- 全局单例音频实例
+- 跨页面无缝播放
+- 简单的播放/停止控制
+- 基于 `use-sound` 库
 
-## 📋 API
+## API
 
 ```javascript
 useBgm(soundUrl, shouldPlay, shouldStop)
@@ -23,7 +23,7 @@ useBgm(soundUrl, shouldPlay, shouldStop)
 - `shouldPlay` (boolean): 是否应该开始播放
 - `shouldStop` (boolean): 是否应该停止播放
 
-## 🚀 使用示例
+## 使用示例
 
 ### 1. 在 HomePage 开始播放 BGM
 
@@ -70,7 +70,7 @@ const GameIntro = () => {
 };
 ```
 
-## 📖 完整流程示例
+## 完整流程示例
 
 ### 场景：HomePage → GameLobby → GameIntro
 
@@ -134,7 +134,7 @@ const GameIntro = () => {
    - `useBgm(url, false, true)` → 停止 BGM
    - 音乐停止
 
-## 🔧 工作原理
+## 工作原理
 
 ### 全局状态管理
 
@@ -162,14 +162,14 @@ let globalIsPlaying = false;
    - 调用 `stop()` 停止音频
    - 设置 `globalIsPlaying = false`
 
-## ⚠️ 注意事项
+## 注意事项
 
 ### 1. URL 必须一致
 
 确保所有页面使用**完全相同**的 `soundUrl`：
 
 ```javascript
-// ✅ 正确 - 使用相同的 URL
+// 正确 - 使用相同的 URL
 const bgmUrl = 'https://example.com/audio/menu.ogg';
 
 // HomePage
@@ -180,7 +180,7 @@ useBgm(bgmUrl, false, false);
 ```
 
 ```javascript
-// ❌ 错误 - URL 不同
+// 错误 - URL 不同
 // HomePage
 useBgm('https://example.com/audio/menu.ogg', true, false);
 
@@ -215,7 +215,7 @@ const HomePage = () => {
 useBgm(bgmUrl, false, true); // 卸载时自动停止
 ```
 
-## 🎨 进阶用法
+## 进阶用法
 
 ### 切换不同的 BGM
 
@@ -244,7 +244,7 @@ import { resetBgm } from '../../hooks/useBgm';
 resetBgm();
 ```
 
-## 🐛 故障排查
+## 故障排查
 
 ### 问题：音乐没有播放
 
@@ -268,12 +268,12 @@ resetBgm();
 2. 检查全局状态是否被正确更新
 3. 尝试调用 `resetBgm()` 手动重置
 
-## 📚 相关资源
+## 相关资源
 
 - [use-sound 文档](https://github.com/joshwcomeau/use-sound)
 - [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 
-## 🎉 完成！
+## 完成！
 
 现在你可以在项目中实现跨页面的无缝背景音乐播放了！
 

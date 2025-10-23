@@ -17,20 +17,20 @@ const GameLobby = () => {
     const [maxTurns, setMaxTurns] = useState(5);
     const turnsCount = useGameStoreScreen(s => s.gameMeta.turnsCount);
 
-    // 使用 ref 防止 StrictMode 导致的重复调用
+    // Use ref to prevent duplicate calls caused by StrictMode
     const hasInitialized = useRef(false);
     
-    // BGM：继续播放 HomePage 的音乐，不停止
+    // BGM: continue playing HomePage music without stopping
     const bgmUrl = BGM_URLS.menu;
-    useBgm(bgmUrl, false, false); // 不启动新播放，也不停止
+    useBgm(bgmUrl, false, false); // Do not start new playback, also do not stop
 
-    // 开始游戏：只在 waiting 状态下调用后端 API，并跳转到 intro
+    // Start game: only call backend in waiting state, then navigate to intro
     const onStartGame = async () => {
         if (gameState !== 'waiting') return;
         
         const { startGame } = useGameStoreScreen.getState();
         const success = await startGame(gameId, null, {
-            // 后端的 max_turns 需要包含开头与结尾（+2）
+            // Backend max_turns needs to include intro and ending (+2)
             max_turns: Number.isFinite(+maxTurns) && +maxTurns > 0 ? (+maxTurns + 2) : undefined,
             show_values: !!showValues,
         });
@@ -39,14 +39,14 @@ const GameLobby = () => {
         }
     };
 
-    // 启动轮询 + 自动跳转逻辑
+    // Start polling + auto navigate logic
     useEffect(() => {
         const { stopLobbyPolling } = useGameStoreScreen.getState();
 
-        // 防止 React StrictMode 导致的重复初始化
+        // Prevent duplicate init due to React StrictMode
         if (!hasInitialized.current) {
             hasInitialized.current = true;
-            // 若 store 尚未写入 gameId，使用路由参数进行一次回填，保证二维码与轮询可用
+            // If store lacks gameId, backfill from route param, ensuring QR/polling works
             if (!storeGameId && gameId) {
                 try { setGameMeta({ id: gameId }); } catch { /* no-op */ }
             }
@@ -54,50 +54,50 @@ const GameLobby = () => {
             startPollingForLobby(gameId);
         }
         
-        // 总是返回 cleanup，确保组件卸载时能清理轮询
+        // Always return cleanup to clear polling on unmount
         return () => {
             stopLobbyPolling();
         }
     }, [gameId, setGameMeta, storeGameId]);
 
-    // 根据 game state 和 turns_count 自动跳转
+    // Auto navigate based on game state and turns_count
     useEffect(() => {
         if (!gameId) return;
 
-        // archived → 跳转到首页
+        // archived → navigate to home
         if (gameState === 'archived') {
             navigate('/');
             return;
         }
 
-        // ongoing + turnsCount = 0 → 跳转到 intro（intro 会自动创建 turn）
+        // ongoing + turnsCount = 0 → navigate to intro (intro will auto-create turn)
         if (gameState === 'ongoing' && turnsCount === 0) {
             navigate(`/game/${gameId}/intro`);
             return;
         }
 
-        // ongoing + turnsCount > 0 → 跳转到 dashboard
-        // 注意：不在这里判断 turnIndex，因为 Lobby 阶段还没有 turn 数据
-        // turnIndex 的判断交给 GameIntro 和 GameDashboard 处理
+        // ongoing + turnsCount > 0 → navigate to dashboard
+        // Note: do not check turnIndex here; Lobby stage lacks turn data
+        // Turn index handling is in GameIntro and GameDashboard
         if (gameState === 'ongoing' && turnsCount > 0) {
             navigate(`/game/${gameId}/game`);
             return;
         }
 
-        // finished → 跳转到 gameover
+        // finished → navigate to gameover
         if (gameState === 'finished') {
             navigate(`/game/${gameId}/gameover`);
             return;
         }
 
-        // waiting → 保持在本页面，不做任何跳转
+        // waiting → stay on this page; no navigation
     }, [gameState, turnsCount, gameId, navigate]);
 
-    // 不自动跳转；仅在按钮点击时根据状态决定行为
+    // Do not auto-navigate; decision by button click based on state
     return (
         <>
             <div className="h-full overflow-hidden flex flex-col items-center justify-center gap-6 py-10">
-                {/* Title 部分 */} 
+                {/* Title section */} 
                 {/*<header className="flex flex-col items-center justify-center text-center">
                     <h1 className="leading-normal text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">NAVIGATING THE FUTURE OF MEMORY</h1>
                     <p className="text-2xl text-cyan-300">2075 | The boundary between memory and privacy</p>
@@ -118,12 +118,12 @@ const GameLobby = () => {
                     </p>
                 </header>
 
-                {/* 游戏框部分 */}
+                {/* Game container section */}
                 <main className="flex-1 flex px-4 py-2 w-8/10">
                     <div className="h-full w-full flex border-5 border-cyan-400 rounded-4xl">
                         <section className="flex-1 flex flex-col justify-space-between p-15 overflow-hidden">
                             {/* {left} */}
-                            {/* 左侧内容 */}
+                            {/* Left section */}
                             <h2 className="font-pixel text-6xl text-cyan-400 font-semibold mb-4">Background</h2>
                             <p className="flex-1 flex flex-col justify-center text-2xl leading-relaxed text-cyan-200">
                             In the future, memory is no longer private—it is stored, traded, and controlled like currency. Governments and corporations manipulate recollections to shape loyalty, erase dissent, or invent false lives. Markets thrive on selling curated pasts, while citizens guard their memories as tightly as bank accounts. Society itself is rebuilt on the flow of memory, fragile and unstable. Every decision—whether to keep, trade, or resist—reshapes both personal identity and the collective order. In this world, truth blurs, freedom bends, and the politics of memory decides the fate of all.
@@ -133,7 +133,7 @@ const GameLobby = () => {
                         <section className="flex-1 px-15 py-5 flex flex-col justify-center overflow-hidden gap-5">
                             <div className="flex flex-col items-center justify-center m-8">
                             {/* {right} */}
-                            {/* 右侧内容 */}
+                            {/* Right section */}
                                 <QRCode />
                             </div>
                             <div className="flex flex-col items-center justify-center gap-4">
