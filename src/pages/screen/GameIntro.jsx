@@ -1,10 +1,11 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useGameStoreScreen from '../../store/index_screen';
 import RingScore from '../../components/dashboard/footer/RingScore';
 import { useBgm, BGM_URLS } from '../../hooks/useBgm';
 import LoadingOverlay from '../../components/shared/LoadingOverlay';
-import { motion } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 const GameIntro = () => {
     const title = "NAVIGATING THE FUTURE OF MEMORY";
@@ -13,6 +14,7 @@ const GameIntro = () => {
     const para1 = "The age of memory arrived without warning. What once hid in silence—private, fragile, fleeting—was dragged into light, stored in vaults, and traded like coin. Governments soon discovered its power: a recollection erased could silence dissent; a recollection forged could invent loyalty. Corporations followed, selling childhoods like luxury goods, auctioning grief, curating love.";
     const para2 = "Citizens learned to guard their minds as if they were bank accounts, clutching each fragment of the past against intrusion. Yet the market thrived. Identity itself became negotiable, a shifting ledger of purchases and exchanges.";
     const para3 = "The world tilted. Truth blurred, freedom bent, and the order of society pulsed to the flow of memory. Each decision—whether to keep, to trade, or to resist—reshaped not only the self, but the collective future. And beneath it all, one question lingered, unspoken but absolute: when memory is no longer yours, what remains of you?";
+    const para4 = "We offer no endings — only beginnings. The rest is written by your choices and our discussions.";
     const navigate = useNavigate();
     const { gameId } = useParams();
     
@@ -49,6 +51,7 @@ const GameIntro = () => {
         return () => {
             stopIntroPolling();
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // 监听 playersVoted, 以获取「当前turn的已投票玩家数 playersVoted」, 以实现「当全部玩家已投票完毕时, 执行submit turn」
@@ -56,14 +59,40 @@ const GameIntro = () => {
         if (playersVoted == playersTotal && playersTotal > 0) {
             useGameStoreScreen.getState().submitCurrentTurn();
         }
-    }, [playersVoted]);
+    }, [playersVoted, playersTotal]);
 
-    // Framer Motion 渐显配置
-    const fadeUp = (delay = 0) => ({
+    // 简单渐显（不基于时间分段显示，仅在切换时淡入）
+    const fadeUp = () => ({
         initial: { opacity: 0, y: 6 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 1.2, ease: 'easeOut', delay }
+        transition: { duration: 0.6, ease: 'easeOut' }
     });
+
+    // 更慢的淡入（用于第二屏）
+    const fadeUpSlow = () => ({
+        initial: { opacity: 0, y: 8 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 1.2, ease: 'easeOut' }
+    });
+
+    // 容器层淡入淡出（用于两屏切换时确保进入有动画）
+    const fadeContainer = {
+        initial: { opacity: 0, y: 6 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: 6 },
+        transition: { duration: 0.6, ease: 'easeOut' }
+    };
+
+    // 更慢的容器淡入（用于第二屏）
+    const fadeContainerSlow = {
+        initial: { opacity: 0, y: 6 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: 6 },
+        transition: { duration: 0.9, ease: 'easeOut' }
+    };
+
+    // 文本分屏：先显示 para1+para2，点击后显示 para3+para4
+    const [showSecondPhase, setShowSecondPhase] = useState(false);
 
     // 监听 turn index 变化，这样当「submit turn」成功后，就能成功获知并自动跳转到 dashboard
     useEffect(() => {
@@ -104,16 +133,39 @@ const GameIntro = () => {
                             </div>
                             
                             <div className="flex-1 flex flex-col justify-start items-start gap-4 w-full">
-                                <motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp(2)}>
-                                    {para1}
-                                </motion.p>
-                                <motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp(27)}>
-                                    {para2}
-                                </motion.p>
-                                <motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp(45)}>
-                                    {para3}
-                                </motion.p>
+                                <AnimatePresence mode="wait">
+                                    {!showSecondPhase ? (
+                                        <Motion.div key="phase1" {...fadeContainer} className="contents">
+                                            <Motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp()}>
+                                                {para1}
+                                            </Motion.p>
+                                            <Motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUp()}>
+                                                {para2}
+                                            </Motion.p>
+                                        </Motion.div>
+                                    ) : (
+                                        <Motion.div key="phase2" {...fadeContainerSlow} className="contents">
+                                            <Motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUpSlow()}>
+                                                {para3}
+                                            </Motion.p>
+                                            <Motion.p className="text-3xl leading-relaxed text-cyan-200" {...fadeUpSlow()}>
+                                                {para4}
+                                            </Motion.p>
+                                        </Motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
+                            {!showSecondPhase && (
+                                <div className="w-full pt-6 flex justify-end">
+                                    <button
+                                        onClick={() => setShowSecondPhase(true)}
+                                        className="font-pixel animate-pulse flex items-center gap-2 text-3xl text-gray-200 hover:text-white transition-colors duration-200 cursor-pointer"
+                                    >
+                                        <span>Continue</span>
+                                        <ArrowRight className="w-7 h-7" />
+                                    </button>
+                                </div>
+                            )}
                         </section>
                     </div>
                 </main>

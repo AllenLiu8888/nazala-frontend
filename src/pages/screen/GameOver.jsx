@@ -51,14 +51,7 @@ const GameOver = () => {
         }
     }, [gameId]);
 
-    // 自动轮播（每8秒切换）
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 10000);
-        
-        return () => clearInterval(interval);
-    }, [slides.length]);
+    // 取消自动轮播：仅手动点击切换
 
     // 手动切换
     const goToSlide = (index) => {
