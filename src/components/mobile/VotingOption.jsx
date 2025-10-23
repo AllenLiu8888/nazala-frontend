@@ -14,6 +14,14 @@ const VotingOption = ({ option, isSelected, onClick }) => {
     PersonalAgency: 'PA',
   };
 
+  // Map attributes to their corresponding radar chart colors
+  const attributeColors = {
+    MemoryEquity: '#00b3b3',      // darker cyan (top)
+    TechnologicalControl: '#ef4444', // red (right)
+    SocialCohesion: '#eab308',    // yellow (bottom)
+    PersonalAgency: '#3b82f6',    // blue (left)
+  };
+
   const desiredOrder = ['MemoryEquity', 'TechnologicalControl', 'SocialCohesion', 'PersonalAgency'];
 
   const attrMap = attrs.reduce((acc, a) => {
@@ -47,7 +55,7 @@ const VotingOption = ({ option, isSelected, onClick }) => {
         {letter ? `${letter}. ` : ''}{option?.text ?? ''}
       </div>
       {showValues && !allValuesZero && (
-        <div className="flex flex-wrap gap-2 text-responsive-badge">
+        <div className="flex justify-center items-center gap-3 text-responsive-badge">
           {desiredOrder.map((key) => {
             const abbr = nameToAbbr[key];
             const val = Number(attrMap[key] ?? 0);
@@ -58,8 +66,8 @@ const VotingOption = ({ option, isSelected, onClick }) => {
                 key={key}
                 className="badge-padding-responsive rounded border"
                 style={{
-                  borderColor: positive ? '#22c55e' : '#ef4444',
-                  color: positive ? '#22c55e' : '#ef4444',
+                  borderColor: attributeColors[key] || '#ffffff',
+                  color: '#f5f5dc',
                 }}
               >
                 {abbr} {sign}

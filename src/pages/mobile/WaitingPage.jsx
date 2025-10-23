@@ -119,19 +119,10 @@ const WaitingPage = () => {
             >
               {gameStatusCode === GAME_STATUS.ARCHIVED ? 'Game not started' : 'Waiting for players to join...'}
             </h1>
-            {/* todo: Show loading count: get from API */}
+
 
           </div>
          </div>
-         {/* </div>
-        <button
-                  onClick={testFullFlow}
-                  className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors duration-200"
-                >
-                  Reset user (show input box again)
-                </button>
-      </div> */}
-
        </div>
     </>
   );

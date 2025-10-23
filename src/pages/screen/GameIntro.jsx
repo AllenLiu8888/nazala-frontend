@@ -169,7 +169,7 @@ const GameIntro = () => {
                         </section>
                     </div>
                 </main>
-                {generating && <LoadingOverlay text="Generating next turn..." small />}
+                {generating && <LoadingOverlay text="LLM-RAG cognitive cores generating…" small />}
             </div>
         </>
     );
