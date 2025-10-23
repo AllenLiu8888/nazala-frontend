@@ -65,7 +65,14 @@ const PersonalSummary = () => {
             {/* Personality section */}
             <div className="mt-2">
               <p className="text-sm text-cyan-200 text-start mt-3 leading-5">
-                This is the final world we have created. Based on your outstanding contributions in {personalData.choices.join(' and ')}, you embody more of the characteristics of a visionary innovator.
+                This is the final world we have created. Based on your outstanding contributions in {Array.isArray(personalData.choices) && personalData.choices.length > 0 ? (
+                  <>
+                    <strong className="font-bold">{personalData.choices[0]}</strong>
+                    {personalData.choices.slice(1).map((choice, idx) => (
+                      <span key={idx}> and <strong className="font-bold">{choice}</strong></span>
+                    ))}
+                  </>
+                ) : null}, you embody more of the characteristics of a visionary innovator.
               </p>
             </div>
 
