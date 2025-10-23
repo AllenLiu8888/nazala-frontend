@@ -1,68 +1,68 @@
-# NaZaLa Backend API 文档
+# NaZaLa Backend API Documentation
 
-## 概述
+## Overview
 
-NaZaLa 是一个多人回合制游戏系统，玩家通过做出选择来影响游戏世界的四个核心属性。游戏使用LLM生成动态内容，为玩家提供沉浸式的决策体验。
+NaZaLa is a multiplayer turn-based game. Players make choices that affect four core attributes of the world. The game uses LLMs to generate dynamic content for an immersive decision-making experience.
 
-## 基本信息
+## Basics
 
 - **Base URL**: `http://127.0.0.1:8000`
-- **API 版本**: v1
-- **数据格式**: JSON
-- **字符编码**: UTF-8
+- **API Version**: v1
+- **Data Format**: JSON
+- **Encoding**: UTF-8
 
-## 身份验证
+## Authentication
 
-### 认证方式
-API支持三种认证方式：
+### Methods
+The API supports three methods:
 
-1. **Authorization Header** (推荐)
+1. **Authorization Header** (recommended)
 ```http
 Authorization: Bearer <your_auth_token>
 ```
 
-2. **自定义Header**
+2. **Custom Header**
 ```http
 X-Auth-Token: <your_auth_token>
 ```
 
-3. **URL参数**
+3. **URL parameter**
 ```
 ?auth_token=<your_auth_token>
 ```
 
-### 获取认证Token
-通过 `/api/game/{game_id}/player/init/` 端点创建玩家时获得认证token。
+### Obtain token
+You get an auth token when creating a player via `/api/game/{game_id}/player/init/`.
 
-## 游戏核心属性
+## Core attributes
 
-游戏包含四个核心属性，每个玩家的选择都会影响这些属性：
+The game has four core attributes; each choice affects them:
 
-- **Memory Equality** (记忆平等)
-- **Technical Control** (技术控制) 
-- **Society Cohesion** (社会凝聚力)
-- **Autonomy Control** (自主控制)
+- **Memory Equality**
+- **Technical Control**
+- **Society Cohesion**
+- **Autonomy Control**
 
-## 游戏状态
+## Game status
 
 ### Game Status
-- `0` - WAITING (等待中)
-- `1` - ONGOING (进行中)
-- `10` - FINISHED (已完成)
-- `20` - ARCHIVED (已归档)
+- `0` - WAITING
+- `1` - ONGOING
+- `10` - FINISHED
+- `20` - ARCHIVED
 
-## API端点
+## API endpoints
 
-### 1. 游戏管理
+### 1. Game management
 
-#### 获取当前游戏
+#### Get current game
 ```http
 GET /api/game/current/
 ```
 
-**说明：** 若最新的游戏为已归档（ARCHIVED）状态，将自动创建一个新的等待中（WAITING）游戏并返回。
+**Note:** If the latest game is ARCHIVED, a new WAITING game will be created and returned.
 
-**响应示例：**
+**Response example:**
 ```json
 {
   "status": true,
@@ -81,26 +81,26 @@ GET /api/game/current/
 }
 ```
 
-#### 获取游戏详情
+#### Get game detail
 ```http
 GET /api/game/{game_id}/detail/
 ```
 
-**路径参数：**
-- `game_id` (integer): 游戏ID
+**Path parameter:**
+- `game_id` (integer): Game ID
 
-**响应：** 与获取当前游戏相同
+**Response:** Same as current game
 
-#### 开始游戏
+#### Start game
 ```http
 POST /api/game/{game_id}/start/
 ```
 
-**前置条件：**
-- 游戏状态为 WAITING
-- 至少有1个玩家
+**Preconditions:**
+- Game status is WAITING
+- At least 1 player
 
-**响应示例：**
+**Response example:**
 ```json
 {
   "status": true,
@@ -116,37 +116,37 @@ POST /api/game/{game_id}/start/
 }
 ```
 
-#### 完成游戏
+#### Finish game
 ```http
 POST /api/game/{game_id}/finish/
 ```
 
-**前置条件：**
-- 游戏状态为 ONGOING
+**Preconditions:**
+- Game status is ONGOING
 
-**说明：** 将游戏状态由进行中（ONGOING）切换为已完成（FINISHED）。通常在最后一个回合结束时触发。
+**Note:** Switch status from ONGOING to FINISHED, typically after the last turn.
 
-#### 归档游戏
+#### Archive game
 ```http
 POST /api/game/{game_id}/archive/
 ```
 
-**前置条件：**
-- 游戏状态为 FINISHED
+**Preconditions:**
+- Game status is FINISHED
 
-### 2. 回合管理
+### 2. Turn management
 
-#### 获取当前回合
+#### Get current turn
 ```http
 GET /api/game/{game_id}/turn/current
 ```
 
-**说明：** 如果第一回合尚未创建，接口将返回 `status: false`。
+**Note:** If the first turn is not created, the API returns `status: false`.
 
-**前置条件：**
-- 游戏状态为 ONGOING
+**Preconditions:**
+- Game status is ONGOING
 
-**响应示例：**
+**Response example:**
 ```json
 {
   "status": true,
@@ -156,13 +156,13 @@ GET /api/game/{game_id}/turn/current
       "game": {...},
       "index": 0,
       "status": 0,
-      "question_text": "你面临一个重要的决策...",
+      "question_text": "You face an important decision...",
       "options": [
         {
           "id": 1,
           "turn_id": 1,
           "display_number": 1,
-          "text": "选择支持技术发展",
+          "text": "Support technological development",
           "attrs": [
             {"name": "Memory Equality", "value": 5},
             {"name": "Technical Control", "value": 10},
@@ -181,29 +181,29 @@ GET /api/game/{game_id}/turn/current
 }
 ```
 
-#### 初始化新回合
+#### Init new turn
 ```http
 POST /api/game/{game_id}/turn/init
 ```
 
-**前置条件：**
-- 游戏状态为 ONGOING
-- 当前没有进行中的回合
+**Preconditions:**
+- Game status is ONGOING
+- No current ongoing turn
 
-**功能：** 使用LLM生成新的问题和选项
+**Function:** Generate new question/options with LLM
 
-#### 提交回合
+#### Submit turn
 ```http
 POST /api/game/{game_id}/turn/submit
 ```
 
-**前置条件：**
-- 游戏状态为 ONGOING
-- 所有玩家都已做出选择
+**Preconditions:**
+- Game status is ONGOING
+- All players have chosen
 
-**功能：** 提交当前回合的玩家选择并生成下一回合内容；若当前回合未创建或仍有玩家未完成选择，则返回 `status: false`。
+**Function:** Submit current turn choices and generate next turn; returns `status: false` if invalid.
 
-**响应示例：**
+**Response example:**
 ```json
 {
   "status": true,
@@ -213,16 +213,16 @@ POST /api/game/{game_id}/turn/submit
 }
 ```
 
-### 3. 玩家管理
+### 3. Player management
 
-#### 获取我的资料
+#### Get my profile
 ```http
 GET /api/game/my_profile/
 ```
 
-**认证：** 必需
+**Auth:** Required
 
-**响应示例：**
+**Response example:**
 ```json
 {
   "status": true,
@@ -237,21 +237,21 @@ GET /api/game/my_profile/
 }
 ```
 
-#### 初始化玩家/加入游戏
+#### Init player / join game
 ```http
 POST /api/game/{game_id}/player/init/
 ```
 
-**请求体：**
+**Request body:**
 ```json
 {
-  "display_name": "玩家昵称"
+  "display_name": "player nickname"
 }
 ```
 
-**说明：** 如果请求携带了有效的 `auth_token`，且该玩家属于此 `game_id`，则不会新建玩家，会直接返回该已存在玩家。
+**Note:** With a valid `auth_token` belonging to this `game_id`, the existing player is returned.
 
-**响应示例：**
+**Response example:**
 ```json
 {
   "status": true,
@@ -266,25 +266,25 @@ POST /api/game/{game_id}/player/init/
 }
 ```
 
-#### 提交选择
+#### Submit choice
 ```http
 POST /api/game/{game_id}/player/submit/
 ```
 
-**认证：** 必需
+**Auth:** Required
 
-**请求体：**
+**Request body:**
 ```json
 {
   "option_id": 1
 }
 ```
-（也可使用表单字段提交：`option_id=<Integer>`）
+(Form field submission is supported: `option_id=<Integer>`)
 
-**前置条件：**
-- 游戏状态为 ONGOING
-- 玩家尚未在当前回合做出选择
-- 选项属于当前回合
+**Preconditions:**
+- Game status is ONGOING
+- Player has not chosen in current turn
+- Option belongs to current turn
 
 **响应示例：**
 ```json
@@ -298,14 +298,14 @@ POST /api/game/{game_id}/player/submit/
 }
 ```
 
-#### 获取我的历史选择
+#### Get my history
 ```http
 GET /api/game/{game_id}/player/history
 ```
 
-**认证：** 必需
+**Auth:** Required
 
-**功能：** 获取玩家在该游戏中的所有历史选择记录。
+**Function:** Get all historical choices for this game.
 
 **响应示例：**
 ```json
@@ -320,25 +320,25 @@ GET /api/game/{game_id}/player/history
 }
 ```
 
-## 错误处理
+## Error handling
 
-### 错误响应格式
+### Error response format
 ```json
 {
   "status": false,
   "data": {},
-  "error": "错误描述信息"
+  "error": "error description"
 }
 ```
 
-### 常见错误码
+### Common error codes
 
-- **400 Bad Request**: 请求参数错误
-- **401 Unauthorized**: 认证失败或token无效
-- **404 Not Found**: 资源不存在
-- **500 Internal Server Error**: 服务器内部错误
+- **400 Bad Request**: invalid request parameters
+- **401 Unauthorized**: auth failed or token invalid
+- **404 Not Found**: resource not found
+- **500 Internal Server Error**: server error
 
-### 业务错误示例
+### Business error examples
 
 ```json
 {
@@ -356,16 +356,16 @@ GET /api/game/{game_id}/player/history
 }
 ```
 
-## 完整游戏流程示例
+## Full game flow example
 
-### 1. 创建/获取当前游戏
+### 1. Create/Get current game
 ```javascript
 const response = await fetch('/api/game/current/');
 const { data } = await response.json();
 const game = data.game;
 ```
 
-### 2. 玩家加入游戏
+### 2. Player joins the game
 ```javascript
 const joinResponse = await fetch(`/api/game/${game.id}/player/init/`, {
   method: 'POST',
@@ -373,14 +373,14 @@ const joinResponse = await fetch(`/api/game/${game.id}/player/init/`, {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    display_name: '张三'
+    display_name: 'Zhang San'
   })
 });
 const { data: playerData } = await joinResponse.json();
 const authToken = playerData.player.auth_token;
 ```
 
-### 3. 开始游戏
+### 3. Start game
 ```javascript
 const startResponse = await fetch(`/api/game/${game.id}/start/`, {
   method: 'POST',
@@ -390,7 +390,7 @@ const startResponse = await fetch(`/api/game/${game.id}/start/`, {
 });
 ```
 
-### 4. 初始化第一回合
+### 4. Initialize first turn
 ```javascript
 const initTurnResponse = await fetch(`/api/game/${game.id}/turn/init`, {
   method: 'POST',
@@ -400,7 +400,7 @@ const initTurnResponse = await fetch(`/api/game/${game.id}/turn/init`, {
 });
 ```
 
-### 5. 获取当前回合信息
+### 5. Get current turn info
 ```javascript
 const turnResponse = await fetch(`/api/game/${game.id}/turn/current`, {
   headers: {
@@ -411,7 +411,7 @@ const { data: turnData } = await turnResponse.json();
 const turn = turnData.turn;
 ```
 
-### 6. 玩家做出选择
+### 6. Player makes a choice
 ```javascript
 const choiceResponse = await fetch(`/api/game/${game.id}/player/submit/`, {
   method: 'POST',
@@ -425,9 +425,9 @@ const choiceResponse = await fetch(`/api/game/${game.id}/player/submit/`, {
 });
 ```
 
-### 7. 等待所有玩家选择完成，然后提交回合
+### 7. Wait for all players then submit turn
 ```javascript
-// 检查是否所有玩家都已选择
+// Check if all players have chosen
 if (turn.total_choices === turn.total_players) {
   const submitResponse = await fetch(`/api/game/${game.id}/turn/submit`, {
     method: 'POST',
@@ -437,11 +437,11 @@ if (turn.total_choices === turn.total_players) {
   });
   const submitData = await submitResponse.json();
   const nextTurn = submitData?.data?.next_turn;
-  // 使用 nextTurn 更新UI或状态
+  // Use nextTurn to update UI/state
 }
 ```
 
-### 8. 结束游戏（可选）
+### 8. Finish game (optional)
 ```javascript
 const finishResponse = await fetch(`/api/game/${game.id}/finish/`, {
   method: 'POST',
@@ -451,7 +451,7 @@ const finishResponse = await fetch(`/api/game/${game.id}/finish/`, {
 });
 ```
 
-### 9. 归档游戏（可选）
+### 9. Archive game (optional)
 ```javascript
 const archiveResponse = await fetch(`/api/game/${game.id}/archive/`, {
   method: 'POST',
@@ -461,24 +461,24 @@ const archiveResponse = await fetch(`/api/game/${game.id}/archive/`, {
 });
 ```
 
-## 实时更新建议
+## Realtime update suggestion
 
-由于游戏是多人协作的，建议前端实现轮询机制来获取最新状态：
+As it is multiplayer, we recommend polling for latest state:
 
 ```javascript
-// 轮询当前回合状态
+// Poll current turn status
 setInterval(async () => {
   const response = await fetch(`/api/game/${game.id}/turn/current`, {
     headers: { 'Authorization': `Bearer ${authToken}` }
   });
   const { data } = await response.json();
   updateUI(data.turn);
-}, 2000); // 每2秒检查一次
+}, 2000); // every 2 seconds
 ```
 
-## 数据模型参考
+## Data models
 
-### Game 对象
+### Game object
 ```json
 {
   "id": 1,
@@ -494,14 +494,14 @@ setInterval(async () => {
 }
 ```
 
-### Turn 对象
+### Turn object
 ```json
 {
   "id": 1,
   "game": {...},
   "index": 0,
   "status": 0,
-  "question_text": "问题文本",
+  "question_text": "Question text",
   "options": [...],
   "created_at": "2024-01-01T10:00:00Z",
   "updated_at": "2024-01-01T10:00:00Z",
@@ -517,13 +517,13 @@ setInterval(async () => {
 }
 ```
 
-### Option 对象
+### Option object
 ```json
 {
   "id": 1,
   "turn_id": 1,
   "display_number": 1,
-  "text": "选项描述",
+  "text": "Option description",
   "attrs": [
     {"name": "Memory Equality", "value": 5},
     {"name": "Technical Control", "value": 10},
@@ -534,7 +534,7 @@ setInterval(async () => {
 }
 ```
 
-### Player 对象
+### Player object
 ```json
 {
   "id": 1,
@@ -544,18 +544,18 @@ setInterval(async () => {
 }
 ```
 
-## 注意事项
+## Notes
 
-1. **Token管理**: 认证token有效期为30天，请妥善保存
-2. **游戏状态**: 确保在正确的游戏状态下调用相应的API
-3. **并发处理**: 多人游戏中注意处理并发选择的情况
-4. **错误处理**: 始终检查API响应的`status`字段
-5. **轮询频率**: 建议轮询间隔不少于1秒，避免对服务器造成压力
+1. **Token management**: token is valid for 30 days; keep it safe
+2. **Game status**: call the correct API in the correct state
+3. **Concurrency**: handle concurrent choices
+4. **Error handling**: always check the `status` field
+5. **Polling frequency**: avoid intervals below 1s to reduce server load
 
-## 联系方式
+## Contact
 
-如有技术问题，请联系后端开发团队。
+For issues, contact the backend team.
 
 ---
 
-*文档更新时间：2024年1月*
+*Last updated: 2024-01*

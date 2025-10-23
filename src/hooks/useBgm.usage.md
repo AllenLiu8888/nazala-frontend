@@ -1,15 +1,15 @@
-# useBgm Hook 使用指南
+# useBgm Hook Guide
 
-## 功能
+## What it does
 
-基于 `use-sound` 库的全局背景音乐管理 Hook，支持跨页面共享音频实例。
+A global background music management hook based on `use-sound`, supporting audio instance sharing across pages.
 
-## 特性
+## Features
 
-- 全局单例音频实例
-- 跨页面无缝播放
-- 简单的播放/停止控制
-- 基于 `use-sound` 库
+- Global singleton audio instance
+- Seamless playback across pages
+- Simple play/stop controls
+- Built on top of `use-sound`
 
 ## API
 
@@ -17,15 +17,15 @@
 useBgm(soundUrl, shouldPlay, shouldStop)
 ```
 
-### 参数
+### Parameters
 
-- `soundUrl` (string): 音频文件的 URL
-- `shouldPlay` (boolean): 是否应该开始播放
-- `shouldStop` (boolean): 是否应该停止播放
+- `soundUrl` (string): audio file URL
+- `shouldPlay` (boolean): whether to start playing
+- `shouldStop` (boolean): whether to stop playing
 
-## 使用示例
+## Usage examples
 
-### 1. 在 HomePage 开始播放 BGM
+### 1. Start BGM in HomePage
 
 ```jsx
 import { useBgm } from '../../hooks/useBgm';
@@ -33,14 +33,14 @@ import { useBgm } from '../../hooks/useBgm';
 const HomePage = () => {
   const bgmUrl = 'https://example.com/audio/menu.ogg';
   
-  // 在 HomePage 开始播放，不停止
+  // Start playing in HomePage, do not stop
   useBgm(bgmUrl, true, false);
   
   return <div>Home Page</div>;
 };
 ```
 
-### 2. 在 GameLobby 继续播放（不中断）
+### 2. Keep playing in GameLobby (no interruption)
 
 ```jsx
 import { useBgm } from '../../hooks/useBgm';
@@ -48,14 +48,14 @@ import { useBgm } from '../../hooks/useBgm';
 const GameLobby = () => {
   const bgmUrl = 'https://example.com/audio/menu.ogg';
   
-  // 不启动新播放，也不停止（继续播放）
+  // Do not start new playback, do not stop (continue playing)
   useBgm(bgmUrl, false, false);
   
   return <div>Game Lobby</div>;
 };
 ```
 
-### 3. 在 GameIntro 停止播放
+### 3. Stop playback in GameIntro
 
 ```jsx
 import { useBgm } from '../../hooks/useBgm';
@@ -63,16 +63,16 @@ import { useBgm } from '../../hooks/useBgm';
 const GameIntro = () => {
   const bgmUrl = 'https://example.com/audio/menu.ogg';
   
-  // 不启动播放，但要停止
+  // Do not start playback, but stop
   useBgm(bgmUrl, false, true);
   
   return <div>Game Intro</div>;
 };
 ```
 
-## 完整流程示例
+## Full flow example
 
-### 场景：HomePage → GameLobby → GameIntro
+### Scenario: HomePage → GameLobby → GameIntro
 
 ```jsx
 // ===== HomePage.jsx =====
@@ -80,7 +80,7 @@ import { useBgm } from '../../hooks/useBgm';
 
 const HomePage = () => {
   const bgmUrl = 'https://example.com/audio/menu.ogg';
-  useBgm(bgmUrl, true, false); // 开始播放
+  useBgm(bgmUrl, true, false); // start playing
   
   return (
     <div>
@@ -120,56 +120,56 @@ const GameIntro = () => {
 };
 ```
 
-### 播放流程
+### Playback flow
 
-1. **用户进入 HomePage**
-   - `useBgm(url, true, false)` → 开始播放 BGM
-   - 音乐循环播放
+1. **User enters HomePage**
+   - `useBgm(url, true, false)` → start BGM
+   - Music loops
 
-2. **用户点击进入 GameLobby**
-   - `useBgm(url, false, false)` → 继续播放（不做任何操作）
-   - 音乐**不会中断**，保持流畅播放
+2. **User navigates to GameLobby**
+   - `useBgm(url, false, false)` → keep playing (no operation)
+   - Music keeps playing smoothly
 
-3. **用户点击 Start Game，进入 GameIntro**
-   - `useBgm(url, false, true)` → 停止 BGM
-   - 音乐停止
+3. **User clicks Start Game and enters GameIntro**
+   - `useBgm(url, false, true)` → stop BGM
+   - Music stops
 
-## 工作原理
+## How it works
 
-### 全局状态管理
+### Global state management
 
 ```javascript
-// 全局变量，跨组件共享
+// Global variables shared across components
 let globalAudioInstance = null;
 let globalIsPlaying = false;
 ```
 
-- `globalAudioInstance`: 保存 `use-sound` 创建的音频实例
-- `globalIsPlaying`: 跟踪当前播放状态
+- `globalAudioInstance`: holds the audio instance created by `use-sound`
+- `globalIsPlaying`: tracks current playback state
 
-### 关键逻辑
+### Key logic
 
-1. **首次播放 (shouldPlay = true)**:
-   - 检查 `globalIsPlaying` 是否为 false
-   - 调用 `play()` 开始播放
-   - 设置 `globalIsPlaying = true`
+1. **First play (shouldPlay = true)**:
+   - Check `globalIsPlaying` is false
+   - Call `play()` to start
+   - Set `globalIsPlaying = true`
 
-2. **继续播放 (shouldPlay = false, shouldStop = false)**:
-   - 不做任何操作
-   - 音频实例继续播放
+2. **Continue (shouldPlay = false, shouldStop = false)**:
+   - Do nothing
+   - Audio keeps playing
 
-3. **停止播放 (shouldStop = true)**:
-   - 调用 `stop()` 停止音频
-   - 设置 `globalIsPlaying = false`
+3. **Stop (shouldStop = true)**:
+   - Call `stop()`
+   - Set `globalIsPlaying = false`
 
-## 注意事项
+## Notes
 
-### 1. URL 必须一致
+### 1. URL must be consistent
 
-确保所有页面使用**完全相同**的 `soundUrl`：
+Ensure all pages use the **exact same** `soundUrl`:
 
 ```javascript
-// 正确 - 使用相同的 URL
+// Correct - same URL
 const bgmUrl = 'https://example.com/audio/menu.ogg';
 
 // HomePage
@@ -180,7 +180,7 @@ useBgm(bgmUrl, false, false);
 ```
 
 ```javascript
-// 错误 - URL 不同
+// Wrong - different URLs
 // HomePage
 useBgm('https://example.com/audio/menu.ogg', true, false);
 
@@ -188,9 +188,9 @@ useBgm('https://example.com/audio/menu.ogg', true, false);
 useBgm('https://example.com/audio/menu2.ogg', false, false); // 不同的 URL！
 ```
 
-### 2. 浏览器自动播放限制
+### 2. Browser autoplay restrictions
 
-现代浏览器要求用户交互后才能播放音频。确保在用户点击按钮后启动音乐：
+Modern browsers require a user gesture before audio playback. Ensure you start music after a click:
 
 ```jsx
 const HomePage = () => {
@@ -201,23 +201,23 @@ const HomePage = () => {
   
   return (
     <button onClick={() => setCanPlay(true)}>
-      Start (点击后播放音乐)
+      Start (play after click)
     </button>
   );
 };
 ```
 
-### 3. 组件卸载
+### 3. Component unmount
 
-当设置 `shouldStop = true` 时，组件卸载会自动停止音乐：
+When `shouldStop = true`, unmount will automatically stop music:
 
 ```jsx
 useBgm(bgmUrl, false, true); // 卸载时自动停止
 ```
 
-## 进阶用法
+## Advanced usage
 
-### 切换不同的 BGM
+### Switch different BGM
 
 ```jsx
 const [currentBgm, setCurrentBgm] = useState('menu');
@@ -228,52 +228,49 @@ const bgmUrls = {
   gameover: 'https://example.com/audio/gameover.ogg',
 };
 
-// 停止当前 BGM
+// Stop current BGM
 useBgm(bgmUrls[currentBgm], false, true);
 
-// 播放新 BGM
+// Play new BGM
 useBgm(bgmUrls['game'], true, false);
 ```
 
-### 手动重置全局状态
+### Manually reset global state
 
 ```javascript
 import { resetBgm } from '../../hooks/useBgm';
 
-// 在某些特殊情况下重置
+// Reset in special cases
 resetBgm();
 ```
 
-## 故障排查
+## Troubleshooting
 
-### 问题：音乐没有播放
+### Issue: Music does not play
 
-**解决方案**:
-1. 检查 `shouldPlay` 是否为 `true`
-2. 确保用户有过交互（点击按钮等）
-3. 检查音频 URL 是否正确
-4. 打开浏览器控制台查看日志
+**Solution**:
+1. Check `shouldPlay` is `true`
+2. Ensure a user gesture happened (click etc.)
+3. Verify audio URL
+4. Check browser console logs
 
-### 问题：切换页面时音乐中断了
+### Issue: Music interrupts when switching pages
 
-**解决方案**:
-1. 确保所有页面使用相同的 `soundUrl`
-2. 在中间页面使用 `useBgm(url, false, false)`
-3. 检查是否有其他地方调用了 `shouldStop = true`
+**Solution**:
+1. Ensure all pages use the same `soundUrl`
+2. Use `useBgm(url, false, false)` on intermediate pages
+3. Check if something sets `shouldStop = true`
 
-### 问题：音乐无法停止
+### Issue: Music cannot stop
 
-**解决方案**:
-1. 确保目标页面使用了 `shouldStop = true`
-2. 检查全局状态是否被正确更新
-3. 尝试调用 `resetBgm()` 手动重置
+**Solution**:
+1. Ensure target page uses `shouldStop = true`
+2. Check global state updates
+3. Try `resetBgm()` to reset
 
-## 相关资源
+## Related resources
 
-- [use-sound 文档](https://github.com/joshwcomeau/use-sound)
+- [use-sound docs](https://github.com/joshwcomeau/use-sound)
 - [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
 
-## 完成！
-
-现在你可以在项目中实现跨页面的无缝背景音乐播放了！
 
