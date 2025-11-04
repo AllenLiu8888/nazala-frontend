@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { gameApi } from '../../services/gameApi';
 import { GAME_STATUS } from '../../constants/constants';
 import useGameStoreMobile from '../../store/index_mobile';
@@ -8,6 +8,7 @@ const WaitingPage = () => {
   // Get real gameId from URL parameters
   const { gameId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const hasInitialized = useRef(false);
   const setUiConfig = useGameStoreMobile(s => s.setUiConfig);
 
@@ -17,15 +18,26 @@ const WaitingPage = () => {
   const createPlayer = async (gameId) => {
     try {
       // Get existing authToken (if any)
-      const existingToken = localStorage.getItem('authToken');
-      
+      const urlToken = searchParams.get('authToken');
+      const localToken = localStorage.getItem('authToken');
+      const existingToken = urlToken || localToken;
+
       // Call API directly, let backend decide whether to return existing user or create new user
       const result = await gameApi.joinGame(gameId, existingToken);
-      localStorage.setItem('authToken', result.player.auth_token);
+      const newToken = result.player.auth_token;
+
+      // store authToken in URL
+      setSearchParams({ authToken: newToken });
+
+      // store authToken and playerId in localStorage
+      localStorage.setItem('authToken', newToken);
       localStorage.setItem('playerId', result.player.id);
-      // 加入成功后，立即刷新一次 gameDetail，促使大屏人数尽快更新
-      try { await useGameStoreMobile.getState().fetchGameDetail(gameId); } catch { /* no-op */ }
       
+      // after joining, immediately refresh game detail to update player count on main screen
+      try { await useGameStoreMobile.getState().fetchGameDetail(gameId); } catch { /* no-op */ }
+
+      console.log('✅ authToken:', newToken);
+      console.log('✅ Shareable URL:', `${window.location.origin}${window.location.pathname}?authToken=${newToken}`);
     } catch (error) {
       console.error(' Failed to handle user:', error, gameId);
     }
